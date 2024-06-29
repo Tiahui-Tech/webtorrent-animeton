@@ -32,6 +32,7 @@ const config = require('../config')
 const telemetry = require('./lib/telemetry')
 const sound = require('./lib/sound')
 const TorrentPlayer = require('./lib/torrent-player')
+const { RSSManager } = require('../modules/rss')
 
 // Perf optimization: Needed immediately, so do not lazy load it below
 const TorrentListController = require('./controllers/torrent-list-controller')
@@ -60,10 +61,43 @@ let state
 // Root React component
 let app
 
+// Load the newest animes from Erai-raws with RSS
+function loadRSSTorrentsAnimes() {
+  console.log('Loading RSS...')
+  const page = 1
+  const perPage = 10
+  const url = 'Erai-raws [Multi-Sub]'
+
+  try {
+    const animes = RSSManager.getMediaForRSS(page, perPage, url, true)
+    
+    Promise.all(animes.map(async (item) => {
+      if (item.type === 'episode' && item.data instanceof Promise) {
+        const resolvedData = await item.data
+        return { type: item.type, data: resolvedData }
+      }
+      return item
+    })).then(results => {
+      console.log('RSS Animes:', JSON.stringify(results, null, 2))
+
+      // Add torrents to list (Test)
+      // results.forEach(anime => {
+      //   if (anime.data && anime.data.link) {
+      //     dispatch('addTorrent', anime.data.link)
+      //   }
+      // })
+    }).catch(error => {
+      console.error('Error loading anime from RSS:', error)
+    })
+  } catch (error) {
+    console.error('Error on loadRSS:', error)
+  }
+}
+
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like
 // the dock icon and drag+drop.
-function onState (err, _state) {
+function onState(err, _state) {
   if (err) return onError(err)
 
   // Make available for easier debugging
@@ -130,6 +164,9 @@ function onState (err, _state) {
   // Restart everything we were torrenting last time the app ran
   resumeTorrents()
 
+  // Laod RSS animes
+  loadRSSTorrentsAnimes()
+
   // Initialize ReactDOM
   ReactDOM.render(
     <App state={state} ref={elem => { app = elem }} />,
@@ -184,7 +221,7 @@ function onState (err, _state) {
 }
 
 // Runs a few seconds after the app loads, to avoid slowing down startup time
-function delayedInit () {
+function delayedInit() {
   telemetry.send(state)
 
   // Send telemetry data every 12 hours, for users who keep the app running
@@ -202,7 +239,7 @@ function delayedInit () {
 }
 
 // Lazily loads Chromecast and Airplay support
-function lazyLoadCast () {
+function lazyLoadCast() {
   if (!Cast) {
     Cast = require('./lib/cast')
     Cast.init(state, update) // Search the local network for Chromecast and Airplays
@@ -215,7 +252,7 @@ function lazyLoadCast () {
 // 2. event - might be a click or other DOM event, or something external
 // 3. dispatch - the event handler calls dispatch(), main.js sends it to a controller
 // 4. controller - the controller handles the event, changing the state object
-function update () {
+function update() {
   controllers.playback().showOrHidePlayerControls()
   app.setState(state)
   updateElectron()
@@ -223,7 +260,7 @@ function update () {
 
 // Some state changes can't be reflected in the DOM, instead we have to
 // tell the main process to update the window or OS integrations
-function updateElectron () {
+function updateElectron() {
   if (state.window.title !== state.prev.title) {
     state.prev.title = state.window.title
     ipcRenderer.send('setTitle', state.window.title)
@@ -345,11 +382,11 @@ const dispatchHandlers = {
   uncaughtError: (proc, err) => telemetry.logUncaughtError(proc, err),
   stateSave: () => State.save(state),
   stateSaveImmediate: () => State.saveImmediate(state),
-  update: () => {} // No-op, just trigger an update
+  update: () => { } // No-op, just trigger an update
 }
 
 // Events from the UI never modify state directly. Instead they call dispatch()
-function dispatch (action, ...args) {
+function dispatch(action, ...args) {
   // Log dispatch calls, for debugging, but don't spam
   if (!['mediaMouseMoved', 'mediaTimeUpdate', 'update'].includes(action)) {
     console.log('dispatch: %s %o', action, args)
@@ -361,13 +398,13 @@ function dispatch (action, ...args) {
 
   // Update the virtual DOM, unless it's just a mouse move event
   if (action !== 'mediaMouseMoved' ||
-      controllers.playback().showOrHidePlayerControls()) {
+    controllers.playback().showOrHidePlayerControls()) {
     update()
   }
 }
 
 // Listen to events from the main and webtorrent processes
-function setupIpc () {
+function setupIpc() {
   ipcRenderer.on('log', (e, ...args) => console.log(...args))
   ipcRenderer.on('error', (e, ...args) => console.error(...args))
 
@@ -399,7 +436,7 @@ function setupIpc () {
 }
 
 // Quits any modal popovers and returns to the torrent list screen
-function backToList () {
+function backToList() {
   // Exit any modals and screens with a back button
   state.modal = null
   state.location.backToFirst(() => {
@@ -410,7 +447,7 @@ function backToList () {
 }
 
 // Quits modals, full screen, or goes back. Happens when the user hits ESC
-function escapeBack () {
+function escapeBack() {
   if (state.modal) {
     dispatch('exitModal')
   } else if (state.window.isFullScreen) {
@@ -420,12 +457,12 @@ function escapeBack () {
   }
 }
 
-function setGlobalTrackers () {
+function setGlobalTrackers() {
   controllers.torrentList().setGlobalTrackers(state.getGlobalTrackers())
 }
 
 // Starts all torrents that aren't paused on program startup
-function resumeTorrents () {
+function resumeTorrents() {
   state.saved.torrents
     .map((torrentSummary) => {
       // Torrent keys are ephemeral, reassigned each time the app runs.
@@ -438,7 +475,7 @@ function resumeTorrents () {
 }
 
 // Set window dimensions to match video dimensions or fill the screen
-function setDimensions (dimensions) {
+function setDimensions(dimensions) {
   // Don't modify the window size if it's already maximized
   if (electron.remote.getCurrentWindow().isMaximized()) {
     state.window.bounds = null
@@ -478,7 +515,7 @@ function setDimensions (dimensions) {
 
 // Called when the user adds files (.torrent, files to seed, subtitles) to the app
 // via any method (drag-drop, drag to app icon, command line)
-function onOpen (files) {
+function onOpen(files) {
   if (!Array.isArray(files)) files = [files]
 
   // File API seems to transform "magnet:?foo" in "magnet:///?foo"
@@ -512,7 +549,7 @@ function onOpen (files) {
   update()
 }
 
-function onError (err) {
+function onError(err) {
   console.error(err.stack || err)
   sound.play('ERROR')
   state.errors.push({
@@ -525,14 +562,14 @@ function onError (err) {
 
 const editableHtmlTags = new Set(['input', 'textarea'])
 
-function onPaste (e) {
+function onPaste(e) {
   if (e && editableHtmlTags.has(e.target.tagName.toLowerCase())) return
   controllers.torrentList().addTorrent(electron.clipboard.readText())
 
   update()
 }
 
-function onKeydown (e) {
+function onKeydown(e) {
   // prevent event fire on user input elements
   if (editableHtmlTags.has(e.target.tagName.toLowerCase())) return
 
@@ -563,22 +600,22 @@ function onKeydown (e) {
   update()
 }
 
-function onFocus (e) {
+function onFocus(e) {
   state.window.isFocused = true
   state.dock.badge = 0
   update()
 }
 
-function onBlur () {
+function onBlur() {
   state.window.isFocused = false
   update()
 }
 
-function onVisibilityChange () {
+function onVisibilityChange() {
   state.window.isVisible = !document.hidden
 }
 
-function onFullscreenChanged (e, isFullScreen) {
+function onFullscreenChanged(e, isFullScreen) {
   state.window.isFullScreen = isFullScreen
   if (!isFullScreen) {
     // Aspect ratio gets reset in fullscreen mode, so restore it (Mac)
@@ -588,14 +625,14 @@ function onFullscreenChanged (e, isFullScreen) {
   update()
 }
 
-function onWindowBoundsChanged (e, newBounds) {
+function onWindowBoundsChanged(e, newBounds) {
   if (state.location.url() !== 'player') {
     state.saved.bounds = newBounds
     dispatch('stateSave')
   }
 }
 
-function checkDownloadPath () {
+function checkDownloadPath() {
   fs.stat(state.saved.prefs.downloadPath, (err, stat) => {
     if (err) {
       state.downloadPathStatus = 'missing'

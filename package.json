@@ -23,6 +23,7 @@
   "dependencies": {
     "@electron/remote": "2.1.2",
     "airplayer": "github:webtorrent/airplayer#fix-security",
+    "anitomyscript": "^2.0.4",
     "application-config": "2.0.0",
     "arch": "2.2.0",
     "auto-launch": "5.0.5",
