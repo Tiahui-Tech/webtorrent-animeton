@@ -27,6 +27,7 @@
     "@mui/icons-material": "^5.15.21",
     "@mui/material": "^5.15.21",
     "airplayer": "github:webtorrent/airplayer#fix-security",
+    "anitomyscript": "^2.0.4",
     "application-config": "2.0.0",
     "arch": "2.2.0",
     "auto-launch": "5.0.5",
