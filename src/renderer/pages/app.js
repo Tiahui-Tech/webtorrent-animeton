@@ -1,10 +1,9 @@
-const colors = require('material-ui/styles/colors')
-const createGetter = require('fn-getter')
 const React = require('react')
-
-const darkBaseTheme = require('material-ui/styles/baseThemes/darkBaseTheme').default
-const getMuiTheme = require('material-ui/styles/getMuiTheme').default
-const MuiThemeProvider = require('material-ui/styles/MuiThemeProvider').default
+const createGetter = require('fn-getter')
+const { createTheme, ThemeProvider } = require('@mui/material/styles')
+const CssBaseline = require('@mui/material/CssBaseline').default
+const Box = require('@mui/material/Box').default
+const { grey, red } = require('@mui/material/colors')
 
 const Header = require('../components/header')
 
@@ -33,50 +32,54 @@ const fontFamily = process.platform === 'win32'
   ? '"Segoe UI", sans-serif'
   : 'BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif'
 
-darkBaseTheme.fontFamily = fontFamily
-darkBaseTheme.userAgent = false
-darkBaseTheme.palette.primary1Color = colors.grey50
-darkBaseTheme.palette.primary2Color = colors.grey50
-darkBaseTheme.palette.primary3Color = colors.grey600
-darkBaseTheme.palette.accent1Color = colors.redA200
-darkBaseTheme.palette.accent2Color = colors.redA400
-darkBaseTheme.palette.accent3Color = colors.redA100
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: grey[50],
+    },
+    secondary: {
+      main: red.A200,
+    },
+  },
+  typography: {
+    fontFamily: fontFamily,
+  },
+})
 
-let darkMuiTheme
-let lightMuiTheme
+const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+  },
+  typography: {
+    fontFamily: fontFamily,
+  },
+})
 
 class App extends React.Component {
   render () {
     const state = this.props.state
 
-    // Hide player controls while playing video, if the mouse stays still for a while
-    // Never hide the controls when:
-    // * The mouse is over the controls or we're scrubbing (see CSS)
-    // * The video is paused
-    // * The video is playing remotely on Chromecast or Airplay
     const hideControls = state.shouldHidePlayerControls()
 
     const cls = [
-      'view-' + state.location.url(), /* e.g. view-home, view-player */
-      'is-' + process.platform /* e.g. is-darwin, is-win32, is-linux */
+      'view-' + state.location.url(),
+      'is-' + process.platform
     ]
     if (state.window.isFullScreen) cls.push('is-fullscreen')
     if (state.window.isFocused) cls.push('is-focused')
     if (hideControls) cls.push('hide-video-controls')
 
-    if (!darkMuiTheme) {
-      darkMuiTheme = getMuiTheme(darkBaseTheme)
-    }
-
     return (
-      <MuiThemeProvider muiTheme={darkMuiTheme}>
-        <div className={'app ' + cls.join(' ')}>
+      <ThemeProvider theme={darkTheme}>
+        <CssBaseline />
+        <Box className={'app ' + cls.join(' ')}>
           <Header state={state} />
           {this.getErrorPopover()}
-          <div key='content' className='content'>{this.getView()}</div>
+          <Box key='content' className='content'>{this.getView()}</Box>
           {this.getModal()}
-        </div>
-      </MuiThemeProvider>
+        </Box>
+      </ThemeProvider>
     )
   }
 
@@ -86,15 +89,15 @@ class App extends React.Component {
     const recentErrors = state.errors.filter((x) => now - x.time < 5000)
     const hasErrors = recentErrors.length > 0
 
-    const errorElems = recentErrors.map((error, i) => <div key={i} className='error'>{error.message}</div>)
+    const errorElems = recentErrors.map((error, i) => <Box key={i} className='error'>{error.message}</Box>)
     return (
-      <div
+      <Box
         key='errors'
         className={'error-popover ' + (hasErrors ? 'visible' : 'hidden')}
       >
-        <div key='title' className='title'>Error</div>
+        <Box key='title' className='title'>Error</Box>
         {errorElems}
-      </div>
+      </Box>
     )
   }
 
@@ -102,23 +105,16 @@ class App extends React.Component {
     const state = this.props.state
     if (!state.modal) return
 
-    if (!lightMuiTheme) {
-      const lightBaseTheme = require('material-ui/styles/baseThemes/lightBaseTheme').default
-      lightBaseTheme.fontFamily = fontFamily
-      lightBaseTheme.userAgent = false
-      lightMuiTheme = getMuiTheme(lightBaseTheme)
-    }
-
     const ModalContents = Modals[state.modal.id]()
     return (
-      <MuiThemeProvider muiTheme={lightMuiTheme}>
-        <div key='modal' className='modal'>
-          <div key='modal-background' className='modal-background' />
-          <div key='modal-content' className='modal-content'>
+      <ThemeProvider theme={lightTheme}>
+        <Box key='modal' className='modal'>
+          <Box key='modal-background' className='modal-background' />
+          <Box key='modal-content' className='modal-content'>
             <ModalContents state={state} />
-          </div>
-        </div>
-      </MuiThemeProvider>
+          </Box>
+        </Box>
+      </ThemeProvider>
     )
   }
 

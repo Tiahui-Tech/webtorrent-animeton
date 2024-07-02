@@ -1,15 +1,25 @@
 const React = require('react')
 const PropTypes = require('prop-types')
 
-const colors = require('material-ui/styles/colors')
-const Checkbox = require('material-ui/Checkbox').default
-const RaisedButton = require('material-ui/RaisedButton').default
-const TextField = require('material-ui/TextField').default
+const { styled } = require('@mui/material/styles')
+const Checkbox = require('@mui/material/Checkbox').default
+const Button = require('@mui/material/Button').default
+const TextField = require('@mui/material/TextField').default
+const FormControlLabel = require('@mui/material/FormControlLabel').default
+const Box = require('@mui/material/Box').default
+const Typography = require('@mui/material/Typography').default
+
 const Heading = require('../components/heading')
 const PathSelector = require('../components/path-selector')
 
 const { dispatch } = require('../lib/dispatcher')
 const config = require('../../config')
+
+const StyledPreferencesPage = styled('div')(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  marginLeft: 25,
+  marginRight: 25
+}))
 
 class PreferencesPage extends React.Component {
   constructor (props) {
@@ -60,14 +70,18 @@ class PreferencesPage extends React.Component {
     dispatch('updatePreferences', 'downloadPath', filePath)
   }
 
-  openExternalPlayerCheckbox () {
+  openExternalPlayerCheckbox() {
     return (
       <Preference>
-        <Checkbox
-          className='control'
-          checked={!this.props.state.saved.prefs.openExternalPlayer}
+        <FormControlLabel
+          control={
+            <Checkbox
+              className='control'
+              checked={!this.props.state.saved.prefs.openExternalPlayer}
+              onChange={this.handleOpenExternalPlayerChange}
+            />
+          }
           label='Play torrent media files using WebTorrent'
-          onCheck={this.handleOpenExternalPlayerChange}
         />
       </Preference>
     )
@@ -77,16 +91,20 @@ class PreferencesPage extends React.Component {
     dispatch('updatePreferences', 'openExternalPlayer', !isChecked)
   }
 
-  highestPlaybackPriorityCheckbox () {
+  highestPlaybackPriorityCheckbox() {
     return (
       <Preference>
-        <Checkbox
-          className='control'
-          checked={this.props.state.saved.prefs.highestPlaybackPriority}
+        <FormControlLabel
+          control={
+            <Checkbox
+              className='control'
+              checked={this.props.state.saved.prefs.highestPlaybackPriority}
+              onChange={this.handleHighestPlaybackPriorityChange}
+            />
+          }
           label='Highest Playback Priority'
-          onCheck={this.handleHighestPlaybackPriorityChange}
         />
-        <p>Pauses all active torrents to allow playback to use all of the available bandwidth.</p>
+        <Typography variant="body2">Pauses all active torrents to allow playback to use all of the available bandwidth.</Typography>
       </Preference>
     )
   }
@@ -176,23 +194,25 @@ class PreferencesPage extends React.Component {
     dispatch('updatePreferences', 'torrentsFolderPath', filePath)
   }
 
-  setDefaultAppButton () {
+  setDefaultAppButton() {
     const isFileHandler = this.props.state.saved.prefs.isFileHandler
     if (isFileHandler) {
       return (
         <Preference>
-          <p>WebTorrent is your default torrent app. Hooray!</p>
+          <Typography>WebTorrent is your default torrent app. Hooray!</Typography>
         </Preference>
       )
     }
     return (
       <Preference>
-        <p>WebTorrent is not currently the default torrent app.</p>
-        <RaisedButton
+        <Typography>WebTorrent is not currently the default torrent app.</Typography>
+        <Button
           className='control'
           onClick={this.handleSetDefaultApp}
-          label='Make WebTorrent the default'
-        />
+          variant="contained"
+        >
+          Make WebTorrent the default
+        </Button>
       </Preference>
     )
   }
@@ -239,28 +259,24 @@ class PreferencesPage extends React.Component {
     dispatch('updatePreferences', 'isFileHandler', true)
   }
 
-  setGlobalTrackers () {
-    // Align the text fields
-    const textFieldStyle = { width: '100%' }
-    const textareaStyle = { margin: 0 }
-
+  setGlobalTrackers() {
     return (
       <Preference>
         <TextField
           className='torrent-trackers control'
-          style={textFieldStyle}
-          textareaStyle={textareaStyle}
-          multiLine
-          rows={2}
-          rowsMax={10}
+          multiline
+          minRows={2}
+          maxRows={10}
           value={this.state.globalTrackers}
           onChange={this.handleSetGlobalTrackers}
+          fullWidth
         />
       </Preference>
     )
   }
 
-  handleSetGlobalTrackers (e, globalTrackers) {
+  handleSetGlobalTrackers(event) {
+    const globalTrackers = event.target.value
     this.setState({ globalTrackers })
 
     const announceList = globalTrackers
@@ -272,14 +288,9 @@ class PreferencesPage extends React.Component {
     dispatch('updateGlobalTrackers', announceList)
   }
 
-  render () {
-    const style = {
-      color: colors.grey400,
-      marginLeft: 25,
-      marginRight: 25
-    }
+  render() {
     return (
-      <div style={style}>
+      <StyledPreferencesPage>
         <PreferencesSection title='Folders'>
           {this.downloadPathSelector()}
           {this.autoAddTorrentsCheckbox()}
@@ -300,36 +311,31 @@ class PreferencesPage extends React.Component {
         <PreferencesSection title='Trackers'>
           {this.setGlobalTrackers()}
         </PreferencesSection>
-      </div>
+      </StyledPreferencesPage>
     )
   }
 }
 
 class PreferencesSection extends React.Component {
-  static get propTypes () {
+  static get propTypes() {
     return {
       title: PropTypes.string
     }
   }
 
-  render () {
-    const style = {
-      marginBottom: 25,
-      marginTop: 25
-    }
+  render() {
     return (
-      <div style={style}>
+      <Box sx={{ marginBottom: 3, marginTop: 3 }}>
         <Heading level={2}>{this.props.title}</Heading>
         {this.props.children}
-      </div>
+      </Box>
     )
   }
 }
 
 class Preference extends React.Component {
-  render () {
-    const style = { marginBottom: 10 }
-    return (<div style={style}>{this.props.children}</div>)
+  render() {
+    return (<Box sx={{ marginBottom: 1 }}>{this.props.children}</Box>)
   }
 }
 

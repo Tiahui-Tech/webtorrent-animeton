@@ -22,6 +22,10 @@
   },
   "dependencies": {
     "@electron/remote": "2.1.2",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.21",
+    "@mui/material": "^5.15.21",
     "airplayer": "github:webtorrent/airplayer#fix-security",
     "application-config": "2.0.0",
     "arch": "2.2.0",

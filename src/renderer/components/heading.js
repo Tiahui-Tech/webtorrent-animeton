@@ -1,7 +1,14 @@
 const React = require('react')
 const PropTypes = require('prop-types')
+const { styled } = require('@mui/material/styles')
+const { grey } = require('@mui/material/colors')
 
-const colors = require('material-ui/styles/colors')
+const StyledHeading = styled('h1')(({ theme }) => ({
+  color: grey[100],
+  fontSize: 20,
+  marginBottom: 15,
+  marginTop: 30
+}))
 
 class Heading extends React.Component {
   static get propTypes () {
@@ -17,17 +24,10 @@ class Heading extends React.Component {
   }
 
   render () {
-    const HeadingTag = 'h' + this.props.level
-    const style = {
-      color: colors.grey100,
-      fontSize: 20,
-      marginBottom: 15,
-      marginTop: 30
-    }
     return (
-      <HeadingTag style={style}>
+      <StyledHeading as={`h${this.props.level}`}>
         {this.props.children}
-      </HeadingTag>
+      </StyledHeading>
     )
   }
 }

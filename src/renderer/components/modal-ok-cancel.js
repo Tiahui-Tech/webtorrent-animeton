@@ -1,27 +1,30 @@
 const React = require('react')
-const FlatButton = require('material-ui/FlatButton').default
-const RaisedButton = require('material-ui/RaisedButton').default
+const Button = require('@mui/material/Button').default
+const Box = require('@mui/material/Box').default
 
 module.exports = class ModalOKCancel extends React.Component {
   render () {
-    const cancelStyle = { marginRight: 10, color: 'black' }
     const { cancelText, onCancel, okText, onOK } = this.props
     return (
-      <div className='float-right'>
-        <FlatButton
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Button
           className='control cancel'
-          style={cancelStyle}
-          label={cancelText}
+          sx={{ marginRight: 1, color: 'black' }}
           onClick={onCancel}
-        />
-        <RaisedButton
+          variant="text"
+        >
+          {cancelText}
+        </Button>
+        <Button
           className='control ok'
-          primary
-          label={okText}
           onClick={onOK}
+          variant="contained"
+          color="primary"
           autoFocus
-        />
-      </div>
+        >
+          {okText}
+        </Button>
+      </Box>
     )
   }
 }

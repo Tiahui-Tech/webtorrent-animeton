@@ -5,10 +5,10 @@ const React = require('react')
 
 const { dispatch, dispatcher } = require('../lib/dispatcher')
 
-const FlatButton = require('material-ui/FlatButton').default
-const RaisedButton = require('material-ui/RaisedButton').default
-const TextField = require('material-ui/TextField').default
-const Checkbox = require('material-ui/Checkbox').default
+const Button = require('@mui/material/Button').default
+const TextField = require('@mui/material/TextField').default
+const Checkbox = require('@mui/material/Checkbox').default
+const FormControlLabel = require('@mui/material/FormControlLabel').default
 
 const CreateTorrentErrorPage = require('../components/create-torrent-error-page')
 const Heading = require('../components/heading')
@@ -65,9 +65,9 @@ class CreateTorrentPage extends React.Component {
     }
 
     // Create React event handlers only once
-    this.handleSetIsPrivate = (_, isPrivate) => this.setState({ isPrivate })
-    this.handleSetComment = (_, comment) => this.setState({ comment })
-    this.handleSetTrackers = (_, trackers) => this.setState({ trackers })
+    this.handleSetIsPrivate = (event) => this.setState({ isPrivate: event.target.checked })
+    this.handleSetComment = (event) => this.setState({ comment: event.target.value })
+    this.handleSetTrackers = (event) => this.setState({ trackers: event.target.value })
     this.handleSubmit = handleSubmit.bind(this)
   }
 
@@ -99,20 +99,23 @@ class CreateTorrentPage extends React.Component {
           {this.renderAdvanced()}
         </ShowMore>
         <div className='float-right'>
-          <FlatButton
+          <Button
             className='control cancel'
-            label='Cancel'
             style={{
               marginRight: 10
             }}
             onClick={dispatcher('cancel')}
-          />
-          <RaisedButton
+          >
+            Cancel
+          </Button>
+          <Button
             className='control create-torrent-button'
-            label='Create Torrent'
-            primary
+            variant="contained"
+            color="primary"
             onClick={this.handleSubmit}
-          />
+          >
+            Create Torrent
+          </Button>
         </div>
       </div>
     )
@@ -141,39 +144,40 @@ class CreateTorrentPage extends React.Component {
     return (
       <div key='advanced' className='create-torrent-advanced'>
         <div key='private' className='torrent-attribute'>
-          <label>Private:</label>
-          <Checkbox
-            className='torrent-is-private control'
-            style={{ display: '' }}
-            checked={this.state.isPrivate}
-            onCheck={this.handleSetIsPrivate}
+          <FormControlLabel
+            control={
+              <Checkbox
+                className='torrent-is-private control'
+                checked={this.state.isPrivate}
+                onChange={this.handleSetIsPrivate}
+              />
+            }
+            label="Private"
           />
         </div>
         <div key='trackers' className='torrent-attribute'>
           <label>Trackers:</label>
           <TextField
             className='torrent-trackers control'
-            style={textFieldStyle}
-            textareaStyle={textareaStyle}
-            multiLine
-            rows={2}
-            rowsMax={10}
+            multiline
+            minRows={2}
+            maxRows={10}
             value={this.state.trackers}
             onChange={this.handleSetTrackers}
+            fullWidth
           />
         </div>
         <div key='comment' className='torrent-attribute'>
           <label>Comment:</label>
           <TextField
             className='torrent-comment control'
-            style={textFieldStyle}
-            textareaStyle={textareaStyle}
-            hintText='Optionally describe your torrent...'
-            multiLine
-            rows={2}
-            rowsMax={10}
+            placeholder='Optionally describe your torrent...'
+            multiline
+            minRows={2}
+            maxRows={10}
             value={this.state.comment}
             onChange={this.handleSetComment}
+            fullWidth
           />
         </div>
         <div key='files' className='torrent-attribute'>

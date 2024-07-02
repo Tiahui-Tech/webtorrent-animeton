@@ -1,28 +1,32 @@
 const React = require('react')
 const prettyBytes = require('prettier-bytes')
 
-const Checkbox = require('material-ui/Checkbox').default
-const LinearProgress = require('material-ui/LinearProgress').default
+const { Stack, Checkbox, LinearProgress, Box, Typography, TableCell, TableRow, IconButton } = require('@mui/material')
+
+const PlayArrowIcon = require('@mui/icons-material/PlayArrow').default
+const CloseIcon = require('@mui/icons-material/Close').default
+const AddIcon = require('@mui/icons-material/Add').default
+const DescriptionIcon = require('@mui/icons-material/Description').default
 
 const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
 const { dispatcher } = require('../lib/dispatcher')
 const { calculateEta } = require('../lib/time')
-
 module.exports = class TorrentList extends React.Component {
-  render () {
+  render() {
     const state = this.props.state
 
     const contents = []
     if (state.downloadPathStatus === 'missing') {
       contents.push(
-        <div key='torrent-missing-path'>
-          <p>Download path missing: {state.saved.prefs.downloadPath}</p>
-          <p>Check that all drives are connected?</p>
-          <p>Alternatively, choose a new download path
+        <Box key='torrent-missing-path'>
+          <Typography>Download path missing: {state.saved.prefs.downloadPath}</Typography>
+          <Typography>Check that all drives are connected?</Typography>
+          <Typography>
+            Alternatively, choose a new download path
             in <a href='#' onClick={dispatcher('preferences')}>Preferences</a>
-          </p>
-        </div>
+          </Typography>
+        </Box>
       )
     }
     const torrentElems = state.saved.torrents.map(
@@ -30,23 +34,23 @@ module.exports = class TorrentList extends React.Component {
     )
     contents.push(...torrentElems)
     contents.push(
-      <div key='torrent-placeholder' className='torrent-placeholder'>
-        <span className='ellipsis'>Drop a torrent file here or paste a magnet link</span>
-      </div>
+      <Box key='torrent-placeholder' className='torrent-placeholder'>
+        <Typography noWrap>Drop a torrent file here or paste a magnet link</Typography>
+      </Box>
     )
 
     return (
-      <div
+      <Box
         key='torrent-list'
         className='torrent-list'
         onContextMenu={dispatcher('openTorrentListContextMenu')}
       >
         {contents}
-      </div>
+      </Box>
     )
   }
 
-  renderTorrent (torrentSummary) {
+  renderTorrent(torrentSummary) {
     const state = this.props.state
     const infoHash = torrentSummary.infoHash
     const isSelected = infoHash && state.selectedInfoHash === infoHash
@@ -83,7 +87,7 @@ module.exports = class TorrentList extends React.Component {
   }
 
   // Show name, download status, % complete
-  renderTorrentMetadata (torrentSummary) {
+  renderTorrentMetadata(torrentSummary) {
     const name = torrentSummary.name || 'Loading torrent...'
     const elements = [(
       <div key='name' className='name ellipsis'>{name}</div>
@@ -119,53 +123,39 @@ module.exports = class TorrentList extends React.Component {
 
     return (<div key='metadata' className='metadata'>{elements}</div>)
 
-    function renderDownloadCheckbox () {
+    function renderDownloadCheckbox() {
       const infoHash = torrentSummary.infoHash
       const isActive = ['downloading', 'seeding'].includes(torrentSummary.status)
       return (
         <Checkbox
           key='download-button'
           className={'control download ' + torrentSummary.status}
-          style={{
+          sx={{
             display: 'inline-block',
             width: 32
           }}
-          iconStyle={{
-            width: 20,
-            height: 20
-          }}
           checked={isActive}
           onClick={stopPropagation}
-          onCheck={dispatcher('toggleTorrent', infoHash)}
+          onChange={() => dispatcher('toggleTorrent', infoHash)}
         />
       )
     }
 
-    function renderProgressBar () {
+    function renderProgressBar() {
       const progress = Math.floor(100 * prog.progress)
-      const styles = {
-        wrapper: {
-          display: 'inline-block',
-          marginRight: 8
-        },
-        progress: {
-          height: 8,
-          width: 30
-        }
-      }
       return (
-        <div key='progress-bar' style={styles.wrapper}>
-          <LinearProgress style={styles.progress} mode='determinate' value={progress} />
-        </div>
+        <Box key='progress-bar' sx={{ display: 'inline-block', marginRight: 1, width: 30 }}>
+          <LinearProgress variant='determinate' value={progress} sx={{ height: 8 }} />
+        </Box>
       )
     }
 
-    function renderPercentProgress () {
+    function renderPercentProgress() {
       const progress = Math.floor(100 * prog.progress)
       return (<span key='percent-progress'>{progress}%</span>)
     }
 
-    function renderTotalProgress () {
+    function renderTotalProgress() {
       const downloaded = prettyBytes(prog.downloaded)
       const total = prettyBytes(prog.length || 0)
       if (downloaded === total) {
@@ -175,13 +165,13 @@ module.exports = class TorrentList extends React.Component {
       }
     }
 
-    function renderPeers () {
+    function renderPeers() {
       if (prog.numPeers === 0) return
       const count = prog.numPeers === 1 ? 'peer' : 'peers'
       return (<span key='peers'>{prog.numPeers} {count}</span>)
     }
 
-    function renderSpeeds () {
+    function renderSpeeds() {
       let str = ''
       if (prog.downloadSpeed > 0) str += ' ↓ ' + prettyBytes(prog.downloadSpeed) + '/s'
       if (prog.uploadSpeed > 0) str += ' ↑ ' + prettyBytes(prog.uploadSpeed) + '/s'
@@ -189,7 +179,7 @@ module.exports = class TorrentList extends React.Component {
       return (<span key='download'>{str}</span>)
     }
 
-    function renderEta () {
+    function renderEta() {
       const downloaded = prog.downloaded
       const total = prog.length || 0
       const missing = total - downloaded
@@ -201,7 +191,7 @@ module.exports = class TorrentList extends React.Component {
       return (<span key='eta'>{etaStr}</span>)
     }
 
-    function renderTorrentStatus () {
+    function renderTorrentStatus() {
       let status
       if (torrentSummary.status === 'paused') {
         if (!torrentSummary.progress) status = ''
@@ -222,41 +212,40 @@ module.exports = class TorrentList extends React.Component {
 
   // Download button toggles between torrenting (DL/seed) and paused
   // Play button starts streaming the torrent immediately, unpausing if needed
-  renderTorrentButtons (torrentSummary) {
+  renderTorrentButtons(torrentSummary) {
     const infoHash = torrentSummary.infoHash
 
-    // Only show the play/dowload buttons for torrents that contain playable media
     let playButton
     if (!torrentSummary.error && TorrentPlayer.isPlayableTorrentSummary(torrentSummary)) {
       playButton = (
-        <i
+        <IconButton
           key='play-button'
           title='Start streaming'
           className='icon play'
           onClick={dispatcher('playFile', infoHash)}
         >
-          play_circle_outline
-        </i>
+          <PlayArrowIcon />
+        </IconButton>
       )
     }
 
     return (
-      <div className='torrent-controls'>
+      <Stack direction="row" gap={2} alignItems="center" justifyContent="center">
         {playButton}
-        <i
+        <IconButton
           key='delete-button'
-          className='icon delete'
           title='Remove torrent'
+          className='icon delete'
           onClick={dispatcher('confirmDeleteTorrent', infoHash, false)}
         >
-          close
-        </i>
-      </div>
+          <CloseIcon />
+        </IconButton>
+      </Stack>
     )
   }
 
   // Show files, per-file download status and play buttons, and so on
-  renderTorrentDetails (torrentSummary) {
+  renderTorrentDetails(torrentSummary) {
     let filesElement
     if (torrentSummary.error || !torrentSummary.files) {
       let message = ''
@@ -304,21 +293,21 @@ module.exports = class TorrentList extends React.Component {
     }
 
     return (
-      <div key='details' className='torrent-details'>
+      <Box key='details' className='torrent-details'>
         {filesElement}
-      </div>
+      </Box>
     )
   }
 
   // Show a single torrentSummary file in the details view for a single torrent
-  renderFileRow (torrentSummary, file, index) {
+  renderFileRow(torrentSummary, file, index) {
     // First, find out how much of the file we've downloaded
     // Are we even torrenting it?
     const isSelected = torrentSummary.selections && torrentSummary.selections[index]
     let isDone = false // Are we finished torrenting it?
     let progress = ''
     if (torrentSummary.progress && torrentSummary.progress.files &&
-        torrentSummary.progress.files[index]) {
+      torrentSummary.progress.files[index]) {
       const fileProg = torrentSummary.progress.files[index]
       isDone = fileProg.numPiecesPresent === fileProg.numPieces
       progress = Math.floor(100 * fileProg.numPiecesPresent / fileProg.numPieces) + '%'
@@ -350,31 +339,33 @@ module.exports = class TorrentList extends React.Component {
     if (!isSelected) rowClass = 'disabled' // File deselected, not being torrented
     if (!isDone && !isPlayable) rowClass = 'disabled' // Can't open yet, can't stream
     return (
-      <tr key={index} onClick={handleClick}>
-        <td className={'col-icon ' + rowClass}>
+      <TableRow key={index} onClick={handleClick}>
+        <TableCell className={'col-icon ' + rowClass}>
           {positionElem}
-          <i className='icon'>{icon}</i>
-        </td>
-        <td className={'col-name ' + rowClass}>
+          {isPlayable ? <PlayArrowIcon /> : <DescriptionIcon />}
+        </TableCell>
+        <TableCell className={'col-name ' + rowClass}>
           {file.name}
-        </td>
-        <td className={'col-progress ' + rowClass}>
+        </TableCell>
+        <TableCell className={'col-progress ' + rowClass}>
           {isSelected ? progress : ''}
-        </td>
-        <td className={'col-size ' + rowClass}>
+        </TableCell>
+        <TableCell className={'col-size ' + rowClass}>
           {prettyBytes(file.length)}
-        </td>
-        <td
+        </TableCell>
+        <TableCell
           className='col-select'
           onClick={dispatcher('toggleTorrentFile', infoHash, index)}
         >
-          <i className='icon deselect-file'>{isSelected ? 'close' : 'add'}</i>
-        </td>
-      </tr>
+          <IconButton className='icon deselect-file'>
+            {isSelected ? <CloseIcon /> : <AddIcon />}
+          </IconButton>
+        </TableCell>
+      </TableRow>
     )
   }
 
-  renderRadialProgressBar (fraction, cssClass) {
+  renderRadialProgressBar(fraction, cssClass) {
     const rotation = 360 * fraction
     const transformFill = { transform: 'rotate(' + (rotation / 2) + 'deg)' }
     const transformFix = { transform: 'rotate(' + rotation + 'deg)' }
@@ -396,11 +387,11 @@ module.exports = class TorrentList extends React.Component {
   }
 }
 
-function stopPropagation (e) {
+function stopPropagation(e) {
   e.stopPropagation()
 }
 
-function getErrorMessage (torrentSummary) {
+function getErrorMessage(torrentSummary) {
   const err = torrentSummary.error
   if (err === 'path-missing') {
     return (
