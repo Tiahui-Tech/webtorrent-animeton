@@ -1,7 +1,8 @@
 const React = require('react')
+const { useEffect, useState, Component } = require('react')
 const prettyBytes = require('prettier-bytes')
 
-const { Stack, Checkbox, LinearProgress, Box, Typography, TableCell, TableRow, IconButton } = require('@mui/material')
+const { Stack, Checkbox, LinearProgress, Box, Typography, TableCell, TableRow, IconButton, Grid } = require('@mui/material')
 
 const PlayArrowIcon = require('@mui/icons-material/PlayArrow').default
 const CloseIcon = require('@mui/icons-material/Close').default
@@ -12,46 +13,94 @@ const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
 const { dispatcher } = require('../lib/dispatcher')
 const { calculateEta } = require('../lib/time')
-module.exports = class TorrentList extends React.Component {
-  render() {
-    const state = this.props.state
+const { RSSManager } = require('../../modules/rss')
 
-    const contents = []
-    if (state.downloadPathStatus === 'missing') {
-      contents.push(
-        <Box key='torrent-missing-path'>
-          <Typography>Download path missing: {state.saved.prefs.downloadPath}</Typography>
-          <Typography>Check that all drives are connected?</Typography>
-          <Typography>
-            Alternatively, choose a new download path
-            in <a href='#' onClick={dispatcher('preferences')}>Preferences</a>
-          </Typography>
-        </Box>
-      )
+
+// Load the newest animes from Erai-raws with RSS
+async function loadRSSTorrentsAnimes() {
+  console.log('Loading RSS...')
+  const page = 1
+  const perPage = 10
+  const url = 'Erai-raws [Multi-Sub]'
+
+  try {
+    const animes = RSSManager.getMediaForRSS(page, perPage, url, true)
+
+    const results = await Promise.all(animes.map(async (item) => {
+      if (item.type === 'episode' && item.data instanceof Promise) {
+        const resolvedData = await item.data
+        return resolvedData
+      }
+      return item
+    }))
+
+    console.log('RSS Animes:', JSON.stringify(results, null, 2))
+
+    return results
+  } catch (error) {
+    console.error('Error on loadRSS:', error)
+    return null
+  }
+}
+
+const TorrentList = ({ state }) => {
+  const [animes, setAnimes] = useState(null);
+
+  useEffect(() => {
+    const getAnimes = async () => {
+      const animes = await loadRSSTorrentsAnimes()
+      console.log(animes);
+      setAnimes(animes)
     }
-    const torrentElems = state.saved.torrents.map(
-      (torrentSummary) => this.renderTorrent(torrentSummary)
-    )
-    contents.push(...torrentElems)
-    contents.push(
-      <Box key='torrent-placeholder' className='torrent-placeholder'>
-        <Typography noWrap>Drop a torrent file here or paste a magnet link</Typography>
-      </Box>
-    )
+    getAnimes();
+  }, [animes])
 
-    return (
-      <Box
-        key='torrent-list'
-        className='torrent-list'
-        onContextMenu={dispatcher('openTorrentListContextMenu')}
-      >
-        {contents}
+  const contents = []
+  if (state.downloadPathStatus === 'missing') {
+    contents.push(
+      <Box key='torrent-missing-path'>
+        <Typography>Download path missing: {state.saved.prefs.downloadPath}</Typography>
+        <Typography>Check that all drives are connected?</Typography>
+        <Typography>
+          Alternatively, choose a new download path
+          in <a href='#' onClick={dispatcher('preferences')}>Preferences</a>
+        </Typography>
       </Box>
     )
   }
+  // const torrentElems = state.saved.torrents.map(
+  //   (torrentSummary) => this.renderTorrent(torrentSummary)
+  // )
+  // contents.push(...torrentElems)
 
-  renderTorrent(torrentSummary) {
-    const state = this.props.state
+  if (animes) {
+    contents.push(
+      <Grid>
+        {animes.map((anime) => (
+        <Grid item>
+          <Typography>{anime.title}</Typography>
+        </Grid>
+      ))}
+      </Grid>
+    )
+  }
+
+  contents.push(
+    <Box key='torrent-placeholder' className='torrent-placeholder'>
+      <Typography noWrap>Drop a torrent file here or paste a magnet link</Typography>
+    </Box>
+  )
+
+  return (
+    <Box
+      key='torrent-list'
+      onContextMenu={dispatcher('openTorrentListContextMenu')}
+    >
+      {contents}
+    </Box>
+  )
+
+  function renderTorrent(torrentSummary) {
     const infoHash = torrentSummary.infoHash
     const isSelected = infoHash && state.selectedInfoHash === infoHash
 
@@ -78,16 +127,16 @@ module.exports = class TorrentList extends React.Component {
         onContextMenu={infoHash && dispatcher('openTorrentContextMenu', infoHash)}
         onClick={infoHash && dispatcher('toggleSelectTorrent', infoHash)}
       >
-        {this.renderTorrentMetadata(torrentSummary)}
-        {infoHash ? this.renderTorrentButtons(torrentSummary) : null}
-        {isSelected ? this.renderTorrentDetails(torrentSummary) : null}
+        {renderTorrentMetadata(torrentSummary)}
+        {infoHash ? renderTorrentButtons(torrentSummary) : null}
+        {isSelected ? renderTorrentDetails(torrentSummary) : null}
         <hr />
       </div>
     )
   }
 
   // Show name, download status, % complete
-  renderTorrentMetadata(torrentSummary) {
+  function renderTorrentMetadata(torrentSummary) {
     const name = torrentSummary.name || 'Loading torrent...'
     const elements = [(
       <div key='name' className='name ellipsis'>{name}</div>
@@ -212,7 +261,7 @@ module.exports = class TorrentList extends React.Component {
 
   // Download button toggles between torrenting (DL/seed) and paused
   // Play button starts streaming the torrent immediately, unpausing if needed
-  renderTorrentButtons(torrentSummary) {
+  function renderTorrentButtons(torrentSummary) {
     const infoHash = torrentSummary.infoHash
 
     let playButton
@@ -245,7 +294,7 @@ module.exports = class TorrentList extends React.Component {
   }
 
   // Show files, per-file download status and play buttons, and so on
-  renderTorrentDetails(torrentSummary) {
+  function renderTorrentDetails(torrentSummary) {
     let filesElement
     if (torrentSummary.error || !torrentSummary.files) {
       let message = ''
@@ -269,7 +318,7 @@ module.exports = class TorrentList extends React.Component {
       )
     } else {
       // We do know the files. List them and show download stats for each one
-      const sortByName = this.props.state.saved.prefs.sortByName
+      const sortByName = state.saved.prefs.sortByName
       const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
       let fileRows = torrentSummary.files
         .filter((file) => !file.path.includes('/.____padding_file/'))
@@ -279,7 +328,7 @@ module.exports = class TorrentList extends React.Component {
         fileRows = fileRows.sort((a, b) => collator.compare(a.file.name, b.file.name))
       }
 
-      fileRows = fileRows.map((obj) => this.renderFileRow(torrentSummary, obj.file, obj.index))
+      fileRows = fileRows.map((obj) => renderFileRow(torrentSummary, obj.file, obj.index))
 
       filesElement = (
         <div key='files' className='files'>
@@ -300,7 +349,7 @@ module.exports = class TorrentList extends React.Component {
   }
 
   // Show a single torrentSummary file in the details view for a single torrent
-  renderFileRow(torrentSummary, file, index) {
+  function renderFileRow(torrentSummary, file, index) {
     // First, find out how much of the file we've downloaded
     // Are we even torrenting it?
     const isSelected = torrentSummary.selections && torrentSummary.selections[index]
@@ -317,7 +366,7 @@ module.exports = class TorrentList extends React.Component {
     let positionElem
     if (file.currentTime) {
       // Radial progress bar. 0% = start from 0:00, 270% = 3/4 of the way thru
-      positionElem = this.renderRadialProgressBar(file.currentTime / file.duration)
+      positionElem = renderRadialProgressBar(file.currentTime / file.duration)
     }
 
     // Finally, render the file as a table row
@@ -365,7 +414,7 @@ module.exports = class TorrentList extends React.Component {
     )
   }
 
-  renderRadialProgressBar(fraction, cssClass) {
+  function renderRadialProgressBar(fraction, cssClass) {
     const rotation = 360 * fraction
     const transformFill = { transform: 'rotate(' + (rotation / 2) + 'deg)' }
     const transformFix = { transform: 'rotate(' + rotation + 'deg)' }
@@ -384,8 +433,11 @@ module.exports = class TorrentList extends React.Component {
         <div className='inset' />
       </div>
     )
-  }
+  };
+
 }
+
+module.exports = TorrentList
 
 function stopPropagation(e) {
   e.stopPropagation()
