@@ -2,12 +2,13 @@ const React = require('react')
 const { useEffect, useState, Component } = require('react')
 const prettyBytes = require('prettier-bytes')
 
-const { Stack, Checkbox, LinearProgress, Box, Typography, TableCell, TableRow, IconButton, Grid } = require('@mui/material')
+const { Stack, Checkbox, LinearProgress, Box, Typography, TableCell, TableRow, IconButton, Grid, Card, CardContent, CardMedia, Chip } = require('@mui/material')
 
-const PlayArrowIcon = require('@mui/icons-material/PlayArrow').default
-const CloseIcon = require('@mui/icons-material/Close').default
-const AddIcon = require('@mui/icons-material/Add').default
-const DescriptionIcon = require('@mui/icons-material/Description').default
+const PlayArrowIcon = require('@mui/icons-material/PlayArrow')
+const CloseIcon = require('@mui/icons-material/Close')
+const AddIcon = require('@mui/icons-material/Add')
+const DescriptionIcon = require('@mui/icons-material/Description')
+const { CalendarToday, LiveTv, Movie, MusicNote, Book } = require('@mui/icons-material');
 
 const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
@@ -48,8 +49,9 @@ const TorrentList = ({ state }) => {
 
   useEffect(() => {
     const getAnimes = async () => {
-      const animes = await loadRSSTorrentsAnimes()
-      console.log(animes);
+      const response = await fetch('http://localhost:3000/anime')
+      console.log(response);
+      const animes = await response.json()
       setAnimes(animes)
     }
     getAnimes();
@@ -74,22 +76,95 @@ const TorrentList = ({ state }) => {
   // contents.push(...torrentElems)
 
   if (animes) {
+    const getStatusColor = (status) => {
+      switch (status) {
+        case 'RELEASING': return 'success';
+        case 'FINISHED': return 'primary';
+        case 'NOT_YET_RELEASED': return 'warning';
+        case 'CANCELLED': return 'error';
+        case 'HIATUS': return 'secondary';
+        default: return 'default';
+      }
+    };
+
+    const getStatusLabel = (status) => {
+      switch (status) {
+        case 'RELEASING': return 'EN EMISIÓN';
+        case 'FINISHED': return 'FINALIZADO';
+        case 'NOT_YET_RELEASED': return 'NO LANZADO';
+        case 'CANCELLED': return 'CANCELADO';
+        case 'HIATUS': return 'HIATUS';
+        default: return 'default';
+      }
+    };
+
+    const getFormatIcon = (format) => {
+      switch (format) {
+        case 'TV': return <LiveTv />;
+        case 'MOVIE': return <Movie />;
+        case 'OVA':
+        case 'ONA': return <LiveTv />;
+        case 'MUSIC': return <MusicNote />;
+        case 'MANGA':
+        case 'NOVEL':
+        case 'ONE_SHOT': return <Book />;
+        default: return null;
+      }
+    };
+
     contents.push(
-      <Grid>
+      <Grid container columnSpacing={4} rowSpacing={6} p={4} justifyContent="center">
         {animes.map((anime) => (
-        <Grid item>
-          <Typography>{anime.title}</Typography>
-        </Grid>
-      ))}
+          <Grid item key={anime.id}>
+            <Stack sx={{ width: '256px', height: '100%' }}>
+              <Box
+                component="img"
+                src={anime.coverImage.extraLarge}
+                alt={anime.title.romaji}
+                sx={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2 }}
+              />
+              <Stack>
+                <Typography component="div" gutterBottom noWrap sx={{
+                  fontSize: 16,
+                  fontWeight: 500
+                }}>
+                  {anime.title.romaji}
+                </Typography>
+                <Stack justifyContent="space-between" direction="row">
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <CalendarToday fontSize="small" sx={{ mr: 1 }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {anime.seasonYear || '?'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    {getFormatIcon(anime.format)}
+                    <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                      {anime.format}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Chip
+                  label={getStatusLabel(anime.status)}
+                  color={getStatusColor(anime.status)}
+                  size="small"
+                  sx={{
+                    fontWeight: 500
+                  }}
+                />
+              </Stack>
+            </Stack>
+          </Grid>
+        ))}
       </Grid>
     )
   }
 
-  contents.push(
-    <Box key='torrent-placeholder' className='torrent-placeholder'>
-      <Typography noWrap>Drop a torrent file here or paste a magnet link</Typography>
-    </Box>
-  )
+  // contents.push(
+  //   <Box key='torrent-placeholder' className='torrent-placeholder'>
+  //     <Typography noWrap>Drop a torrent file here or paste a magnet link</Typography>
+  //   </Box>
+  // )
 
   return (
     <Box
