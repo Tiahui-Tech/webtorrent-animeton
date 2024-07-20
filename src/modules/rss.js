@@ -32,6 +32,7 @@ function parseRSSNodes(nodes) {
 
 const rssmap = {
   'Erai-raws [Multi-Sub]': defaults.toshoURL + 'rss2?qx=1&q="[Erai-raws] "',
+  'Erai-raws [Multi-Sub]2': 'https://www.erai-raws.info/episodes/feed/?res=1080p&type=torrent&subs%5B0%5D=mx&d157edc6b50f28b2776442c03d067d56',
 }
 function getReleasesRSSurl(val = 'Erai-raws [Multi-Sub]') {
   const rss = rssmap[val] || val

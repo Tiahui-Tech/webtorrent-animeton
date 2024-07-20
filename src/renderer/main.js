@@ -32,7 +32,6 @@ const config = require('../config')
 const telemetry = require('./lib/telemetry')
 const sound = require('./lib/sound')
 const TorrentPlayer = require('./lib/torrent-player')
-const { RSSManager } = require('../modules/rss')
 
 // Perf optimization: Needed immediately, so do not lazy load it below
 const TorrentListController = require('./controllers/torrent-list-controller')
@@ -60,39 +59,6 @@ let state
 
 // Root React component
 let app
-
-// // Load the newest animes from Erai-raws with RSS
-// function loadRSSTorrentsAnimes() {
-//   console.log('Loading RSS...')
-//   const page = 1
-//   const perPage = 10
-//   const url = 'Erai-raws [Multi-Sub]'
-
-//   try {
-//     const animes = RSSManager.getMediaForRSS(page, perPage, url, true)
-    
-//     Promise.all(animes.map(async (item) => {
-//       if (item.type === 'episode' && item.data instanceof Promise) {
-//         const resolvedData = await item.data
-//         return { type: item.type, data: resolvedData }
-//       }
-//       return item
-//     })).then(results => {
-//       console.log('RSS Animes:', JSON.stringify(results, null, 2))
-
-//       // Add torrents to list (Test)
-//       // results.forEach(anime => {
-//       //   if (anime.data && anime.data.link) {
-//       //     dispatch('addTorrent', anime.data.link)
-//       //   }
-//       // })
-//     }).catch(error => {
-//       console.error('Error loading anime from RSS:', error)
-//     })
-//   } catch (error) {
-//     console.error('Error on loadRSS:', error)
-//   }
-// }
 
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like

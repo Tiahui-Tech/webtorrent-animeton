@@ -2,19 +2,16 @@ const React = require('react')
 const { useEffect, useState, Component } = require('react')
 const prettyBytes = require('prettier-bytes')
 
-const { Stack, Checkbox, LinearProgress, Box, Typography, TableCell, TableRow, IconButton, Grid, Card, CardContent, CardMedia, Chip } = require('@mui/material')
+const { Stack, Box, Typography, Grid, Button, Chip } = require('@mui/material')
 
-const PlayArrowIcon = require('@mui/icons-material/PlayArrow')
-const CloseIcon = require('@mui/icons-material/Close')
-const AddIcon = require('@mui/icons-material/Add')
-const DescriptionIcon = require('@mui/icons-material/Description')
-const { CalendarToday, LiveTv, Movie, MusicNote, Book } = require('@mui/icons-material');
+const { CalendarToday, LiveTv, Movie, MusicNote, Book, PlayArrow, Numbers } = require('@mui/icons-material');
 
 const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
 const { dispatcher } = require('../lib/dispatcher')
 const { calculateEta } = require('../lib/time')
 const { RSSManager } = require('../../modules/rss')
+const anitomy = require('anitomyscript')
 
 
 // Load the newest animes from Erai-raws with RSS
@@ -35,7 +32,7 @@ async function loadRSSTorrentsAnimes() {
       return item
     }))
 
-    console.log('RSS Animes:', JSON.stringify(results, null, 2))
+    // console.log('RSS Animes:', JSON.stringify(results, null, 2))
 
     return results
   } catch (error) {
@@ -46,36 +43,43 @@ async function loadRSSTorrentsAnimes() {
 
 const TorrentList = ({ state }) => {
   const [animes, setAnimes] = useState(null);
+  const [rssAnimes, setRSSAnimes] = useState(null);
 
   useEffect(() => {
     const getAnimes = async () => {
       const response = await fetch('http://localhost:3000/anime')
-      console.log(response);
       const animes = await response.json()
       setAnimes(animes)
     }
+    const getRSSAnimes = async () => {
+      const data = await loadRSSTorrentsAnimes();
+      const animeTitles = data.map(anime => anime.title);
+      const parsedAnimes = (await anitomy(animeTitles)).map(a => a.anime_title);
+
+      const response = await fetch('http://localhost:3000/anime/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          animes: parsedAnimes
+        })
+      })
+      const animes = await response.json()
+
+      const updatedData = animes.map((anime, index) => ({
+        ...anime,
+        torrent: data[index].link
+      }));
+      setRSSAnimes(updatedData);
+    }
     getAnimes();
-  }, [animes])
+    getRSSAnimes();
+  }, [])
 
   const contents = []
-  if (state.downloadPathStatus === 'missing') {
-    contents.push(
-      <Box key='torrent-missing-path'>
-        <Typography>Download path missing: {state.saved.prefs.downloadPath}</Typography>
-        <Typography>Check that all drives are connected?</Typography>
-        <Typography>
-          Alternatively, choose a new download path
-          in <a href='#' onClick={dispatcher('preferences')}>Preferences</a>
-        </Typography>
-      </Box>
-    )
-  }
-  // const torrentElems = state.saved.torrents.map(
-  //   (torrentSummary) => this.renderTorrent(torrentSummary)
-  // )
-  // contents.push(...torrentElems)
 
-  if (animes) {
+  if (animes && rssAnimes) {
     const getStatusColor = (status) => {
       switch (status) {
         case 'RELEASING': return 'success';
@@ -113,58 +117,102 @@ const TorrentList = ({ state }) => {
     };
 
     contents.push(
-      <Grid container columnSpacing={4} rowSpacing={6} p={4} justifyContent="center">
-        {animes.map((anime) => (
-          <Grid item key={anime.id}>
-            <Stack sx={{ width: '256px', height: '100%' }}>
-              <Box
-                component="img"
-                src={anime.coverImage.extraLarge}
-                alt={anime.title.romaji}
-                sx={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2 }}
-              />
-              <Stack>
-                <Typography component="div" gutterBottom noWrap sx={{
-                  fontSize: 16,
-                  fontWeight: 500
-                }}>
-                  {anime.title.romaji}
-                </Typography>
-                <Stack justifyContent="space-between" direction="row">
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <CalendarToday fontSize="small" sx={{ mr: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      {anime.seasonYear || '?'}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    {getFormatIcon(anime.format)}
-                    <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                      {anime.format}
-                    </Typography>
-                  </Box>
-                </Stack>
-                <Chip
-                  label={getStatusLabel(anime.status)}
-                  color={getStatusColor(anime.status)}
-                  size="small"
-                  sx={{
-                    fontWeight: 500
-                  }}
+      <Stack gap={1} p={4}>
+        <Typography ml={8} variant='h4'>Latest episodes</Typography>
+        <Grid container columnSpacing={4} rowSpacing={6} justifyContent="center">
+          {rssAnimes.map((anime) => (
+            <Grid item key={`rss-${anime.id}`}>
+              <Stack sx={{ width: '162px', height: '100%' }}>
+                <Box
+                  component="img"
+                  src={anime.coverImage.extraLarge}
+                  alt={anime.title.romaji}
+                  sx={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2 }}
                 />
+                <Stack>
+                  <Typography component="div" gutterBottom noWrap sx={{
+                    fontSize: 16,
+                    fontWeight: 500
+                  }}>
+                    {anime.title.romaji}
+                  </Typography>
+                  <Stack justifyContent="space-between">
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Numbers fontSize="small" />
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        {`Episodio ${anime.episodes || "??"}`}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <CalendarToday fontSize="small" sx={{ mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {anime.nextAiringEpisode ? `${new Date(anime.nextAiringEpisode.airingAt * 1000).toDateString()}` : `Finalizado`}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  <Button variant='contained' color='success' startIcon={<PlayArrow />} onClick={() => {
+                    dispatcher('addTorrent', anime.torrent)
+                  }}>
+                    VER
+                  </Button>
+                </Stack>
               </Stack>
-            </Stack>
-          </Grid>
-        ))}
-      </Grid>
+            </Grid>
+          ))}
+        </Grid>
+      </Stack>
+    )
+
+    contents.push(
+      <Stack gap={1} p={4}>
+        <Typography ml={8} variant='h4'>Trending anime</Typography>
+        <Grid container columnSpacing={4} rowSpacing={6} justifyContent="center">
+          {animes.map((anime) => (
+            <Grid item key={anime.id}>
+              <Stack sx={{ width: '256px', height: '100%' }}>
+                <Box
+                  component="img"
+                  src={anime.coverImage.extraLarge}
+                  alt={anime.title.romaji}
+                  sx={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2 }}
+                />
+                <Stack>
+                  <Typography component="div" gutterBottom noWrap sx={{
+                    fontSize: 16,
+                    fontWeight: 500
+                  }}>
+                    {anime.title.romaji}
+                  </Typography>
+                  <Stack justifyContent="space-between" direction="row">
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <CalendarToday fontSize="small" sx={{ mr: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        {anime.seasonYear || '?'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      {getFormatIcon(anime.format)}
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        {anime.format}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  <Chip
+                    label={getStatusLabel(anime.status)}
+                    color={getStatusColor(anime.status)}
+                    size="small"
+                    sx={{
+                      fontWeight: 500
+                    }}
+                  />
+                </Stack>
+              </Stack>
+            </Grid>
+          ))}
+        </Grid>
+      </Stack>
     )
   }
-
-  // contents.push(
-  //   <Box key='torrent-placeholder' className='torrent-placeholder'>
-  //     <Typography noWrap>Drop a torrent file here or paste a magnet link</Typography>
-  //   </Box>
-  // )
 
   return (
     <Box
