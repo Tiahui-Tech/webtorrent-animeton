@@ -27,6 +27,7 @@ const electron = require('electron')
 const fs = require('fs')
 const React = require('react')
 const ReactDOM = require('react-dom')
+const { createRoot } = require('react-dom/client')
 
 const config = require('../config')
 const telemetry = require('./lib/telemetry')
@@ -134,10 +135,10 @@ function onState(err, _state) {
   // loadRSSTorrentsAnimes()
 
   // Initialize ReactDOM
-  ReactDOM.render(
-    <App state={state} ref={elem => { app = elem }} />,
-    document.querySelector('#body')
-  )
+  const container = document.querySelector('#body');
+  const root = createRoot(container);
+
+  root.render(<App state={state} ref={elem => { app = elem }} />);
 
   // Calling update() updates the UI given the current state
   // Do this at least once a second to give every file in every torrentSummary
