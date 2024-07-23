@@ -8,10 +8,10 @@ const { CalendarToday, LiveTv, Movie, MusicNote, Book, PlayArrow, Numbers } = re
 
 const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
-const { dispatcher } = require('../lib/dispatcher')
+const { dispatcher, dispatch } = require('../lib/dispatcher')
 const { calculateEta } = require('../lib/time')
 const { RSSManager } = require('../../modules/rss')
-const anitomy = require('anitomyscript')
+const anitomy = require('anitomyscript');
 
 
 // Load the newest animes from Erai-raws with RSS
@@ -78,6 +78,8 @@ const TorrentList = ({ state }) => {
   }, [])
 
   const contents = []
+
+  console.log(state);
 
   if (animes && rssAnimes) {
     const getStatusColor = (status) => {
@@ -151,7 +153,23 @@ const TorrentList = ({ state }) => {
                     </Box>
                   </Stack>
                   <Button variant='contained' color='success' startIcon={<PlayArrow />} onClick={() => {
-                    dispatcher('addTorrent', anime.torrent)
+                    // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debe utilizar 'dispatch()'
+                    const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
+                    const match = anime.torrent.match(regex);
+
+                    if (match) {
+                      const hash = match[1];
+                      const torrent = state.saved.torrents.find(torrent => torrent.infoHash === hash);
+
+                      if (torrent) {
+                        return dispatch('playFile', torrent.infoHash)
+                      }
+
+                      dispatch('addTorrent', anime.torrent)
+                      setTimeout(() => {
+                        dispatch('playFile', hash)
+                      }, 1500);
+                    }
                   }}>
                     VER
                   </Button>
