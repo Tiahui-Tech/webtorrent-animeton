@@ -79,8 +79,6 @@ const TorrentList = ({ state }) => {
 
   const contents = []
 
-  console.log(state);
-
   if (animes && rssAnimes) {
     const getStatusColor = (status) => {
       switch (status) {
@@ -153,7 +151,7 @@ const TorrentList = ({ state }) => {
                     </Box>
                   </Stack>
                   <Button variant='contained' color='success' startIcon={<PlayArrow />} onClick={() => {
-                    // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debe utilizar 'dispatch()'
+                    // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
                     const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
                     const match = anime.torrent.match(regex);
 
