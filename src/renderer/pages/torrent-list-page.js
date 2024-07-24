@@ -10,31 +10,20 @@ const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
 const { dispatcher, dispatch } = require('../lib/dispatcher')
 const { calculateEta } = require('../lib/time')
-const { RSSManager } = require('../../modules/rss')
-const anitomy = require('anitomyscript');
+const { fetchAndParseRSS } = require('../../modules/rss')
+const { anitomyscript } = require('../../modules/anime');
 
 
 // Load the newest animes from Erai-raws with RSS
-async function loadRSSTorrentsAnimes() {
+async function loadRSSAnimes() {
   console.log('Loading RSS...')
   const page = 1
-  const perPage = 10
-  const url = 'Erai-raws [Multi-Sub]'
+  const perPage = 18
 
   try {
-    const animes = RSSManager.getMediaForRSS(page, perPage, url, true)
+    const animes = await fetchAndParseRSS(page, perPage)
 
-    const results = await Promise.all(animes.map(async (item) => {
-      if (item.type === 'episode' && item.data instanceof Promise) {
-        const resolvedData = await item.data
-        return resolvedData
-      }
-      return item
-    }))
-
-    // console.log('RSS Animes:', JSON.stringify(results, null, 2))
-
-    return results
+    return animes
   } catch (error) {
     console.error('Error on loadRSS:', error)
     return null
@@ -52,9 +41,12 @@ const TorrentList = ({ state }) => {
       setAnimes(animes)
     }
     const getRSSAnimes = async () => {
-      const data = await loadRSSTorrentsAnimes();
+      const data = await loadRSSAnimes();
       const animeTitles = data.map(anime => anime.title);
-      const parsedAnimes = (await anitomy(animeTitles)).map(a => a.anime_title);
+      const parsedAnimes = (await anitomyscript(animeTitles)).map(a => a.anime_title);
+
+      console.log('RSS Animes: ', JSON.stringify(data));
+      console.log('RSS Animes Count: ', data.length);
 
       const response = await fetch('http://localhost:3000/anime/search', {
         method: 'POST',
@@ -66,6 +58,9 @@ const TorrentList = ({ state }) => {
         })
       })
       const animes = await response.json()
+
+      console.log('API Animes: ', JSON.stringify(animes));
+      console.log('API Animes Count: ', animes.length);
 
       const updatedData = animes.map((anime, index) => ({
         ...anime,
