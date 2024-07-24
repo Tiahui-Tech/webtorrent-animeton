@@ -2,7 +2,8 @@ const React = require('react')
 const { useEffect, useState, Component } = require('react')
 const prettyBytes = require('prettier-bytes')
 
-const { Stack, Box, Typography, Grid, Button, Chip } = require('@mui/material')
+const { Stack, Box, Typography, Grid, Chip } = require('@mui/material')
+const { Card, CardHeader, CardBody, Image, Button } = require('@nextui-org/react')
 
 const { CalendarToday, LiveTv, Movie, MusicNote, Book, PlayArrow, Numbers } = require('@mui/icons-material');
 
@@ -111,41 +112,47 @@ const TorrentList = ({ state }) => {
       }
     };
 
+    const dateOptions = {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
+
     contents.push(
       <Stack gap={1} p={4}>
         <Typography ml={8} variant='h4'>Latest episodes</Typography>
         <Grid container columnSpacing={4} rowSpacing={6} justifyContent="center">
-          {rssAnimes.map((anime) => (
-            <Grid item key={`rss-${anime.id}`}>
-              <Stack sx={{ width: '162px', height: '100%' }}>
-                <Box
-                  component="img"
-                  src={anime.coverImage.extraLarge}
-                  alt={anime.title.romaji}
-                  sx={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2 }}
-                />
-                <Stack>
-                  <Typography component="div" gutterBottom noWrap sx={{
-                    fontSize: 16,
-                    fontWeight: 500
-                  }}>
-                    {anime.title.romaji}
-                  </Typography>
-                  <Stack justifyContent="space-between">
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Numbers fontSize="small" />
-                      <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                        {`Episodio ${anime.episodes || "??"}`}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <CalendarToday fontSize="small" sx={{ mr: 1 }} />
-                      <Typography variant="body2" color="text.secondary">
-                        {anime.nextAiringEpisode ? `${new Date(anime.nextAiringEpisode.airingAt * 1000).toDateString()}` : `Finalizado`}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                  <Button variant='contained' color='success' startIcon={<PlayArrow />} onClick={() => {
+          {rssAnimes.map((anime, i) => (
+            <Grid item key={`rss-${anime.id}-${i}`}>
+              <Card className="flex flex-col p-1 max-w-[200px]">
+                <CardHeader className='w-full z-0'>
+                  <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0,20)}</h4>
+                </CardHeader>
+                <CardBody className='w-full'>
+                  <Image
+                    component="img"
+                    src={anime.coverImage.extraLarge}
+                    alt={anime.title.romaji}
+                    width={162}
+                    style={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2, zIndex: 0 }}
+                  />
+                  <div className='py-1'>
+                    <div>
+                      <div className='flex mb-1 items-center'>
+                        <Numbers fontSize="small" />
+                        <p >
+                          {`Episodio ${anime.episodes || "??"}`}
+                        </p>
+                      </div>
+                      <div className='flex mb-1 items-center'>
+                        <CalendarToday fontSize="small" />
+                        <p variant="body2" sx={{ color: '#fff' }}>
+                          {anime.nextAiringEpisode ? `Siguiente: ${new Date(anime.nextAiringEpisode.airingAt * 1000).toLocaleDateString('es-ES', dateOptions)}` : `Finalizado`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button color='success' onClick={() => {
                     // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
                     const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
                     const match = anime.torrent.match(regex);
@@ -164,10 +171,11 @@ const TorrentList = ({ state }) => {
                       }, 1500);
                     }
                   }}>
+                    <PlayArrow />
                     VER
                   </Button>
-                </Stack>
-              </Stack>
+                </CardBody>
+              </Card>
             </Grid>
           ))}
         </Grid>
@@ -178,8 +186,8 @@ const TorrentList = ({ state }) => {
       <Stack gap={1} p={4}>
         <Typography ml={8} variant='h4'>Trending anime</Typography>
         <Grid container columnSpacing={4} rowSpacing={6} justifyContent="center">
-          {animes.map((anime) => (
-            <Grid item key={anime.id}>
+          {animes.map((anime, i) => (
+            <Grid item key={`anime-${anime.id}-${i}`}>
               <Stack sx={{ width: '256px', height: '100%' }}>
                 <Box
                   component="img"

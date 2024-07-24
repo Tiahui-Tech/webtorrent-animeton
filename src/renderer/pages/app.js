@@ -1,9 +1,6 @@
 const React = require('react')
 const createGetter = require('fn-getter')
-const { createTheme, ThemeProvider } = require('@mui/material/styles')
-const CssBaseline = require('@mui/material/CssBaseline').default
-const Box = require('@mui/material/Box').default
-const { grey, red } = require('@mui/material/colors')
+const { NextUIProvider } = require('@nextui-org/react')
 
 const Header = require('../components/header')
 
@@ -25,39 +22,15 @@ const Modals = {
   'update-available-modal': createGetter(() => require('../components/update-available-modal')),
   'unsupported-media-modal': createGetter(() => require('../components/unsupported-media-modal')),
   'delete-all-torrents-modal':
-      createGetter(() => require('../components/delete-all-torrents-modal'))
+    createGetter(() => require('../components/delete-all-torrents-modal'))
 }
 
 const fontFamily = process.platform === 'win32'
   ? '"Segoe UI", sans-serif'
   : 'BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif'
 
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: grey[50],
-    },
-    secondary: {
-      main: red.A200,
-    },
-  },
-  typography: {
-    fontFamily: fontFamily,
-  },
-})
-
-const lightTheme = createTheme({
-  palette: {
-    mode: 'light',
-  },
-  typography: {
-    fontFamily: fontFamily,
-  },
-})
-
 class App extends React.Component {
-  render () {
+  render() {
     const state = this.props.state
 
     const hideControls = state.shouldHidePlayerControls()
@@ -71,54 +44,53 @@ class App extends React.Component {
     if (hideControls) cls.push('hide-video-controls')
 
     return (
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <Box className={'app ' + cls.join(' ')}>
-          <Header state={state} />
-          {this.getErrorPopover()}
-          <Box key='content' className='content'>{this.getView()}</Box>
-          {this.getModal()}
-        </Box>
-      </ThemeProvider>
+      <NextUIProvider>
+          <main className="dark text-foreground bg-background min-h-screen overflow-y-auto">
+            <div className={'app'}>
+              <Header state={state} />
+              {this.getErrorPopover()}
+              <div key='content' className='content'>{this.getView()}</div>
+              {this.getModal()}
+            </div>
+          </main>
+      </NextUIProvider>
     )
   }
 
-  getErrorPopover () {
+  getErrorPopover() {
     const state = this.props.state
     const now = new Date().getTime()
     const recentErrors = state.errors.filter((x) => now - x.time < 5000)
     const hasErrors = recentErrors.length > 0
 
-    const errorElems = recentErrors.map((error, i) => <Box key={i} className='error'>{error.message}</Box>)
+    const errorElems = recentErrors.map((error, i) => <div key={i} className='error'>{error.message}</div>)
     return (
-      <Box
+      <div
         key='errors'
         className={'error-popover ' + (hasErrors ? 'visible' : 'hidden')}
       >
-        <Box key='title' className='title'>Error</Box>
+        <div key='title' className='title'>Error</div>
         {errorElems}
-      </Box>
+      </div>
     )
   }
 
-  getModal () {
+  getModal() {
     const state = this.props.state
     if (!state.modal) return
 
     const ModalContents = Modals[state.modal.id]()
     return (
-      <ThemeProvider theme={lightTheme}>
-        <Box key='modal' className='modal'>
-          <Box key='modal-background' className='modal-background' />
-          <Box key='modal-content' className='modal-content'>
+        <div key='modal' className='modal'>
+          <div key='modal-background' className='modal-background' />
+          <div key='modal-content' className='modal-content'>
             <ModalContents state={state} />
-          </Box>
-        </Box>
-      </ThemeProvider>
+          </div>
+        </div>
     )
   }
 
-  getView () {
+  getView() {
     const state = this.props.state
     const View = Views[state.location.url()]()
     return (<View state={state} />)
