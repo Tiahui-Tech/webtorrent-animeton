@@ -46,9 +46,6 @@ const TorrentList = ({ state }) => {
       const animeTitles = data.map(anime => anime.title);
       const parsedAnimes = (await anitomyscript(animeTitles)).map(a => a.anime_title);
 
-      console.log('RSS Animes: ', JSON.stringify(data));
-      console.log('RSS Animes Count: ', data.length);
-
       const response = await fetch('http://localhost:3000/anime/search', {
         method: 'POST',
         headers: {
@@ -59,9 +56,6 @@ const TorrentList = ({ state }) => {
         })
       })
       const animes = await response.json()
-
-      console.log('API Animes: ', JSON.stringify(animes));
-      console.log('API Animes Count: ', animes.length);
 
       const updatedData = animes.map((anime, index) => ({
         ...anime,
@@ -126,7 +120,7 @@ const TorrentList = ({ state }) => {
             <Grid item key={`rss-${anime.id}-${i}`}>
               <Card className="flex flex-col p-1 max-w-[200px]">
                 <CardHeader className='w-full z-0'>
-                  <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0,20)}</h4>
+                  <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0, 20)}</h4>
                 </CardHeader>
                 <CardBody className='w-full'>
                   <Image
@@ -141,7 +135,7 @@ const TorrentList = ({ state }) => {
                       <div className='flex mb-1 items-center'>
                         <Numbers fontSize="small" />
                         <p >
-                          {`Episodio ${anime?.nextAiringEpisode?.episode-1 || "??"}`}
+                          {`Episodio ${anime?.nextAiringEpisode?.episode - 1 || "??"}`}
                         </p>
                       </div>
                       <div className='flex mb-1 items-center'>
