@@ -80,8 +80,6 @@ const TorrentList = ({ state }) => {
 
   const contents = []
 
-  console.log(state);
-
   if (animes && rssAnimes) {
     const getStatusColor = (status) => {
       switch (status) {
@@ -132,7 +130,7 @@ const TorrentList = ({ state }) => {
           {rssAnimes.map((anime, i) => (
             <Grid item key={`rss-${anime.id}-${i}`}>
               <Card className="flex flex-col p-1 max-w-[200px]">
-                <CardHeader className='w-full'>
+                <CardHeader className='w-full z-0'>
                   <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0,20)}</h4>
                 </CardHeader>
                 <CardBody className='w-full'>
@@ -141,7 +139,7 @@ const TorrentList = ({ state }) => {
                     src={anime.coverImage.extraLarge}
                     alt={anime.title.romaji}
                     width={162}
-                    style={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2 }}
+                    style={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2, zIndex: 0 }}
                   />
                   <div className='py-1'>
                     <div>
@@ -160,7 +158,7 @@ const TorrentList = ({ state }) => {
                     </div>
                   </div>
                   <Button color='success' onClick={() => {
-                    // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debe utilizar 'dispatch()'
+                    // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
                     const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
                     const match = anime.torrent.match(regex);
 
