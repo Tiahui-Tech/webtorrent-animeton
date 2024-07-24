@@ -19,7 +19,7 @@ const { anitomyscript } = require('../../modules/anime');
 async function loadRSSAnimes() {
   console.log('Loading RSS...')
   const page = 1
-  const perPage = 18
+  const perPage = 14
 
   try {
     const animes = await fetchAndParseRSS(page, perPage)
@@ -141,7 +141,7 @@ const TorrentList = ({ state }) => {
                       <div className='flex mb-1 items-center'>
                         <Numbers fontSize="small" />
                         <p >
-                          {`Episodio ${anime.episodes || "??"}`}
+                          {`Episodio ${anime?.nextAiringEpisode?.episode-1 || "??"}`}
                         </p>
                       </div>
                       <div className='flex mb-1 items-center'>
