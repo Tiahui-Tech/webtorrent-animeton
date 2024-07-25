@@ -4,6 +4,7 @@ const prettyBytes = require('prettier-bytes')
 
 const { Stack, Box, Typography, Grid, Chip } = require('@mui/material')
 const { Card, CardHeader, CardBody, Image, Button } = require('@nextui-org/react')
+const { Icon } = require('@iconify/react');
 
 const { CalendarToday, LiveTv, Movie, MusicNote, Book, PlayArrow, Numbers } = require('@mui/icons-material');
 
@@ -99,40 +100,38 @@ const TorrentList = ({ state }) => {
     };
 
     contents.push(
-      <Stack gap={1} p={4}>
+      <div>
         <Typography ml={8} variant='h4'>Latest episodes</Typography>
-        <Grid container columnSpacing={4} rowSpacing={6} justifyContent="center">
+        <div className="container grid grid-cols-4 gap-4">
           {rssAnimes.map((anime, i) => (
-            <Grid item key={`rss-${anime.id}-${i}`}>
-              <Card className="flex flex-col p-1 max-w-[200px]">
-                <CardHeader className='w-full z-0'>
-                  <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0, 20)}</h4>
+            <div>
+              <Card key={`rss-${anime.id}-${i}`} className="flex flex-col p-1">
+                <CardHeader className='flex flex-col items-start justify-start z-0'>
+                  <p className='text-base font-semibold truncate'>{anime.title.romaji}</p>
+                  <p className='text-sm'>
+                    {`Episodio ${anime?.nextAiringEpisode?.episode - 1 || "??"}`}
+                  </p>
                 </CardHeader>
-                <CardBody className='w-full'>
+                <CardBody className='w-full h-full flex flex-col justify-between'>
                   <Image
                     component="img"
                     src={anime.coverImage.extraLarge}
                     alt={anime.title.romaji}
                     width={162}
-                    style={{ aspectRatio: '9/14', objectFit: 'cover', borderRadius: 2, zIndex: 0 }}
+                    className="w-full h-auto object-cover rounded"
+                    style={{ aspectRatio: '9/14' }}
                   />
                   <div className='py-1'>
                     <div>
-                      <div className='flex mb-1 items-center'>
-                        <Numbers fontSize="small" />
-                        <p >
-                          {`Episodio ${anime?.nextAiringEpisode?.episode - 1 || "??"}`}
-                        </p>
-                      </div>
-                      <div className='flex mb-1 items-center'>
-                        <CalendarToday fontSize="small" />
-                        <p variant="body2" sx={{ color: '#fff' }}>
-                          {anime.nextAiringEpisode ? `Siguiente: ${new Date(anime.nextAiringEpisode.airingAt * 1000).toLocaleDateString('es-ES', dateOptions)}` : `Finalizado`}
+                      <div className='flex items-center space-x-1 mb-1'>
+                        <Icon icon="gravity-ui:calendar" />
+                        <p className="text-sm">
+                          {anime.nextAiringEpisode ? `${new Date(anime.nextAiringEpisode.airingAt * 1000).toLocaleDateString('es-ES', dateOptions)}` : `Finalizado`}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <Button color='success' onClick={() => {
+                  <Button color='success' className='text-base font-semibold' onClick={() => {
                     // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
                     const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
                     const match = anime.torrent.match(regex);
@@ -156,10 +155,10 @@ const TorrentList = ({ state }) => {
                   </Button>
                 </CardBody>
               </Card>
-            </Grid>
+            </div>
           ))}
-        </Grid>
-      </Stack>
+        </div>
+      </div>
     )
 
     contents.push(
