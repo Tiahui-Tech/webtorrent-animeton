@@ -1,5 +1,5 @@
 const React = require('react')
-const { useEffect, useState, Component } = require('react')
+const { useEffect, useState } = require('react')
 const prettyBytes = require('prettier-bytes')
 
 const { Stack, Box, Typography, Grid, Chip } = require('@mui/material')
@@ -14,23 +14,6 @@ const { calculateEta } = require('../lib/time')
 const { fetchAndParseRSS } = require('../../modules/rss')
 const { anitomyscript } = require('../../modules/anime');
 
-
-// Load the newest animes from Erai-raws with RSS
-async function loadRSSAnimes() {
-  console.log('Loading RSS...')
-  const page = 1
-  const perPage = 14
-
-  try {
-    const animes = await fetchAndParseRSS(page, perPage)
-
-    return animes
-  } catch (error) {
-    console.error('Error on loadRSS:', error)
-    return null
-  }
-}
-
 const TorrentList = ({ state }) => {
   const [animes, setAnimes] = useState(null);
   const [rssAnimes, setRSSAnimes] = useState(null);
@@ -42,7 +25,10 @@ const TorrentList = ({ state }) => {
       setAnimes(animes)
     }
     const getRSSAnimes = async () => {
-      const data = await loadRSSAnimes();
+      const page = 1
+      const perPage = 14
+      const data = await fetchAndParseRSS(page, perPage)
+
       const animeTitles = data.map(anime => anime.title);
       const parsedAnimes = (await anitomyscript(animeTitles)).map(a => a.anime_title);
 
