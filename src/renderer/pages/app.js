@@ -1,6 +1,5 @@
 const React = require('react')
 const createGetter = require('fn-getter')
-const { NextUIProvider } = require('@nextui-org/react')
 
 const Header = require('../components/header')
 
@@ -44,16 +43,14 @@ class App extends React.Component {
     if (hideControls) cls.push('hide-video-controls')
 
     return (
-      <NextUIProvider>
-          <main className="dark text-foreground bg-background min-h-screen overflow-y-auto">
-            <div className={'app'}>
-              <Header state={state} />
-              {this.getErrorPopover()}
-              <div key='content' className='content'>{this.getView()}</div>
-              {this.getModal()}
-            </div>
-          </main>
-      </NextUIProvider>
+      <main className="dark text-foreground bg-background min-h-screen overflow-y-auto">
+        <div className={'app'}>
+          <Header state={state} />
+          {this.getErrorPopover()}
+          <div key='content' className='content'>{this.getView()}</div>
+          {this.getModal()}
+        </div>
+      </main>
     )
   }
 
@@ -81,12 +78,12 @@ class App extends React.Component {
 
     const ModalContents = Modals[state.modal.id]()
     return (
-        <div key='modal' className='modal'>
-          <div key='modal-background' className='modal-background' />
-          <div key='modal-content' className='modal-content'>
-            <ModalContents state={state} />
-          </div>
+      <div key='modal' className='modal'>
+        <div key='modal-background' className='modal-background' />
+        <div key='modal-content' className='modal-content'>
+          <ModalContents state={state} />
         </div>
+      </div>
     )
   }
 

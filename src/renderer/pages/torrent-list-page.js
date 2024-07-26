@@ -100,11 +100,11 @@ const TorrentList = ({ state }) => {
     };
 
     contents.push(
-      <div>
-        <Typography ml={8} variant='h4'>Latest episodes</Typography>
-        <div className="container grid grid-cols-4 gap-4">
+      <div className='p-8'>
+        <h2 className='text-2xl font-bold mb-4'>Latest episodes</h2>
+        <div className="grid grid-cols-8 gap-4">
           {rssAnimes.map((anime, i) => (
-            <div>
+            <div style={{ maxWidth: '192px'}}>
               <Card key={`rss-${anime.id}-${i}`} className="flex flex-col p-1">
                 <CardHeader className='flex flex-col items-start justify-start z-0'>
                   <p className='text-base font-semibold truncate'>{anime.title.romaji}</p>
@@ -131,7 +131,7 @@ const TorrentList = ({ state }) => {
                       </div>
                     </div>
                   </div>
-                  <Button color='success' className='text-base font-semibold' onClick={() => {
+                  <Button color='success' className='text-base font-semibold max-w-32' onClick={() => {
                     // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
                     const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
                     const match = anime.torrent.match(regex);
@@ -213,12 +213,12 @@ const TorrentList = ({ state }) => {
   }
 
   return (
-    <Box
+    <div
       key='torrent-list'
       onContextMenu={dispatcher('openTorrentListContextMenu')}
     >
       {contents}
-    </Box>
+    </div>
   )
 
   function renderTorrent(torrentSummary) {
