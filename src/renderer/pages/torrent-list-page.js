@@ -1,6 +1,7 @@
 const React = require('react')
 const { useEffect, useState } = require('react')
 const prettyBytes = require('prettier-bytes')
+const fastLevenshtein = require('fast-levenshtein');
 
 const { Stack, Box, Typography, Grid, Chip } = require('@mui/material')
 const { Card, CardHeader, CardBody, Image, Button } = require('@nextui-org/react')
@@ -15,6 +16,8 @@ const { calculateEta } = require('../lib/time')
 const { fetchAndParseRSS } = require('../../modules/rss')
 const { anitomyscript } = require('../../modules/anime');
 
+const normalize = title => title.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 const TorrentList = ({ state }) => {
   const [animes, setAnimes] = useState(null);
   const [rssAnimes, setRSSAnimes] = useState(null);
@@ -27,70 +30,14 @@ const TorrentList = ({ state }) => {
     }
     const getRSSAnimes = async () => {
       const page = 1
-      const perPage = 10
+      const perPage = 6
       const data = await fetchAndParseRSS(page, perPage)
 
-      const animeTitles = data.map(anime => anime.title);
-      const parsedAnimes = await anitomyscript(animeTitles);
-      const anitomyTitles = parsedAnimes.map(a => a.anime_title);
-
-      const normalize = title => title.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-      const normalizedParsedAnimes = parsedAnimes.map(a => ({
-        ...a,
-        normalizedTitle: normalize(a.anime_title),
-      }));
-
-      const parsedAnimesMap = new Map(
-        normalizedParsedAnimes.map(a => [a.normalizedTitle, a])
-      );
-
-      console.log(parsedAnimes);
-
-      const response = await fetch('http://localhost:3000/anime/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ animes: anitomyTitles })
-      });
-      const animes = await response.json();
-
-      console.log(animes);
-
-      const normalizedAnimes = animes.map(anime => ({
-        ...anime,
-        normalizedTitle: normalize(anime.title.romaji),
-      }));
-
-      const updatedData = await Promise.all(
-        normalizedAnimes.map(async (anime) => {
-          const matchingParsedAnime = Array.from(parsedAnimesMap.values()).find(pAnime =>
-            pAnime.normalizedTitle === anime.normalizedTitle
-          );
-
-          if (matchingParsedAnime) {
-            const episodeNumber = matchingParsedAnime.episode_number;
-            const data = await fetch(`http://localhost:3000/torrent/${anime.idAnil}/${episodeNumber}`);
-            const json = await data.json();
-
-            return {
-              ...anime,
-              ...json,
-            };
-          }
-        })
-      );
-
-      console.log('updatedData', updatedData);
-
-      const resolvedData = await Promise.all(updatedData);
+      const resolvedData = await processAnimes(data)
 
       const filteredRssAnimes = resolvedData.filter((item, index, self) =>
         index === self.findIndex((t) => t.id === item.id) && item.episode && item.torrent
       )
-
-      console.log('filteredRssAnimes', filteredRssAnimes);
 
       setRSSAnimes(filteredRssAnimes.slice(0, 4));
     }
@@ -99,6 +46,37 @@ const TorrentList = ({ state }) => {
   }, [])
 
   const contents = []
+
+  const processAnimes = async (data) => {
+    const animeTitles = data.map(anime => anime.title);
+    const parsedAnimes = await anitomyscript(animeTitles);
+
+    const response = await fetch('http://localhost:3000/anime/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ animes: parsedAnimes.map(a => a.anime_title) })
+    });
+    const animes = await response.json()
+
+    const resolvedData = await Promise.all(animes.map(async (anime) => {
+      const bestMatch = parsedAnimes.reduce((best, parsed) => {
+        const distance = fastLevenshtein.get(
+          normalize(anime.title.romaji),
+          normalize(parsed.anime_title)
+        );
+        return distance < best.distance ? { parsed, distance } : best;
+      }, { distance: Infinity }).parsed;
+
+      if (bestMatch && bestMatch.episode_number) {
+        const episodeData = await fetch(`http://localhost:3000/anime/${anime.idAnil}/${bestMatch.episode_number}`).then(res => res.json());
+        const rssTorrent = data.find(anim => anim.title === bestMatch.file_name);
+        return { ...anime, episode: episodeData, torrent: rssTorrent };
+      }
+      return null;
+    }));
+
+    return resolvedData.filter(Boolean);
+  }
 
   if (animes && rssAnimes) {
     const getStatusColor = (status) => {
@@ -141,22 +119,33 @@ const TorrentList = ({ state }) => {
       const now = new Date();
       const date = new Date(dateISO);
       const seconds = Math.floor((now - date) / 1000);
-  
+
       const units = [
-          { limit: 60, unit: 'segundo', divisor: 1 },
-          { limit: 3600, unit: 'minuto', divisor: 60 },
-          { limit: 86400, unit: 'hora', divisor: 3600 },
-          { limit: 2592000, unit: 'dia', divisor: 86400 }
+        { limit: 60, unit: 'segundo', divisor: 1 },
+        { limit: 3600, unit: 'minuto', divisor: 60 },
+        { limit: 86400, unit: 'hora', divisor: 3600 },
+        { limit: 2592000, unit: 'dia', divisor: 86400 }
       ];
-  
+
       for (const { limit, unit, divisor } of units) {
-          if (seconds < limit) {
-              const quantity = Math.floor(seconds / divisor);
-              return `Añadido hace ${quantity} ${unit}${quantity !== 1 ? 's' : ''}`;
-          }
+        if (seconds < limit) {
+          const quantity = Math.floor(seconds / divisor);
+          return `Hace ${quantity} ${unit}${quantity !== 1 ? 's' : ''}`;
+        }
       }
-  };
-  
+    };
+
+    const getAnimeFlags = (animeTitle) => {
+      const allowedFlags = ['mx', 'es', 'us'];
+      const flagRegex = /\[([a-z]{2})\]/g;
+      const matches = animeTitle.match(flagRegex);
+
+      if (!matches) return [];
+
+      return allowedFlags
+        .filter(flag => matches.some(match => match.includes(flag)))
+        .map(flag => <Icon icon={`flagpack:${flag}`} width={24} height={24} />);
+    };
 
     contents.push(
       <div className='p-8'>
@@ -166,37 +155,42 @@ const TorrentList = ({ state }) => {
             <div key={`rss-${anime.id}-${i}`} className='max-w-[400px]'>
               <Card className="flex flex-col p-1">
                 <CardHeader className='flex flex-col truncate items-start justify-start z-0'>
-                  <p className='truncate text-base font-semibold'>{anime.title.romaji}</p>
+                  <p className='truncate w-full font-semibold'>{anime.title.romaji}</p>
                   <p className='text-sm'>
-                    {`Episodio ${anime.episode.episodeNumber || "??"}`}
+                    {`Episodio ${anime.episode.episodeNumber || anime.episode.episode || "??"}`}
                   </p>
                 </CardHeader>
-                <CardBody className='w-full h-full flex flex-col justify-between'>
-                  <Image
-                    component="img"
-                    src={anime.episode.image}
-                    alt={anime.title.romaji}
-                    width={400}
-                    className="w-full h-auto object-cover rounded"
-                    style={{ aspectRatio: '16/9' }}
-                  />
+                <CardBody className='w-full h-full flex flex-col justify-between relative'>
+                  <div className='relative'>
+                    <Image
+                      component="img"
+                      src={anime.episode.image || anime.bannerImage}
+                      alt={anime.title.romaji}
+                      width={400}
+                      className="w-full h-auto object-cover rounded"
+                      style={{ aspectRatio: '16/9' }}
+                    />
+                    <div className='flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2 z-50'>
+                      {getAnimeFlags(anime.torrent.title)}
+                    </div>
+                  </div>
                   <div className='flex py-1 justify-between'>
-                      <div className='flex items-center space-x-1 mb-1'>
-                        <Icon icon="gravity-ui:calendar" />
-                        <p className="text-sm">
-                          {timeAgo(anime.episode.airDateUtc)}
-                        </p>
-                      </div>
-                      <div className='flex items-center space-x-1 mb-1'>
-                        <p className="text-sm">
-                          {`${anime.episode.runtime} mins`}
-                        </p>
-                        <Icon icon="gravity-ui:clock" />
-                      </div>
+                    <div className='flex items-center space-x-1 mb-1'>
+                      <Icon icon="gravity-ui:calendar" />
+                      <p className="text-sm">
+                        {timeAgo(anime.torrent.pubDate)}
+                      </p>
+                    </div>
+                    <div className='flex items-center space-x-1 mb-1'>
+                      <p className="text-sm">
+                        {`${anime.episode.runtime || anime.episode.length} mins`}
+                      </p>
+                      <Icon icon="gravity-ui:clock" />
+                    </div>
                   </div>
                   <Button color='success' className='text-base font-semibold w-full' onClick={() => {
                     // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
-                    const hash = anime.torrent.hash
+                    const hash = anime.torrent.infohash
                     const torrent = state.saved.torrents.find(torrent => torrent.infoHash === hash);
 
                     if (torrent) {
