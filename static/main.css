@@ -2018,10 +2018,6 @@ video {
   max-width: 42rem;
 }
 
-.max-w-32 {
-  max-width: 8rem;
-}
-
 .max-w-3xl {
   max-width: 48rem;
 }
@@ -2048,6 +2044,10 @@ video {
 
 .max-w-\[270px\] {
   max-width: 270px;
+}
+
+.max-w-\[400px\] {
+  max-width: 400px;
 }
 
 .max-w-\[640px\] {
@@ -2348,10 +2348,6 @@ video {
 
 .grid-cols-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.grid-cols-8 {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
 .flex-row {

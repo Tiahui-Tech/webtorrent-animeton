@@ -125,11 +125,11 @@
     "install-system-deps": "brew install fakeroot dpkg rpm",
     "open-config": "node ./bin/open-config.js",
     "package": "node ./bin/package.js",
-    "start": "npm run build && electron --no-sandbox .",
+    "start": "tailwindcss -i ./static/input.css -o ./static/main.css && npm run build && electron --no-sandbox .",
     "test": "standard && depcheck --ignores=standard,@babel/eslint-parser --ignore-dirs=build,dist",
     "test-integration": "npm run build && node ./test",
     "update-authors": "./bin/update-authors.sh",
-    "watch": "nodemon --exec \"npm run start\" --ext js,css --ignore build/ --ignore dist/"
+    "watch": "nodemon --exec \"tailwindcss -i ./static/input.css -o ./static/main.css && npm run start\" --ext js,css --ignore build/ --ignore dist/"
   },
   "standard": {
     "parser": "@babel/eslint-parser"

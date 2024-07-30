@@ -6,7 +6,7 @@ const { Stack, Box, Typography, Grid, Chip } = require('@mui/material')
 const { Card, CardHeader, CardBody, Image, Button } = require('@nextui-org/react')
 const { Icon } = require('@iconify/react');
 
-const { CalendarToday, LiveTv, Movie, MusicNote, Book, PlayArrow, Numbers } = require('@mui/icons-material');
+const { CalendarToday, LiveTv, Movie, MusicNote, Book, PlayArrow } = require('@mui/icons-material');
 
 const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
@@ -27,28 +27,72 @@ const TorrentList = ({ state }) => {
     }
     const getRSSAnimes = async () => {
       const page = 1
-      const perPage = 14
+      const perPage = 10
       const data = await fetchAndParseRSS(page, perPage)
 
       const animeTitles = data.map(anime => anime.title);
-      const parsedAnimes = (await anitomyscript(animeTitles)).map(a => a.anime_title);
+      const parsedAnimes = await anitomyscript(animeTitles);
+      const anitomyTitles = parsedAnimes.map(a => a.anime_title);
+
+      const normalize = title => title.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+      const normalizedParsedAnimes = parsedAnimes.map(a => ({
+        ...a,
+        normalizedTitle: normalize(a.anime_title),
+      }));
+
+      const parsedAnimesMap = new Map(
+        normalizedParsedAnimes.map(a => [a.normalizedTitle, a])
+      );
+
+      console.log(parsedAnimes);
 
       const response = await fetch('http://localhost:3000/anime/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          animes: parsedAnimes
-        })
-      })
-      const animes = await response.json()
+        body: JSON.stringify({ animes: anitomyTitles })
+      });
+      const animes = await response.json();
 
-      const updatedData = animes.map((anime, index) => ({
+      console.log(animes);
+
+      const normalizedAnimes = animes.map(anime => ({
         ...anime,
-        torrent: data[index].link
+        normalizedTitle: normalize(anime.title.romaji),
       }));
-      setRSSAnimes(updatedData);
+
+      const updatedData = await Promise.all(
+        normalizedAnimes.map(async (anime) => {
+          const matchingParsedAnime = Array.from(parsedAnimesMap.values()).find(pAnime =>
+            pAnime.normalizedTitle === anime.normalizedTitle
+          );
+
+          if (matchingParsedAnime) {
+            const episodeNumber = matchingParsedAnime.episode_number;
+            const data = await fetch(`http://localhost:3000/torrent/${anime.idAnil}/${episodeNumber}`);
+            const json = await data.json();
+
+            return {
+              ...anime,
+              ...json,
+            };
+          }
+        })
+      );
+
+      console.log('updatedData', updatedData);
+
+      const resolvedData = await Promise.all(updatedData);
+
+      const filteredRssAnimes = resolvedData.filter((item, index, self) =>
+        index === self.findIndex((t) => t.id === item.id) && item.episode && item.torrent
+      )
+
+      console.log('filteredRssAnimes', filteredRssAnimes);
+
+      setRSSAnimes(filteredRssAnimes.slice(0, 4));
     }
     getAnimes();
     getRSSAnimes();
@@ -93,62 +137,76 @@ const TorrentList = ({ state }) => {
       }
     };
 
-    const dateOptions = {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    };
+    const timeAgo = dateISO => {
+      const now = new Date();
+      const date = new Date(dateISO);
+      const seconds = Math.floor((now - date) / 1000);
+  
+      const units = [
+          { limit: 60, unit: 'segundo', divisor: 1 },
+          { limit: 3600, unit: 'minuto', divisor: 60 },
+          { limit: 86400, unit: 'hora', divisor: 3600 },
+          { limit: 2592000, unit: 'dia', divisor: 86400 }
+      ];
+  
+      for (const { limit, unit, divisor } of units) {
+          if (seconds < limit) {
+              const quantity = Math.floor(seconds / divisor);
+              return `Añadido hace ${quantity} ${unit}${quantity !== 1 ? 's' : ''}`;
+          }
+      }
+  };
+  
 
     contents.push(
       <div className='p-8'>
         <h2 className='text-2xl font-bold mb-4'>Latest episodes</h2>
-        <div className="grid grid-cols-8 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {rssAnimes.map((anime, i) => (
-            <div style={{ maxWidth: '192px'}}>
-              <Card key={`rss-${anime.id}-${i}`} className="flex flex-col p-1">
-                <CardHeader className='flex flex-col items-start justify-start z-0'>
-                  <p className='text-base font-semibold truncate'>{anime.title.romaji}</p>
+            <div key={`rss-${anime.id}-${i}`} className='max-w-[400px]'>
+              <Card className="flex flex-col p-1">
+                <CardHeader className='flex flex-col truncate items-start justify-start z-0'>
+                  <p className='truncate text-base font-semibold'>{anime.title.romaji}</p>
                   <p className='text-sm'>
-                    {`Episodio ${anime?.nextAiringEpisode?.episode - 1 || "??"}`}
+                    {`Episodio ${anime.episode.episodeNumber || "??"}`}
                   </p>
                 </CardHeader>
                 <CardBody className='w-full h-full flex flex-col justify-between'>
                   <Image
                     component="img"
-                    src={anime.coverImage.extraLarge}
+                    src={anime.episode.image}
                     alt={anime.title.romaji}
-                    width={162}
+                    width={400}
                     className="w-full h-auto object-cover rounded"
-                    style={{ aspectRatio: '9/14' }}
+                    style={{ aspectRatio: '16/9' }}
                   />
-                  <div className='py-1'>
-                    <div>
+                  <div className='flex py-1 justify-between'>
                       <div className='flex items-center space-x-1 mb-1'>
                         <Icon icon="gravity-ui:calendar" />
                         <p className="text-sm">
-                          {anime.nextAiringEpisode ? `${new Date(anime.nextAiringEpisode.airingAt * 1000).toLocaleDateString('es-ES', dateOptions)}` : `Finalizado`}
+                          {timeAgo(anime.episode.airDateUtc)}
                         </p>
                       </div>
-                    </div>
+                      <div className='flex items-center space-x-1 mb-1'>
+                        <p className="text-sm">
+                          {`${anime.episode.runtime} mins`}
+                        </p>
+                        <Icon icon="gravity-ui:clock" />
+                      </div>
                   </div>
-                  <Button color='success' className='text-base font-semibold max-w-32' onClick={() => {
+                  <Button color='success' className='text-base font-semibold w-full' onClick={() => {
                     // IMPORTANTE: Usar 'dispatcher()' no funcionara si es una arrow function, se debera utilizar 'dispatch()'
-                    const regex = /\/storage\/torrent\/([a-f0-9]{40})/;
-                    const match = anime.torrent.match(regex);
+                    const hash = anime.torrent.hash
+                    const torrent = state.saved.torrents.find(torrent => torrent.infoHash === hash);
 
-                    if (match) {
-                      const hash = match[1];
-                      const torrent = state.saved.torrents.find(torrent => torrent.infoHash === hash);
-
-                      if (torrent) {
-                        return dispatch('playFile', torrent.infoHash)
-                      }
-
-                      dispatch('addTorrent', anime.torrent)
-                      setTimeout(() => {
-                        dispatch('playFile', hash)
-                      }, 1500);
+                    if (torrent) {
+                      return dispatch('playFile', torrent.infoHash)
                     }
+
+                    dispatch('addTorrent', anime.torrent.link)
+                    setTimeout(() => {
+                      dispatch('playFile', hash)
+                    }, 1500);
                   }}>
                     <PlayArrow />
                     VER
