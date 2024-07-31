@@ -219,7 +219,13 @@ const TorrentList = ({ state }) => {
         <Grid container columnSpacing={4} rowSpacing={6} justifyContent="center">
           {animes.map((anime, i) => (
             <Grid item key={`anime-${anime.id}-${i}`}>
-              <Stack sx={{ width: '256px', height: '100%' }}>
+              <Stack sx={{ width: '256px', height: '100%' }} onClick={() => state.location.go({
+                url: 'anime-details',
+                setup: (cb) => {
+                  state.window.title = 'Anime Details'
+                  cb(null)
+                }
+              })}>
                 <Box
                   component="img"
                   src={anime.coverImage.extraLarge}
@@ -260,7 +266,7 @@ const TorrentList = ({ state }) => {
             </Grid>
           ))}
         </Grid>
-      </Stack>
+      </Stack >
     )
   }
 
