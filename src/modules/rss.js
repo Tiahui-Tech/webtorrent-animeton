@@ -1,11 +1,10 @@
-const { DOMPARSER } = require('./util.js');
+const { ERAI_RAWS_CONFIG } = require('../constants/config.js');
 
 async function fetchAndParseRSS(page = 1, perPage = 20) {
-  const url = 'https://www.erai-raws.info/episodes/feed/?res=1080p&type=torrent&subs%5B0%5D=mx&d157edc6b50f28b2776442c03d067d56';
-  const eraiNS = 'https://www.erai-raws.info/rss-page/';
+  const { FEED_URL, RSS_URL } = ERAI_RAWS_CONFIG;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(FEED_URL);
     const xmlText = await response.text();
 
     const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
@@ -20,12 +19,12 @@ async function fetchAndParseRSS(page = 1, perPage = 20) {
         const title = item.querySelector('title');
         const link = item.querySelector('link');
         const pubDate = item.querySelector('pubDate');
-        const resolution = item.getElementsByTagNameNS(eraiNS, 'resolution')[0];
-        const linktype = item.getElementsByTagNameNS(eraiNS, 'linktype')[0];
-        const size = item.getElementsByTagNameNS(eraiNS, 'size')[0];
-        const infohash = item.getElementsByTagNameNS(eraiNS, 'infohash')[0];
-        const subtitles = item.getElementsByTagNameNS(eraiNS, 'subtitles')[0];
-        const category = item.getElementsByTagNameNS(eraiNS, 'category')[0];
+        const resolution = item.getElementsByTagNameNS(RSS_URL, 'resolution')[0];
+        const linktype = item.getElementsByTagNameNS(RSS_URL, 'linktype')[0];
+        const size = item.getElementsByTagNameNS(RSS_URL, 'size')[0];
+        const infohash = item.getElementsByTagNameNS(RSS_URL, 'infohash')[0];
+        const subtitles = item.getElementsByTagNameNS(RSS_URL, 'subtitles')[0];
+        const category = item.getElementsByTagNameNS(RSS_URL, 'category')[0];
 
         return {
           title: title ? title.textContent : null,

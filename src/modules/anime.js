@@ -1,4 +1,38 @@
-const _anitomyscript = require('anitomyscript') 
+const _anitomyscript = require('anitomyscript'); 
+const fastLevenshtein = require('fast-levenshtein');
+const { API_BASE_URL } = require('../constants/config');
+const { normalize } = require('./utils');
+
+const processAnimes = async (rssData) => {
+  const animeTitles = rssData.map(anime => anime.title);
+  const parsedAnimes = await anitomyscript(animeTitles);
+
+  const response = await fetch(`${API_BASE_URL}/anime/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ animes: parsedAnimes.map(a => a.anime_title) })
+  });
+  const animes = await response.json()
+
+  const resolvedData = await Promise.all(animes.map(async (anime) => {
+    const bestMatch = parsedAnimes.reduce((best, parsed) => {
+      const distance = fastLevenshtein.get(
+        normalize(anime.title.romaji),
+        normalize(parsed.anime_title)
+      );
+      return distance < best.distance ? { parsed, distance } : best;
+    }, { distance: Infinity }).parsed;
+
+    if (bestMatch && bestMatch.episode_number) {
+      const episodeData = await fetch(`${API_BASE_URL}/anime/${anime.idAnil}/${bestMatch.episode_number}`).then(res => res.json());
+      const rssTorrent = rssData.find(anim => anim.title === bestMatch.file_name);
+      return { ...anime, episode: episodeData, torrent: rssTorrent };
+    }
+    return null;
+  }));
+
+  return resolvedData.filter(Boolean);
+}
 
 // utility method for correcting anitomyscript woes for what's needed
 async function anitomyscript (...args) {
@@ -26,14 +60,4 @@ async function anitomyscript (...args) {
   return parseObjs
 }
 
-const episodeMetadataMap = {}
-
-async function getEpisodeMetadataForMedia (media) {
-  if (episodeMetadataMap[media.id]) return episodeMetadataMap[media.id]
-  const res = await fetch('https://api.ani.zip/mappings?anilist_id=' + media.id)
-  const { episodes } = await res.json()
-  episodeMetadataMap[media.id] = episodes
-  return episodes
-}
-
-module.exports = { anitomyscript, getEpisodeMetadataForMedia }
+module.exports = { anitomyscript, processAnimes }
