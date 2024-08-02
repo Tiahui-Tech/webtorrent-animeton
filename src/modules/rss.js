@@ -15,11 +15,14 @@ async function fetchAndParseRSS(page = 1, perPage = 20) {
     const paginatedItems = Array.from(items).slice(startIndex, endIndex);
 
     const result = paginatedItems
-      .map(item => {
+      .map((item) => {
         const title = item.querySelector('title');
         const link = item.querySelector('link');
         const pubDate = item.querySelector('pubDate');
-        const resolution = item.getElementsByTagNameNS(RSS_URL, 'resolution')[0];
+        const resolution = item.getElementsByTagNameNS(
+          RSS_URL,
+          'resolution'
+        )[0];
         const linktype = item.getElementsByTagNameNS(RSS_URL, 'linktype')[0];
         const size = item.getElementsByTagNameNS(RSS_URL, 'size')[0];
         const infohash = item.getElementsByTagNameNS(RSS_URL, 'infohash')[0];
@@ -35,10 +38,10 @@ async function fetchAndParseRSS(page = 1, perPage = 20) {
           size: size ? size.textContent : null,
           infohash: infohash ? infohash.textContent : null,
           subtitles: subtitles ? subtitles.textContent : null,
-          category: category ? category.textContent : null,
+          category: category ? category.textContent : null
         };
       })
-      .filter(item => item.title && !item.title.includes("(V2)")); // Filtra títulos con "(V2)"
+      .filter((item) => item.title && !item.title.includes('(V2)')); // Filtra títulos con "(V2)"
 
     return result;
   } catch (error) {
@@ -46,6 +49,5 @@ async function fetchAndParseRSS(page = 1, perPage = 20) {
     return [];
   }
 }
-
 
 module.exports = { fetchAndParseRSS };

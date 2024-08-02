@@ -1,4 +1,4 @@
-const React = require('react')
+const React = require('react');
 const { TIME_UNITS } = require('../constants/config');
 const { LiveTv, Movie, MusicNote, Book } = require('@mui/icons-material');
 const { Icon } = require('@iconify/react');
@@ -19,7 +19,7 @@ const timeAgo = (dateISO) => {
   return `Hace ${quantity} ${key}${quantity !== 1 ? 's' : ''}`;
 };
 
-const normalize = title => title.toLowerCase().replace(/[^a-z0-9]/g, '');
+const normalize = (title) => title.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const getAnimeFlags = (animeTitle) => {
   const allowedFlags = ['mx', 'es', 'us'];
@@ -29,22 +29,29 @@ const getAnimeFlags = (animeTitle) => {
   if (!matches) return [];
 
   return allowedFlags
-    .filter(flag => matches.some(match => match.includes(flag)))
-    .map(flag => <Icon key={`flag-icon-${flag}`} icon={`flagpack:${flag}`} width={24} height={24} />);
+    .filter((flag) => matches.some((match) => match.includes(flag)))
+    .map((flag) => (
+      <Icon
+        key={`flag-icon-${flag}`}
+        icon={`flagpack:${flag}`}
+        width={24}
+        height={24}
+      />
+    ));
 };
 
 const getFormatIcon = (format) => {
   const icons = {
-    TV: "gravity-ui:tv",
-    MOVIE: "gravity-ui:video",
-    OVA: "gravity-ui:tv",
-    ONA: "gravity-ui:tv",
-    MUSIC: "gravity-ui:music-note",
-    MANGA: "gravity-ui:book-open",
-    NOVEL: "gravity-ui:book-open",
-    ONE_SHOT: "gravity-ui:book-open"
+    TV: 'gravity-ui:tv',
+    MOVIE: 'gravity-ui:video',
+    OVA: 'gravity-ui:tv',
+    ONA: 'gravity-ui:tv',
+    MUSIC: 'gravity-ui:music-note',
+    MANGA: 'gravity-ui:book-open',
+    NOVEL: 'gravity-ui:book-open',
+    ONE_SHOT: 'gravity-ui:book-open'
   };
   return icons[format] ? <Icon icon={icons[format]} /> : null;
 };
 
-module.exports = { timeAgo, normalize, getAnimeFlags, getFormatIcon }
+module.exports = { timeAgo, normalize, getAnimeFlags, getFormatIcon };
