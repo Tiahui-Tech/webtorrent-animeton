@@ -26,8 +26,8 @@ const dragDrop = require('drag-drop')
 const electron = require('electron')
 const fs = require('fs')
 const React = require('react')
-const ReactDOM = require('react-dom')
 const { createRoot } = require('react-dom/client')
+const { NextUIProvider } = require('@nextui-org/react')
 
 const config = require('../config')
 const telemetry = require('./lib/telemetry')
@@ -138,7 +138,16 @@ function onState(err, _state) {
   const container = document.querySelector('#body');
   const root = createRoot(container);
 
-  root.render(<App state={state} ref={elem => { app = elem }} />);
+  root.render(
+    <NextUIProvider>
+      <App
+        state={state}
+        ref={(elem) => {
+          app = elem;
+        }}
+      />
+    </NextUIProvider>
+  );
 
   // Calling update() updates the UI given the current state
   // Do this at least once a second to give every file in every torrentSummary

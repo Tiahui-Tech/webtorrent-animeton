@@ -56,6 +56,7 @@ table {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -78,11 +79,12 @@ table {
  * HEADER
  */
 
- .header {
+.header {
   -webkit-app-region: drag;
   background: rgb(40, 40, 40);
   border-bottom: 1px solid rgb(30, 30, 30);
-  height: 38px; /* vertically center OS menu buttons (OS X) */
+  height: 38px;
+  /* vertically center OS menu buttons (OS X) */
   padding-top: 7px;
   overflow: hidden;
   flex: 0 1 auto;
@@ -152,7 +154,7 @@ table {
  * CONTENT
  */
 
- .content {
+.content {
   position: relative;
   width: 100%;
   overflow-x: hidden;
@@ -165,12 +167,11 @@ table {
   margin-top: 0;
 }
 
-
 /*
  * MODAL POPOVERS
  */
 
- .modal {
+.modal {
   z-index: 2;
 }
 
@@ -236,7 +237,7 @@ table {
  * PLAYER
  */
 
- .player {
+.player {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -281,7 +282,6 @@ table {
   margin: 8px;
   font-size: 22px;
   opacity: 0.85;
-
   /* Make all icons have uniform spacing */
   max-width: 23px;
   overflow: hidden;
@@ -348,10 +348,12 @@ table {
 }
 
 /* invisible click target for scrubbing */
+
 .player .controls .scrub-bar {
   position: absolute;
   width: 100%;
-  height: 23px; /* 3px .loading-bar plus 10px above and below */
+  height: 23px;
+  /* 3px .loading-bar plus 10px above and below */
   top: -10px;
   left: 0;
   -webkit-app-region: no-drag;
@@ -442,13 +444,17 @@ table {
 /**
  * Set the cue text position so it appears above the player controls.
  */
+
 video::-webkit-media-text-track-container {
   bottom: 60px;
+  -webkit-transition: bottom 0.1s ease-out;
   transition: bottom 0.1s ease-out;
 }
+
 .app.hide-video-controls video::-webkit-media-text-track-container {
   bottom: 30px;
 }
+
 ::cue {
   background: none;
   color: #FFF;
@@ -647,6 +653,7 @@ video::-webkit-media-text-track-container {
   width:  40px;
   height: 40px;
 }
+
 .radial-progress-large .circle .mask {
   clip: rect(0px, 40px, 40px, 20px);
 }
@@ -666,10 +673,13 @@ video::-webkit-media-text-track-container {
  * MATERIAL ICONS
  */
 
- @font-face {
+@font-face {
   font-family: 'Material Icons';
+
   font-style: normal;
+
   font-weight: 400;
+
   src: url('MaterialIcons-Regular.woff2') format('woff2');
 }
 
@@ -677,7 +687,8 @@ video::-webkit-media-text-track-container {
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
+  font-size: 24px;
+  /* Preferred icon size */
   display: inline-block;
   line-height: 1;
   text-transform: none;
@@ -686,7 +697,6 @@ video::-webkit-media-text-track-container {
   white-space: nowrap;
   direction: ltr;
   opacity: 0.85;
-
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -698,12 +708,6 @@ video::-webkit-media-text-track-container {
 .icon:not(.disabled):hover {
   opacity: 1;
 }
-
-/* 
-
-
-
-*/
 
 /*
 ! tailwindcss v3.4.6 | MIT License | https://tailwindcss.com
@@ -1401,6 +1405,10 @@ video {
   right: 0.375rem;
 }
 
+.right-2 {
+  right: 0.5rem;
+}
+
 .right-3 {
   right: 0.75rem;
 }
@@ -1423,6 +1431,10 @@ video {
 
 .top-1\/2 {
   top: 50%;
+}
+
+.top-2 {
+  top: 0.5rem;
 }
 
 .top-\[10\%\] {
@@ -1562,12 +1574,20 @@ video {
   margin-inline-start: -0.5rem;
 }
 
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
 .mb-1\.5 {
   margin-bottom: 0.375rem;
 }
 
 .mb-2 {
   margin-bottom: 0.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
 }
 
 .mb-5 {
@@ -2455,6 +2475,12 @@ video {
   margin-left: calc(0.125rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
+.space-x-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.25rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
 .self-center {
   align-self: center;
 }
@@ -2981,6 +3007,10 @@ video {
   background-color: hsl(var(--nextui-secondary) / 0.2);
 }
 
+.bg-slate-950\/25 {
+  background-color: rgb(2 6 23 / 0.25);
+}
+
 .bg-success {
   --tw-bg-opacity: 1;
   background-color: hsl(var(--nextui-success) / var(--nextui-success-opacity, var(--tw-bg-opacity)));
@@ -3066,6 +3096,10 @@ video {
 
 .p-4 {
   padding: 1rem;
+}
+
+.p-8 {
+  padding: 2rem;
 }
 
 .\!px-1 {
@@ -3255,6 +3289,11 @@ video {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
 .text-\[0\.55rem\] {
   font-size: 0.55rem;
 }
@@ -3265,6 +3304,11 @@ video {
 
 .text-\[0\.6rem\] {
   font-size: 0.6rem;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 .text-large {
@@ -3282,6 +3326,11 @@ video {
   line-height: var(--nextui-line-height-medium);
 }
 
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
 .text-small {
   font-size: var(--nextui-font-size-small);
   line-height: var(--nextui-line-height-small);
@@ -3295,6 +3344,10 @@ video {
 .text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem;
+}
+
+.font-bold {
+  font-weight: 700;
 }
 
 .font-medium {

@@ -7,43 +7,46 @@ async function fetchAndParseRSS(page = 1, perPage = 20) {
   try {
     const response = await fetch(url);
     const xmlText = await response.text();
-    
-    const xmlDoc = DOMPARSER(xmlText, 'application/xml');
-    
+
+    const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+
     const items = xmlDoc.querySelectorAll('item');
     const startIndex = (page - 1) * perPage;
     const endIndex = startIndex + perPage;
     const paginatedItems = Array.from(items).slice(startIndex, endIndex);
 
-    const result = paginatedItems.map(item => {
-      const title = item.querySelector('title');
-      const link = item.querySelector('link');
-      const pubDate = item.querySelector('pubDate');
-      const resolution = item.getElementsByTagNameNS(eraiNS, 'resolution')[0];
-      const linktype = item.getElementsByTagNameNS(eraiNS, 'linktype')[0];
-      const size = item.getElementsByTagNameNS(eraiNS, 'size')[0];
-      const infohash = item.getElementsByTagNameNS(eraiNS, 'infohash')[0];
-      const subtitles = item.getElementsByTagNameNS(eraiNS, 'subtitles')[0];
-      const category = item.getElementsByTagNameNS(eraiNS, 'category')[0];
-      
-      return {
-        title: title ? title.textContent : null,
-        link: link ? encodeURI(link.textContent) : null,
-        pubDate: pubDate ? pubDate.textContent : null,
-        resolution: resolution ? resolution.textContent : null,
-        linktype: linktype ? linktype.textContent : null,
-        size: size ? size.textContent : null,
-        infohash: infohash ? infohash.textContent : null,
-        subtitles: subtitles ? subtitles.textContent : null,
-        category: category ? category.textContent : null,
-      };
-    });
-    
+    const result = paginatedItems
+      .map(item => {
+        const title = item.querySelector('title');
+        const link = item.querySelector('link');
+        const pubDate = item.querySelector('pubDate');
+        const resolution = item.getElementsByTagNameNS(eraiNS, 'resolution')[0];
+        const linktype = item.getElementsByTagNameNS(eraiNS, 'linktype')[0];
+        const size = item.getElementsByTagNameNS(eraiNS, 'size')[0];
+        const infohash = item.getElementsByTagNameNS(eraiNS, 'infohash')[0];
+        const subtitles = item.getElementsByTagNameNS(eraiNS, 'subtitles')[0];
+        const category = item.getElementsByTagNameNS(eraiNS, 'category')[0];
+
+        return {
+          title: title ? title.textContent : null,
+          link: link ? encodeURI(link.textContent) : null,
+          pubDate: pubDate ? pubDate.textContent : null,
+          resolution: resolution ? resolution.textContent : null,
+          linktype: linktype ? linktype.textContent : null,
+          size: size ? size.textContent : null,
+          infohash: infohash ? infohash.textContent : null,
+          subtitles: subtitles ? subtitles.textContent : null,
+          category: category ? category.textContent : null,
+        };
+      })
+      .filter(item => item.title && !item.title.includes("(V2)")); // Filtra títulos con "(V2)"
+
     return result;
   } catch (error) {
     console.error('Error fetching or parsing RSS feed:', error);
     return [];
   }
 }
+
 
 module.exports = { fetchAndParseRSS };
