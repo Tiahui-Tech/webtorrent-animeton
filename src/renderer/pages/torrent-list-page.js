@@ -1,5 +1,5 @@
 const React = require('react')
-const { useEffect, useState, Component } = require('react')
+const { useEffect, useState } = require('react')
 const prettyBytes = require('prettier-bytes')
 
 const { Stack, Box, Typography, Grid, Chip } = require('@mui/material')
@@ -11,36 +11,8 @@ const TorrentSummary = require('../lib/torrent-summary')
 const TorrentPlayer = require('../lib/torrent-player')
 const { dispatcher, dispatch } = require('../lib/dispatcher')
 const { calculateEta } = require('../lib/time')
-const { RSSManager } = require('../../modules/rss')
-const anitomy = require('anitomyscript');
-
-
-// Load the newest animes from Erai-raws with RSS
-async function loadRSSTorrentsAnimes() {
-  console.log('Loading RSS...')
-  const page = 1
-  const perPage = 10
-  const url = 'Erai-raws [Multi-Sub]'
-
-  try {
-    const animes = RSSManager.getMediaForRSS(page, perPage, url, true)
-
-    const results = await Promise.all(animes.map(async (item) => {
-      if (item.type === 'episode' && item.data instanceof Promise) {
-        const resolvedData = await item.data
-        return resolvedData
-      }
-      return item
-    }))
-
-    // console.log('RSS Animes:', JSON.stringify(results, null, 2))
-
-    return results
-  } catch (error) {
-    console.error('Error on loadRSS:', error)
-    return null
-  }
-}
+const { fetchAndParseRSS } = require('../../modules/rss')
+const { anitomyscript } = require('../../modules/anime');
 
 const TorrentList = ({ state }) => {
   const [animes, setAnimes] = useState(null);
@@ -53,9 +25,12 @@ const TorrentList = ({ state }) => {
       setAnimes(animes)
     }
     const getRSSAnimes = async () => {
-      const data = await loadRSSTorrentsAnimes();
+      const page = 1
+      const perPage = 14
+      const data = await fetchAndParseRSS(page, perPage)
+
       const animeTitles = data.map(anime => anime.title);
-      const parsedAnimes = (await anitomy(animeTitles)).map(a => a.anime_title);
+      const parsedAnimes = (await anitomyscript(animeTitles)).map(a => a.anime_title);
 
       const response = await fetch('http://localhost:3000/anime/search', {
         method: 'POST',
@@ -131,7 +106,7 @@ const TorrentList = ({ state }) => {
             <Grid item key={`rss-${anime.id}-${i}`}>
               <Card className="flex flex-col p-1 max-w-[200px]">
                 <CardHeader className='w-full z-0'>
-                  <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0,20)}</h4>
+                  <h4 className='text-small font-semibold truncate max-w-full'>{anime.title.romaji.slice(0, 20)}</h4>
                 </CardHeader>
                 <CardBody className='w-full'>
                   <Image
@@ -146,7 +121,7 @@ const TorrentList = ({ state }) => {
                       <div className='flex mb-1 items-center'>
                         <Numbers fontSize="small" />
                         <p >
-                          {`Episodio ${anime.episodes || "??"}`}
+                          {`Episodio ${anime?.nextAiringEpisode?.episode - 1 || "??"}`}
                         </p>
                       </div>
                       <div className='flex mb-1 items-center'>
