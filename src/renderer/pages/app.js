@@ -5,9 +5,11 @@ const Header = require('../components/header')
 
 // Perf optimization: Needed immediately, so do not lazy load it below
 const TorrentListPage = require('./torrent-list-page')
+const AnimeDetailsPage = require('./anime-details-page')
 
 const Views = {
   home: createGetter(() => TorrentListPage),
+  'anime-details': createGetter(() => (props) => <AnimeDetailsPage {...props} />),
   player: createGetter(() => require('./player-page')),
   'create-torrent': createGetter(() => require('./create-torrent-page')),
   preferences: createGetter(() => require('./preferences-page'))
@@ -90,7 +92,9 @@ class App extends React.Component {
   getView() {
     const state = this.props.state
     const View = Views[state.location.url()]()
-    return (<View state={state} />)
+    console.log(state.location.params);
+
+    return <View state={state} params={state.location.params}/>
   }
 }
 

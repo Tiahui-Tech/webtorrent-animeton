@@ -1802,6 +1802,10 @@ video {
   max-height: 16rem;
 }
 
+.max-h-96 {
+  max-height: 24rem;
+}
+
 .max-h-\[calc\(100\%_-_8rem\)\] {
   max-height: calc(100% - 8rem);
 }
@@ -2100,6 +2104,10 @@ video {
 
 .max-w-\[400px\] {
   max-width: 400px;
+}
+
+.max-w-\[50vw\] {
+  max-width: 50vw;
 }
 
 .max-w-\[640px\] {
@@ -2587,6 +2595,10 @@ video {
 
 .whitespace-nowrap {
   white-space: nowrap;
+}
+
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
 }
 
 .break-words {

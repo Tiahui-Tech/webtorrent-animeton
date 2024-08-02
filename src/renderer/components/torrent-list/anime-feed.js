@@ -32,8 +32,8 @@ const AnimeCard = React.memo(({ anime, state }) => {
             onPress={() => state.location.go({
                 url: 'anime-details',
                 setup: (cb) => {
-                    state.window.title = 'Anime Details'
-                    cb(null)
+                    state.window.title = anime.title.romaji
+                    cb()
                 }
             })}
         >
@@ -72,6 +72,7 @@ const AnimeCard = React.memo(({ anime, state }) => {
                         <span className="text-sm text-gray-400 ml-1">
                             {anime.format}
                         </span>
+                        
                     </div>
                 </div>
 
