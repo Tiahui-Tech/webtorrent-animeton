@@ -20,8 +20,11 @@ const AnimeCard = React.memo(({ anime, state }) => {
         state.location.go({
           url: 'anime-details',
           setup: (cb) => {
-            state.window.title = 'Anime Details';
+            state.window.title = anime.title.romaji;
             cb(null);
+          },
+          data: {
+            selectedAnime: anime,
           }
         })
       }

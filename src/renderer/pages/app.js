@@ -5,7 +5,7 @@ const Header = require('../components/header');
 
 // Perf optimization: Needed immediately, so do not lazy load it below
 const Home = require('./home');
-const AnimeDetailsPage = require('./anime-details-page');
+const AnimeDetailsPage = require('./anime-details');
 
 const Views = {
   home: createGetter(() => Home),

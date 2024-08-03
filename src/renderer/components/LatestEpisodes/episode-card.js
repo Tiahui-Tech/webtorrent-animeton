@@ -78,7 +78,7 @@ const EpisodeCard = React.memo(({ anime, state }) => {
             <div className="flex items-center">
               <Icon icon="gravity-ui:clock" />
               <span className="text-sm text-gray-400 ml-1">
-                {`${anime.episode.runtime || anime.episode.length} mins`}
+                {`${anime.duration || anime.episode.runtime || anime.episode.length} mins`}
               </span>
             </div>
           </div>

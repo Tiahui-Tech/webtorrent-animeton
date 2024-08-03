@@ -943,14 +943,14 @@ function renderPreview(state) {
   // Calculate time from x-coord as fraction of track width
   const windowWidth = document.querySelector('body').clientWidth;
   const fraction = previewXCoord / windowWidth;
-  const time = fraction * state.playing.duration; /* seconds */
+  const time = fraction * state.playing?.duration; /* seconds */
 
   const height = 70;
   let width = 0;
 
   const previewEl = document.querySelector('video#preview');
   if (previewEl !== null && previewXCoord !== null) {
-    previewEl.currentTime = time;
+    previewEl.currentTime = time ?? 0;
 
     // Auto adjust width to maintain video aspect ratio
     width = Math.floor((previewEl.videoWidth / previewEl.videoHeight) * height);
