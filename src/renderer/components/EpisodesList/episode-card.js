@@ -1,22 +1,23 @@
 const React = require('react');
-const { Card, CardBody, Image } = require('@nextui-org/react');
+const { Card, CardBody, Image, Divider } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 
 const EpisodeCard = ({ episode }) => {
   return (
-    <Card className="w-[50vw] max-w-[50vw]">
+    <Card className="w-[70vw] max-w-[70vw]">
       <CardBody className="flex flex-row gap-4 justify-between items-center">
         <div className="flex flex-row gap-4 items-center">
           <Image
             alt="episode-image"
             src={episode.image}
-            className="aspect-square object-cover w-32 h-32"
-          ></Image>
+            className="aspect-video object-cover w-auto h-32"
+          />
+          <Divider orientation="vertical" />
           <div className="flex flex-col gap-2 justify-start">
-            <p className="text-large font-medium truncate w-full">
+            <p className="text-3xl font-medium truncate w-full">
               {episode.title.en}
             </p>
-            <span className="text-large text-gray-400">{episode.title.ja}</span>
+            <span className="text-xl text-gray-400">{episode.title.ja}</span>
           </div>
         </div>
         <div className="flex flex-row gap-1 pr-4 items-center justify-center">
