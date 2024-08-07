@@ -54,4 +54,37 @@ const getFormatIcon = (format) => {
   return icons[format] ? <Icon icon={icons[format]} /> : null;
 };
 
-module.exports = { timeAgo, normalize, getAnimeFlags, getFormatIcon };
+function getContrastColor(hexColor) {
+  hexColor = hexColor.replace('#', '');
+
+  const r = parseInt(hexColor.substr(0, 2), 16);
+  const g = parseInt(hexColor.substr(2, 2), 16);
+  const b = parseInt(hexColor.substr(4, 2), 16);
+
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+}
+
+function sortColorsByBrightness(colors) {
+  return colors
+    .sort((a, b) => {
+      if (a.saturation > 0.5 && a.lightness > 0.5 && (b.saturation <= 0.5 || b.lightness <= 0.5)) {
+        return -1;
+      }
+      if (b.saturation > 0.5 && b.lightness > 0.5 && (a.saturation <= 0.5 || a.lightness <= 0.5)) {
+        return 1;
+      }
+      return b.intensity - a.intensity;
+    })
+    .map(color => color.hex);
+}
+
+module.exports = {
+  timeAgo,
+  normalize,
+  getAnimeFlags,
+  getFormatIcon,
+  getContrastColor,
+  sortColorsByBrightness
+};

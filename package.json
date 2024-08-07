@@ -47,7 +47,7 @@
     "dlnacasts": "0.1.0",
     "drag-drop": "7.2.0",
     "es6-error": "4.1.1",
-    "fast-average-color-node": "^3.0.0",
+    "extract-colors": "^4.0.6",
     "fast-levenshtein": "^3.0.0",
     "fn-getter": "1.0.0",
     "framer-motion": "^11.3.18",

@@ -8,7 +8,13 @@ const useExtractColor = require('../hooks/useExtractColor');
 const AnimeDetails = ({ state }) => {
   const anime = state.location.current().data.selectedAnime;
   const episodesData = useAnimeEpisodesData(anime.idAnil);
-  const animeColor = useExtractColor(anime.bannerImage);
+  const { animeColors, textColor } = useExtractColor(
+    anime.coverImage.extraLarge
+  );
+
+  if (!animeColors && !textColor) {
+    return null
+  }
 
   return (
     <div>
@@ -42,8 +48,9 @@ const AnimeDetails = ({ state }) => {
                     key={`genre-${i}`}
                     className="mt-2 text-zinc-900 font-medium p-2.5 py-0.5 rounded-full"
                     style={{
-                      backgroundColor: animeColor,
-                      boxShadow: `0px 2px 15px ${animeColor}`
+                      backgroundColor: animeColors.at(0),
+                      color: textColor,
+                      boxShadow: `0px 2px 15px ${animeColors.at(0)}`
                     }}
                   >
                     {genr}
@@ -66,7 +73,8 @@ const AnimeDetails = ({ state }) => {
           </CardBody>
         </Card>
       </div>
-      <EpisodesList episodesData={episodesData} animeColor={animeColor} />
+
+      <EpisodesList episodesData={episodesData} animeColors={animeColors} />
     </div>
   );
 };

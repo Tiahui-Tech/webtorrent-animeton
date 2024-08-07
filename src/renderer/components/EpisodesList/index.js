@@ -1,16 +1,14 @@
 const React = require('react');
 const EpisodeCard = require('./episode-card');
+const useModernBackground = require('../../hooks/useModernBackground');
 
-const EpisodesList = React.memo(({ episodesData, animeColor }) => {
+const EpisodesList = React.memo(({ episodesData, animeColors }) => {
+  const background = useModernBackground(animeColors);
   return (
     <div className="relative bg-black">
       <div
-        className="absolute"
-        style={{
-          inset: 0,
-          opacity: 0.3,
-          background: `linear-gradient(to top, ${animeColor}, transparent)`
-        }}
+        className="fixed inset-0 bg-cover bg-center z-20"
+        style={{ backgroundImage: `url(${background})` }}
       />
       <div className="flex flex-col gap-4 py-4 justify-center items-center">
         {episodesData?.episodes &&
@@ -18,6 +16,7 @@ const EpisodesList = React.memo(({ episodesData, animeColor }) => {
             <EpisodeCard
               key={`episode-${episode.episodeNumber}`}
               episode={episode}
+              animeColor={animeColors.at(0)}
             />
           ))}
       </div>
