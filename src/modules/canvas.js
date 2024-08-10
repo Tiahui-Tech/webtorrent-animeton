@@ -4,7 +4,6 @@ async function genModernBackground(options = {}) {
     height = 1080,
     primaryColor,
     secondaryColor,
-    tertiaryColor
   } = options;
 
   const canvas = document.createElement('canvas');
@@ -13,13 +12,13 @@ async function genModernBackground(options = {}) {
   const ctx = canvas.getContext('2d');
 
   ctx.filter = 'blur(300px)';
-  ctx.globalAlpha = 0.8;
+  ctx.globalAlpha = 0.6;
 
   ctx.fillStyle = primaryColor;
   ctx.beginPath();
   ctx.ellipse(
-    0,
-    0,
+    100,
+    200,
     width * 0.208,
     height * 0.278,
     (-45 * Math.PI) / 180,
@@ -31,22 +30,9 @@ async function genModernBackground(options = {}) {
   ctx.fillStyle = secondaryColor;
   ctx.beginPath();
   ctx.ellipse(
-    width * 0.99,
-    height * 0.556,
+    1600,
+    600,
     width * 0.208,
-    height * 0.139,
-    (45 * Math.PI) / 180,
-    0,
-    2 * Math.PI
-  );
-  ctx.fill();
-
-  ctx.fillStyle = tertiaryColor;
-  ctx.beginPath();
-  ctx.ellipse(
-    width * 0.521,
-    height * 0.833,
-    width * 0.156,
     height * 0.139,
     (45 * Math.PI) / 180,
     0,

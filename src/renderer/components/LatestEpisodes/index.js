@@ -1,8 +1,8 @@
 const React = require('react');
 const useRSSData = require('../../hooks/useRSSData');
 
-const EpisodeCard = require('./episode-card');
-const EpisodeCardSkeleton = require('./episode-card-skeleton');
+const EpisodeCard = require('./episode');
+const EpisodeCardSkeleton = require('./episode-skeleton');
 
 const LatestEpisodes = ({ state, sectionTitle }) => {
   const rssAnimes = useRSSData({

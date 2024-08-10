@@ -4,14 +4,12 @@ const createGetter = require('fn-getter');
 const Header = require('../components/header');
 
 // Perf optimization: Needed immediately, so do not lazy load it below
-const Home = require('./home');
-const AnimeDetailsPage = require('./anime-details');
+const Home = require('./Home');
+const AnimeDetails = require('./AnimeDetails');
 
 const Views = {
   home: createGetter(() => Home),
-  'anime-details': createGetter(() => (props) => (
-    <AnimeDetailsPage {...props} />
-  )),
+  'anime-details': createGetter(() => AnimeDetails),
   player: createGetter(() => require('./player-page')),
   'create-torrent': createGetter(() => require('./create-torrent-page')),
   preferences: createGetter(() => require('./preferences-page'))
@@ -34,11 +32,6 @@ const Modals = {
     require('../components/delete-all-torrents-modal')
   )
 };
-
-const fontFamily =
-  process.platform === 'win32'
-    ? '"Segoe UI", sans-serif'
-    : 'BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif';
 
 class App extends React.Component {
   render() {

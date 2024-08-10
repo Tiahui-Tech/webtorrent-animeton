@@ -54,7 +54,7 @@ const getFormatIcon = (format) => {
   return icons[format] ? <Icon icon={icons[format]} /> : null;
 };
 
-function getContrastColor(hexColor) {
+const getContrastColor = (hexColor) => {
   hexColor = hexColor.replace('#', '');
 
   const r = parseInt(hexColor.substr(0, 2), 16);
@@ -66,7 +66,7 @@ function getContrastColor(hexColor) {
   return luminance > 0.5 ? '#000000' : '#FFFFFF';
 }
 
-function sortColorsByBrightness(colors) {
+const sortColorsByBrightness = (colors) => {
   return colors
     .sort((a, b) => {
       if (a.saturation > 0.5 && a.lightness > 0.5 && (b.saturation <= 0.5 || b.lightness <= 0.5)) {
@@ -80,11 +80,24 @@ function sortColorsByBrightness(colors) {
     .map(color => color.hex);
 }
 
+const genGlassStyle = (color, opacity = 15, blur = 15) => {
+  return {
+    background: `${color}${opacity}`,
+    borderRadius: '16px',
+    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
+    backdropFilter: `blur(${blur}px)`,
+    WebkitBackdropFilter: `blur(${blur}px)`,
+    border: `2px solid ${color}${opacity}`,
+  };
+};
+
+
 module.exports = {
   timeAgo,
   normalize,
   getAnimeFlags,
   getFormatIcon,
   getContrastColor,
-  sortColorsByBrightness
+  sortColorsByBrightness,
+  genGlassStyle
 };

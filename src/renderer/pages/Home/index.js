@@ -1,7 +1,7 @@
 const React = require('react');
 
-const LatestEpisodes = require('../components/LatestEpisodes');
-const AnimeSection = require('../components/AnimeSection');
+const LatestEpisodes = require('../../components/LatestEpisodes');
+const AnimeSection = require('../../components/AnimeSection');
 
 const Home = ({ state }) => {
   return (

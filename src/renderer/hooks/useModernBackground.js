@@ -1,20 +1,21 @@
-const { useEffect, useState } = require('react');
+const { useEffect, useState, useCallback, useMemo } = require('react');
 const { genModernBackground } = require('../../modules/canvas');
 
-const useModernBackground = (colors) => {
-    const [background, setBackground] = useState();
+const useModernBackground = ({ primaryColor, secondaryColor }) => {
+  const [background, setBackground] = useState(null);
+
+  const genBackground = useCallback(async () => {
+    if (!primaryColor || !secondaryColor) return;
+    const backgroundBase64 = await genModernBackground({
+      primaryColor,
+      secondaryColor,
+    });
+    setBackground(backgroundBase64);
+  }, [primaryColor, secondaryColor]);
 
   useEffect(() => {
-    const genBackground = async () => {
-      const backgroundBase64 = await genModernBackground({
-        primaryColor: colors.at(0),
-        secondaryColor: colors.at(1),
-        tertiaryColor: colors.at(2),
-      });
-      setBackground(backgroundBase64);
-    }
-    genBackground()
-  }, []);
+    genBackground();
+  }, [genBackground]);
 
   return background;
 };

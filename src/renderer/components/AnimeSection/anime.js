@@ -11,10 +11,11 @@ const {
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 
-const AnimeCard = React.memo(({ anime, state }) => {
+const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
   return (
     <Card
       className="w-64 transition duration-300 ease-in-out hover:scale-105"
+      style={glassStyle ?? {}}
       isPressable
       onPress={() =>
         state.location.go({

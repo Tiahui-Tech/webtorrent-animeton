@@ -1,4 +1,4 @@
-const { useEffect, useState } = require('react');
+const { useEffect, useState, useCallback, useMemo } = require('react');
 const { extractColors } = require('extract-colors');
 const { getContrastColor, sortColorsByBrightness } = require('../../modules/utils');
 
@@ -6,28 +6,29 @@ const useExtractColor = (image) => {
   const [animeColors, setAnimeColors] = useState(null);
   const [textColor, setTextColor] = useState(null);
 
-  useEffect(() => {
-    const getAnimeColor = async () => {
-      const animeColors = await extractColors(image, {
-        pixels: 100000,
-        distance: 0.15,
-        hueDistance: 0.1,
-        saturationDistance: 1,
-        lightnessDistance: 1,
-        crossOrigin: 'anonymous'
-      });
-      const parsedColors = sortColorsByBrightness(animeColors)
-      const textColor = getContrastColor(parsedColors.at(0));
-      setTextColor(textColor);
-      setAnimeColors(parsedColors);
-    };
-    getAnimeColor();
-  }, []);
+  const getAnimeColor = useCallback(async () => {
+    if (!image) return;
+    const colors = await extractColors(image, {
+      pixels: 100000,
+      distance: 0.15,
+      hueDistance: 0.1,
+      saturationDistance: 1,
+      lightnessDistance: 1,
+      crossOrigin: 'anonymous'
+    });
+    const parsedColors = sortColorsByBrightness(colors);
+    setAnimeColors(parsedColors);
+    setTextColor(getContrastColor(parsedColors[0]));
+  }, [image]);
 
-  return {
+  useEffect(() => {
+    getAnimeColor();
+  }, [getAnimeColor]);
+
+  return useMemo(() => ({
     animeColors,
     textColor
-  };
+  }), [animeColors, textColor]);
 };
 
 module.exports = useExtractColor;
