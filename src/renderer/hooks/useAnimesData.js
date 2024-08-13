@@ -1,7 +1,7 @@
 const { useEffect, useState } = require('react');
 const { API_BASE_URL } = require('../../constants/config');
 
-const useAnimeData = () => {
+const useAnimesData = () => {
   const [animes, setAnimes] = useState(null);
 
   useEffect(() => {
@@ -21,4 +21,4 @@ const useAnimeData = () => {
   return animes;
 };
 
-module.exports = useAnimeData;
+module.exports = useAnimesData;

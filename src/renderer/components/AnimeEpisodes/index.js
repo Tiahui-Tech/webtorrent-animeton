@@ -8,7 +8,7 @@ const { genGlassStyle } = require('../../../modules/utils');
 
 const EpisodesList = require('../EpisodesList');
 
-const AnimeEpisodes = ({ idAnil, animeColors }) => {
+const AnimeEpisodes = ({ idAnil, animeColors, sectionTitle }) => {
   const episodesData = useAnimeEpisodesData(idAnil);
   const [isReversed, setIsReversed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,7 +40,7 @@ const AnimeEpisodes = ({ idAnil, animeColors }) => {
   return (
     <div className="flex flex-col gap-2 z-30 justify-start w-full">
       <div className="flex flex-row w-full justify-between items-start">
-        <h2 className="text-2xl font-semibold">Episodios</h2>
+        <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
         <div className="flex flex-row gap-2">
           <Button
             size="md"

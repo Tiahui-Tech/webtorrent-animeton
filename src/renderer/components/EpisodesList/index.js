@@ -7,9 +7,9 @@ const EpisodesList = React.memo(({ episodesData, animeColors }) => {
     <div className="relative w-full">
       <div className="flex flex-col gap-4">
         {episodesData
-          ? episodesData.map((episode) => (
+          ? episodesData.map((episode, i) => (
               <EpisodeCard
-                key={`episode-${episode.episodeNumber}`}
+                key={`episode-${episode.episodeNumber}-${i}`}
                 episode={episode}
                 animeColor={animeColors.at(0)}
               />

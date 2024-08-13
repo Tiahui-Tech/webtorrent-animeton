@@ -1,57 +1,42 @@
-const React = require('react')
+const React = require('react');
+const { useNavigate, useLocation, useNavigationType } = require('react-router-dom');
 
-const { dispatcher } = require('../lib/dispatcher')
+const { dispatcher } = require('../lib/dispatcher');
 
-class Header extends React.Component {
-  render () {
-    const loc = this.props.state.location
-    return (
-      <div
-        className='header'
-        onMouseMove={dispatcher('mediaMouseMoved')}
-        onMouseEnter={dispatcher('mediaControlsMouseEnter')}
-        onMouseLeave={dispatcher('mediaControlsMouseLeave')}
-        role='navigation'
-      >
-        {this.getTitle()}
-        <div className='nav left float-left'>
-          <i
-            className={'icon back ' + (loc.hasBack() ? '' : 'disabled')}
-            title='Back'
-            onClick={dispatcher('back')}
-            role='button'
-            aria-disabled={!loc.hasBack()}
-            aria-label='Back'
-          >
-            chevron_left
-          </i>
-          <i
-            className={'icon forward ' + (loc.hasForward() ? '' : 'disabled')}
-            title='Forward'
-            onClick={dispatcher('forward')}
-            role='button'
-            aria-disabled={!loc.hasForward()}
-            aria-label='Forward'
-          >
-            chevron_right
-          </i>
-        </div>
-        <div className='nav right float-right'>
-          {this.getAddButton()}
-        </div>
-      </div>
-    )
-  }
+function Header({ state }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navigationType = useNavigationType();
 
-  getTitle () {
-    if (process.platform !== 'darwin') return null
-    const state = this.props.state
-    return (<div className='title ellipsis'>{state.window.title}</div>)
-  }
+  const [canGoBack, setCanGoBack] = React.useState(false);
+  const [canGoForward, setCanGoForward] = React.useState(false);
 
-  getAddButton () {
-    const state = this.props.state
-    if (state.location.url() !== 'home') return null
+  React.useEffect(() => {
+    // Actualiza el estado de navegación cada vez que cambia la ubicación o el tipo de navegación
+    setCanGoBack(navigationType !== 'POP' || location.key !== 'default');
+    setCanGoForward(false); // Se reinicia en cada navegación
+  }, [location, navigationType]);
+
+  const handleBack = () => {
+    if (canGoBack) {
+      navigate(-1);
+      setCanGoForward(true);
+    }
+  };
+
+  const handleForward = () => {
+    if (canGoForward) {
+      navigate(1);
+    }
+  };
+
+  const getTitle = () => {
+    if (process.platform !== 'darwin') return null;
+    return (<div className='title ellipsis'>{state.window.title}</div>);
+  };
+
+  const getAddButton = () => {
+    if (location.pathname !== '/') return null;
     return (
       <i
         className='icon add'
@@ -61,8 +46,45 @@ class Header extends React.Component {
       >
         add
       </i>
-    )
-  }
+    );
+  };
+
+  return (
+    <div
+      className='header'
+      onMouseMove={dispatcher('mediaMouseMoved')}
+      onMouseEnter={dispatcher('mediaControlsMouseEnter')}
+      onMouseLeave={dispatcher('mediaControlsMouseLeave')}
+      role='navigation'
+    >
+      {getTitle()}
+      <div className='nav left float-left'>
+        <i
+          className={`icon back ${canGoBack ? '' : 'disabled'}`}
+          title='Back'
+          onClick={handleBack}
+          role='button'
+          aria-disabled={!canGoBack}
+          aria-label='Back'
+        >
+          chevron_left
+        </i>
+        <i
+          className={`icon forward ${canGoForward ? '' : 'disabled'}`}
+          title='Forward'
+          onClick={handleForward}
+          role='button'
+          aria-disabled={!canGoForward}
+          aria-label='Forward'
+        >
+          chevron_right
+        </i>
+      </div>
+      <div className='nav right float-right'>
+        {getAddButton()}
+      </div>
+    </div>
+  );
 }
 
-module.exports = Header
+module.exports = Header;

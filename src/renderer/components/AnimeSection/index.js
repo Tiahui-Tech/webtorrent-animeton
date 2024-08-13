@@ -1,11 +1,11 @@
 const React = require('react');
-const useAnimeData = require('../../hooks/useAnimeData');
+const useAnimesData = require('../../hooks/useAnimesData');
 
 const AnimeCard = require('./anime');
 const AnimeCardSkeleton = require('./anime-skeleton');
 
 const AnimeSection = ({ state, sectionTitle }) => {
-  const animes = useAnimeData();
+  const animes = useAnimesData();
 
   return (
     <div className="p-8">

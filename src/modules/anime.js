@@ -67,7 +67,7 @@ const findAnilistEpisodeAndTorrent = async (
 
   if (anitomyAnimeMatch && anitomyAnimeMatch.episode_number) {
     const episodeResponse = await fetch(
-      `${API_BASE_URL}/anime/${anilistAnime.idAnil}/${anitomyAnimeMatch.episode_number}`
+      `${API_BASE_URL}/anime/episodes/${anilistAnime.idAnil}/${anitomyAnimeMatch.episode_number}`
     );
     const episodeData = await episodeResponse.json();
 

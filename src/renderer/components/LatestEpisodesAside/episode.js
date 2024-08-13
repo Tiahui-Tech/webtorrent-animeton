@@ -3,9 +3,28 @@ const { Icon } = require('@iconify/react');
 const { Image } = require('@nextui-org/react');
 
 const Episode = React.memo(({ anime }) => {
+  const handlePlay = (anime) => {
+    const hash = anime.torrent.infohash;
+    const torrent = state.saved.torrents.find(
+      (torrent) => torrent.infoHash === hash
+    );
+
+    if (torrent) {
+      return dispatch('playFile', torrent.infoHash);
+    }
+
+    dispatch('addTorrent', anime.torrent.link);
+    setTimeout(() => {
+      dispatch('playFile', hash);
+    }, 1500);
+  };
+
   return (
     <div className="inline-block" style={{ width: 'min-content' }}>
-      <div className="flex flex-col w-[227px] max-w-[227px]">
+      <div
+        className="flex flex-col w-[227px] max-w-[227px]"
+        onClick={() => handlePlay(anime)}
+      >
         <div className="relative cursor-pointer transition-all duration-300 hover:grayscale">
           <Image
             alt="episode-image"

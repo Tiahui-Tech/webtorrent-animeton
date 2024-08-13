@@ -1,107 +1,120 @@
 const React = require('react');
-const createGetter = require('fn-getter');
+const { useState, useEffect } = React;
+const { MemoryRouter, Routes, Route, useLocation } = require('react-router-dom');
 
 const Header = require('../components/header');
 
-// Perf optimization: Needed immediately, so do not lazy load it below
+// Perf optimization: Needed immediately, so do not lazy load it
 const Home = require('./Home');
 const AnimeDetails = require('./AnimeDetails');
 
-const Views = {
-  home: createGetter(() => Home),
-  'anime-details': createGetter(() => AnimeDetails),
-  player: createGetter(() => require('./player-page')),
-  'create-torrent': createGetter(() => require('./create-torrent-page')),
-  preferences: createGetter(() => require('./preferences-page'))
-};
+const Player = React.lazy(() => require('./player-page'));
+const CreateTorrent = React.lazy(() => require('./create-torrent-page'));
+const Preferences = require('./preferences-page');
 
 const Modals = {
-  'open-torrent-address-modal': createGetter(() =>
+  'open-torrent-address-modal': React.lazy(() =>
     require('../components/open-torrent-address-modal')
   ),
-  'remove-torrent-modal': createGetter(() =>
+  'remove-torrent-modal': React.lazy(() =>
     require('../components/remove-torrent-modal')
   ),
-  'update-available-modal': createGetter(() =>
+  'update-available-modal': React.lazy(() =>
     require('../components/update-available-modal')
   ),
-  'unsupported-media-modal': createGetter(() =>
+  'unsupported-media-modal': React.lazy(() =>
     require('../components/unsupported-media-modal')
   ),
-  'delete-all-torrents-modal': createGetter(() =>
+  'delete-all-torrents-modal': React.lazy(() =>
     require('../components/delete-all-torrents-modal')
   )
 };
 
-class App extends React.Component {
-  render() {
-    const state = this.props.state;
+function App({ initialState, onUpdate }) {
+  return (
+    <MemoryRouter initialEntries={['/']}>
+      <AppContent initialState={initialState} onUpdate={onUpdate} />
+    </MemoryRouter>
+  );
+}
 
-    const hideControls = state.shouldHidePlayerControls();
+function AppContent({ initialState, onUpdate }) {
+  const [state, setState] = useState(initialState);
+  const location = useLocation();
 
-    const cls = ['view-' + state.location.url(), 'is-' + process.platform];
-    if (state.window.isFullScreen) cls.push('is-fullscreen');
-    if (state.window.isFocused) cls.push('is-focused');
-    if (hideControls) cls.push('hide-video-controls');
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setState(prevState => {
+        const newState = { ...prevState /* actualiza el estado aquí */ };
+        onUpdate(newState);
+        return newState;
+      });
+    }, 1000);
 
-    return (
-      <main className="dark text-foreground bg-background min-h-screen overflow-y-auto">
-        <div className={'app'}>
-          <Header state={state} />
-          {this.getErrorPopover()}
-          <div key="content" className="content">
-            {this.getView()}
-          </div>
-          {this.getModal()}
+    return () => clearInterval(intervalId);
+  }, [onUpdate]);
+
+  const hideControls = state.shouldHidePlayerControls();
+
+  const cls = ['view-' + location.pathname.slice(1), 'is-' + process.platform];
+  if (state.window.isFullScreen) cls.push('is-fullscreen');
+  if (state.window.isFocused) cls.push('is-focused');
+  if (hideControls) cls.push('hide-video-controls');
+
+  return (
+    <main className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}>
+      <div className={'app'}>
+        <Header state={state} />
+        <ErrorPopover state={state} />
+        <div key="content" className="content">
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<Home state={state} />} />
+              <Route path="/anime-details/:idAnil" element={<AnimeDetails state={state} />} />
+              <Route path="/player" element={<Player state={state} />} />
+              <Route path="/create-torrent" element={<CreateTorrent state={state} />} />
+              <Route path="/preferences" element={<Preferences state={state} />} />
+            </Routes>
+          </React.Suspense>
         </div>
-      </main>
-    );
-  }
-
-  getErrorPopover() {
-    const state = this.props.state;
-    const now = new Date().getTime();
-    const recentErrors = state.errors.filter((x) => now - x.time < 5000);
-    const hasErrors = recentErrors.length > 0;
-
-    const errorElems = recentErrors.map((error, i) => (
-      <div key={i} className="error">
-        {error.message}
+        <Modal state={state} />
       </div>
-    ));
-    return (
-      <div
-        key="errors"
-        className={'error-popover ' + (hasErrors ? 'visible' : 'hidden')}
-      >
-        <div key="title" className="title">
-          Error
-        </div>
-        {errorElems}
-      </div>
-    );
-  }
+    </main>
+  );
+}
 
-  getModal() {
-    const state = this.props.state;
-    if (!state.modal) return;
+function ErrorPopover({ state }) {
+  const now = new Date().getTime();
+  const recentErrors = state.errors.filter((x) => now - x.time < 5000);
+  const hasErrors = recentErrors.length > 0;
 
-    const ModalContents = Modals[state.modal.id]();
-    return (
-      <div key="modal" className="modal">
-        <div key="modal-background" className="modal-background" />
-        <div key="modal-content" className="modal-content">
+  if (!hasErrors) return null;
+
+  return (
+    <div key="errors" className="error-popover visible">
+      <div key="title" className="title">Error</div>
+      {recentErrors.map((error, i) => (
+        <div key={i} className="error">{error.message}</div>
+      ))}
+    </div>
+  );
+}
+
+function Modal({ state }) {
+  if (!state.modal) return null;
+
+  const ModalContents = Modals[state.modal.id];
+
+  return (
+    <div key="modal" className="modal">
+      <div key="modal-background" className="modal-background" />
+      <div key="modal-content" className="modal-content">
+        <React.Suspense fallback={<div>Loading modal...</div>}>
           <ModalContents state={state} />
-        </div>
+        </React.Suspense>
       </div>
-    );
-  }
-
-  getView() {
-    const state = this.props.state;
-    const View = Views[state.location.url()]();
-    return <View state={state} />;
-  }
+    </div>
+  );
 }
 
 module.exports = App;

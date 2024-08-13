@@ -58,9 +58,6 @@ let Cast = null;
 // All other state is ephemeral. First we load state.saved then initialize the app.
 let state;
 
-// Root React component
-let app;
-
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like
 // the dock icon and drag+drop.
@@ -118,43 +115,31 @@ function onState(err, _state) {
     })
   };
 
-  // Add first page to location history
-  state.location.go({
-    url: 'home',
-    setup: (cb) => {
-      state.window.title = config.APP_WINDOW_TITLE;
-      cb(null);
-    }
-  });
-
   // Give global trackers
   setGlobalTrackers();
 
   // Restart everything we were torrenting last time the app ran
   resumeTorrents();
 
-  // // Laod RSS animes
-  // loadRSSTorrentsAnimes()
-
   // Initialize ReactDOM
   const container = document.querySelector('#body');
   const root = createRoot(container);
 
+  function handleUpdate(newState) {
+    state = window.state = newState;
+    updateElectron();
+  }
+
   root.render(
     <NextUIProvider>
-      <App
-        state={state}
-        ref={(elem) => {
-          app = elem;
-        }}
-      />
+      <App initialState={state} onUpdate={handleUpdate} />
     </NextUIProvider>
   );
 
   // Calling update() updates the UI given the current state
   // Do this at least once a second to give every file in every torrentSummary
   // a progress bar and to keep the cursor in sync when playing a video
-  setInterval(update, 1000);
+  // setInterval(update, 1000);
 
   // Listen for messages from the main process
   setupIpc();
@@ -190,10 +175,6 @@ function onState(err, _state) {
   // ...focus and blur. Needed to show correct dock icon text ('badge') in OSX
   window.addEventListener('focus', onFocus);
   window.addEventListener('blur', onBlur);
-
-  if (electron.remote.getCurrentWindow().isVisible()) {
-    sound.play('STARTUP');
-  }
 
   // To keep app startup fast, some code is delayed.
   window.setTimeout(delayedInit, config.DELAYED_INIT);
@@ -236,8 +217,6 @@ function lazyLoadCast() {
 // 4. controller - the controller handles the event, changing the state object
 function update() {
   controllers.playback().showOrHidePlayerControls();
-  app.setState(state);
-  updateElectron();
 }
 
 // Some state changes can't be reflected in the DOM, instead we have to

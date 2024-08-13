@@ -7,7 +7,7 @@ const useAnimeEpisodesData = (idAnil) => {
   const fetchAnimeEpisodes = useCallback(async () => {
     if (!idAnil) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/anime/${idAnil}`);
+      const response = await fetch(`${API_BASE_URL}/anime/episodes/${idAnil}`);
       const data = await response.json();
       setEpisodes(data.episodes);
     } catch (error) {
