@@ -77,8 +77,6 @@ function getConfigPath () {
   if (IS_PORTABLE) {
     return PORTABLE_PATH
   } else {
-    console.log(appConfig.filePath);
-    
     return path.dirname(appConfig.filePath)
   }
 }

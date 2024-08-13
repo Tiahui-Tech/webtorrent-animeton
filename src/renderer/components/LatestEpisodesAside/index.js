@@ -22,6 +22,7 @@ const LatestEpisodes = React.memo(({ bannerColors, sectionTitle }) => {
           ? rssAnimes.map((anime, i) => (
               <Episode anime={anime} key={`rss-episode-${i}`} />
             ))
+          // While loading, shows 8 EpisodeSkeletons per row
           : Array.from({ length: 8 }).map((_, i) => (
               <EpisodeSkeleton
                 color={bannerColors[0]}

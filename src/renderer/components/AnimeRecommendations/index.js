@@ -2,12 +2,13 @@ const React = require('react');
 const { Divider } = require('@nextui-org/react');
 
 const { genGlassStyle } = require('../../../modules/utils');
-const AnimeCard = require('../../components/AnimeSection/anime');
+const AnimeCard = require('../AnimeSection/anime');
+const AnimeCardSkeleton = require('../AnimeSection/skeleton');
 
 const useAnimeRecommendations = require('../../hooks/useAnimeRecommendations');
 
-const AnimeRecommendations = React.memo(({ idAnil, color, sectionTitle }) => {
-  const recommendations = useAnimeRecommendations(idAnil);
+const AnimeRecommendations = React.memo(({ idAnilist, color, sectionTitle }) => {
+  const recommendations = useAnimeRecommendations(idAnilist);
 
   return (
     <div className="flex flex-col gap-2 z-30 items-start">
@@ -18,19 +19,15 @@ const AnimeRecommendations = React.memo(({ idAnil, color, sectionTitle }) => {
       <Divider orientation="horizontal" />
 
       <div className="flex flex-col gap-6 p-6" style={genGlassStyle(color)}>
-        {recommendations ? (
-          <>
-            {recommendations.map((anime, i) => (
-              <AnimeCard
-                anime={anime}
-                state={state}
-                glassStyle={genGlassStyle('#575757')}
-                key={`anim-recomm-${idAnil}-${i}`}
-              />
-            ))}
-          </>
-        ) : (
-          <></>
+        {recommendations ? (recommendations.map((anime, i) => (
+          <AnimeCard
+            anime={anime}
+            state={state}
+            glassStyle={genGlassStyle('#575757')}
+            key={`anim-recomm-${idAnilist}-${i}`}
+          />
+        ))) : (
+          <AnimeCardSkeleton />
         )}
       </div>
     </div>

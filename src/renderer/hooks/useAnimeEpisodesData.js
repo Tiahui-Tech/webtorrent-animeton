@@ -1,19 +1,19 @@
 const { useEffect, useState, useCallback } = require('react');
 const { API_BASE_URL } = require('../../constants/config');
 
-const useAnimeEpisodesData = (idAnil) => {
+const useAnimeEpisodesData = (idAnilist) => {
   const [episodes, setEpisodes] = useState([]);
 
   const fetchAnimeEpisodes = useCallback(async () => {
-    if (!idAnil) return;
+    if (!idAnilist) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/anime/episodes/${idAnil}`);
+      const response = await fetch(`${API_BASE_URL}/anime/episodes/${idAnilist}`);
       const data = await response.json();
       setEpisodes(data.episodes);
     } catch (error) {
       console.error('Error fetching anime data:', error);
     }
-  }, [idAnil]);
+  }, [idAnilist]);
 
   useEffect(() => {
     fetchAnimeEpisodes();

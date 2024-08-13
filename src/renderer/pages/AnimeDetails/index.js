@@ -14,7 +14,7 @@ const AnimeRecommendations = require('../../components/AnimeRecommendations');
 const AnimeDetails = ({ state }) => {
   const [isLoading, setIsLoading] = useState(true);
 
-  const { idAnil } = useParams();
+  const { idAnilist } = useParams();
   const location = useLocation();
   const animeTitle = location.state?.title || 'Información del Anime';
 
@@ -22,7 +22,7 @@ const AnimeDetails = ({ state }) => {
     state.window.title = animeTitle;
   }, [state.window, animeTitle]);
 
-  const anime = useAnimeDetails(idAnil);
+  const anime = useAnimeDetails(idAnilist);
 
   const { animeColors, textColor } = useExtractColor(
     anime?.coverImage?.extraLarge || ''
@@ -62,12 +62,12 @@ const AnimeDetails = ({ state }) => {
         />
         <div className="flex flex-row gap-16 p-8 pt-0 justify-between items-start h-full">
           <AnimeRecommendations
-            idAnil={idAnil}
+            idAnilist={idAnilist}
             color={animeColors[0]}
             sectionTitle="Animes Similares"
           />
           <AnimeEpisodes
-            idAnil={idAnil}
+            idAnilist={idAnilist}
             animeColors={animeColors}
             sectionTitle="Episodios"
           />

@@ -1,7 +1,7 @@
 const React = require('react');
 const { Skeleton } = require('@nextui-org/react');
 
-const EpisodeSkeleton = React.memo(({ color }) => {
+const EpisodeSkeleton = ({ color }) => {
   return (
     <div className="inline-block" style={{ width: 'min-content' }}>
       <div className="flex flex-col w-[227px] max-w-[227px]">
@@ -36,6 +36,6 @@ const EpisodeSkeleton = React.memo(({ color }) => {
       </div>
     </div>
   );
-});
+};
 
 module.exports = EpisodeSkeleton;

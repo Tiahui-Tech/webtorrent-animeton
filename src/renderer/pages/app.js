@@ -70,7 +70,7 @@ function AppContent({ initialState, onUpdate }) {
           <React.Suspense fallback={<div>Loading...</div>}>
             <Routes>
               <Route path="/" element={<Home state={state} />} />
-              <Route path="/anime-details/:idAnil" element={<AnimeDetails state={state} />} />
+              <Route path="/anime-details/:idAnilist" element={<AnimeDetails state={state} />} />
               <Route path="/player" element={<Player state={state} />} />
               <Route path="/create-torrent" element={<CreateTorrent state={state} />} />
               <Route path="/preferences" element={<Preferences state={state} />} />

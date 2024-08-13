@@ -8,8 +8,8 @@ const { genGlassStyle } = require('../../../modules/utils');
 
 const EpisodesList = require('../EpisodesList');
 
-const AnimeEpisodes = ({ idAnil, animeColors, sectionTitle }) => {
-  const episodesData = useAnimeEpisodesData(idAnil);
+const AnimeEpisodes = ({ idAnilist, animeColors, sectionTitle }) => {
+  const episodesData = useAnimeEpisodesData(idAnilist);
   const [isReversed, setIsReversed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 

@@ -16,7 +16,7 @@ const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
   const navigate = useNavigate();
 
   const handleAnimeClick = (anime) => {
-    navigate(`/anime-details/${anime.idAnil}`, {
+    navigate(`/anime-details/${anime.idAnilist}`, {
       state: { title: anime.title.romaji }
     });
   };

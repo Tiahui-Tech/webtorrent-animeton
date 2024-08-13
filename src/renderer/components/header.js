@@ -1,20 +1,21 @@
 const React = require('react');
+const { useState, useEffect } = require('react');
 const { useNavigate, useLocation, useNavigationType } = require('react-router-dom');
 
 const { dispatcher } = require('../lib/dispatcher');
 
-function Header({ state }) {
+const Header = ({ state }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigationType = useNavigationType();
 
-  const [canGoBack, setCanGoBack] = React.useState(false);
-  const [canGoForward, setCanGoForward] = React.useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoForward, setCanGoForward] = useState(false);
 
-  React.useEffect(() => {
-    // Actualiza el estado de navegación cada vez que cambia la ubicación o el tipo de navegación
+  useEffect(() => {
+    // Updates the navigation state every time the location or navigation type changes
     setCanGoBack(navigationType !== 'POP' || location.key !== 'default');
-    setCanGoForward(false); // Se reinicia en cada navegación
+    setCanGoForward(false); // Reset on each navigation
   }, [location, navigationType]);
 
   const handleBack = () => {
@@ -30,25 +31,6 @@ function Header({ state }) {
     }
   };
 
-  const getTitle = () => {
-    if (process.platform !== 'darwin') return null;
-    return (<div className='title ellipsis'>{state.window.title}</div>);
-  };
-
-  const getAddButton = () => {
-    if (location.pathname !== '/') return null;
-    return (
-      <i
-        className='icon add'
-        title='Add torrent'
-        onClick={dispatcher('openFiles')}
-        role='button'
-      >
-        add
-      </i>
-    );
-  };
-
   return (
     <div
       className='header'
@@ -57,7 +39,11 @@ function Header({ state }) {
       onMouseLeave={dispatcher('mediaControlsMouseLeave')}
       role='navigation'
     >
-      {getTitle()}
+      {process.platform === 'darwin' && (
+        <div className="title ellipsis" title={state.window.title}>
+          {state.window.title}
+        </div>
+      )}
       <div className='nav left float-left'>
         <i
           className={`icon back ${canGoBack ? '' : 'disabled'}`}
@@ -79,9 +65,6 @@ function Header({ state }) {
         >
           chevron_right
         </i>
-      </div>
-      <div className='nav right float-right'>
-        {getAddButton()}
       </div>
     </div>
   );
