@@ -1,4 +1,5 @@
 const React = require('react');
+const { useNavigate } = require('react-router-dom');
 const { getFormatIcon } = require('../../../modules/utils');
 const { STATUS_LABELS, STATUS_COLORS } = require('../../../constants/anime');
 
@@ -11,20 +12,21 @@ const {
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 
-const AnimeCard = React.memo(({ anime, state }) => {
+const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
+  const navigate = useNavigate();
+
+  const handleAnimeClick = (anime) => {
+    navigate(`/anime/${anime.idAnilist}`, {
+      state: { title: anime.title.romaji }
+    });
+  };
+
   return (
     <Card
       className="w-64 transition duration-300 ease-in-out hover:scale-105"
+      style={glassStyle ?? {}}
       isPressable
-      onPress={() =>
-        state.location.go({
-          url: 'anime-details',
-          setup: (cb) => {
-            state.window.title = 'Anime Details';
-            cb(null);
-          }
-        })
-      }
+      onPress={() => handleAnimeClick(anime)}
     >
       <CardBody className="p-0 relative">
         <Image
