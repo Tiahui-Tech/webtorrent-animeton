@@ -2,7 +2,7 @@ const React = require('react');
 const useAnimesData = require('../../hooks/useAnimesData');
 
 const AnimeCard = require('./anime');
-const AnimeCardSkeleton = require('./anime-skeleton');
+const AnimeCardSkeleton = require('./skeleton');
 
 const AnimeSection = ({ state, sectionTitle }) => {
   const animes = useAnimesData();
