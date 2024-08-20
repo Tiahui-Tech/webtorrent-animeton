@@ -9,7 +9,7 @@ const AnimeSection = ({ state, sectionTitle }) => {
 
   return (
     <div className="p-8">
-      <h2 className="mb-4 text-2xl font-bold">{sectionTitle}</h2>
+      <h2 className="relative mb-4 text-2xl font-bold z-10">{sectionTitle}</h2>
       <div className="grid grid-cols-6 auto-rows-max gap-8 justify-center items-center">
         {animes
           ? animes.map((anime, i) => (

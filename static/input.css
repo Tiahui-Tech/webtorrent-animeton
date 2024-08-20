@@ -14,7 +14,6 @@
 
 html,
 body {
-  background: rgb(24, 24, 24);
   cursor: default;
   height: 100%;
   margin: 0;
@@ -67,12 +66,12 @@ table {
   height: 100%;
   display: flex;
   flex-flow: column;
-  background: rgb(20, 20, 20);
+  background: rgb(0, 0, 0);
   animation: fadein 0.5s;
 }
 
 .app:not(.is-focused) {
-  background: rgb(20, 20, 20);
+  background: rgb(0, 0, 0);
 }
 
 /*
