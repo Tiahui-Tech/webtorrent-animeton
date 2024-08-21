@@ -33,11 +33,12 @@ const config = require('../config');
 const telemetry = require('./lib/telemetry');
 const sound = require('./lib/sound');
 const TorrentPlayer = require('./lib/torrent-player');
+const eventBus = require('./lib/event-bus');
 
 // Perf optimization: Needed immediately, so do not lazy load it below
 const TorrentListController = require('./controllers/torrent-list-controller');
 
-const App = require('./pages/app');
+const { App } = require('./pages/app');
 
 // Electron apps have two processes: a main process (node) runs first and starts
 // a renderer process (essentially a Chrome window). We're in the renderer process,
@@ -58,6 +59,10 @@ let Cast = null;
 // All other state is ephemeral. First we load state.saved then initialize the app.
 let state;
 
+function handleUpdate(newState) {
+  state = window.state = newState;
+  eventBus.emit('stateUpdate', newState);
+}
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like
 // the dock icon and drag+drop.
@@ -124,11 +129,6 @@ function onState(err, _state) {
   // Initialize ReactDOM
   const container = document.querySelector('#body');
   const root = createRoot(container);
-
-  function handleUpdate(newState) {
-    state = window.state = newState;
-    updateElectron();
-  }
 
   root.render(
     <NextUIProvider>
@@ -217,6 +217,8 @@ function lazyLoadCast() {
 // 4. controller - the controller handles the event, changing the state object
 function update() {
   controllers.playback().showOrHidePlayerControls();
+  updateElectron();
+  handleUpdate(state);
 }
 
 // Some state changes can't be reflected in the DOM, instead we have to
