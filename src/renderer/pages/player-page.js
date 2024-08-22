@@ -196,7 +196,7 @@ function renderMedia(state) {
       onMouseMove={dispatcher('mediaMouseMoved')}
     >
       {mediaTag}
-      {renderOverlay(state)}
+      {/* {renderOverlay(state)} */}
     </div>
   );
 
@@ -307,7 +307,7 @@ function renderTrack(common, key) {
 
 function renderAudioMetadata(state) {
   const fileSummary = state.getPlayingFileSummary();
-  if (!fileSummary.audioInfo) return;
+  if (!fileSummary?.audioInfo) return;
   const common = fileSummary.audioInfo.common || {};
 
   // Get audio track info

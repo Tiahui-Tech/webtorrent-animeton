@@ -63,7 +63,6 @@ let state;
 function handleUpdate(newState) {
   state = window.state = newState;
   eventBus.emit('stateUpdate', newState);
-  console.log('received state update', newState);
 }
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like
