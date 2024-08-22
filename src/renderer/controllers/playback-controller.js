@@ -147,8 +147,9 @@ module.exports = class PlaybackController {
   }
 
   // Skip specified number of seconds (backwards if negative)
-  skip(time) {
-    this.skipTo(this.state.playing.currentTime + time)
+  skip(timeValue) {
+    const time = this.state.playing.currentTime + timeValue
+    this.skipTo(time || 0)
   }
 
   // Skip (aka seek) to a specific point, in seconds
@@ -330,13 +331,13 @@ module.exports = class PlaybackController {
     // play in VLC if set as default player (Preferences / Playback / Play in VLC)
     if (this.state.saved.prefs.openExternalPlayer) {
       dispatch('openExternalPlayer')
-      this.update()
+      this.update(state)
       cb()
       return
     }
 
     // otherwise, play the video
-    this.update()
+    this.update(state)
 
     ipcRenderer.send('onPlayerUpdate', Playlist.hasNext(state), Playlist.hasPrevious(state))
     cb()
