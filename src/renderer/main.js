@@ -24,6 +24,7 @@ const createGetter = require('fn-getter');
 const debounce = require('debounce');
 const dragDrop = require('drag-drop');
 const electron = require('electron');
+const remote = require('@electron/remote')
 const fs = require('fs');
 const React = require('react');
 const { createRoot } = require('react-dom/client');
@@ -62,6 +63,7 @@ let state;
 function handleUpdate(newState) {
   state = window.state = newState;
   eventBus.emit('stateUpdate', newState);
+  console.log('received state update', newState);
 }
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like
@@ -215,10 +217,10 @@ function lazyLoadCast() {
 // 2. event - might be a click or other DOM event, or something external
 // 3. dispatch - the event handler calls dispatch(), main.js sends it to a controller
 // 4. controller - the controller handles the event, changing the state object
-function update() {
+function update(newState = state) {
+  handleUpdate(newState);
   controllers.playback().showOrHidePlayerControls();
   updateElectron();
-  handleUpdate(state);
 }
 
 // Some state changes can't be reflected in the DOM, instead we have to
@@ -471,7 +473,7 @@ function resumeTorrents() {
 // Set window dimensions to match video dimensions or fill the screen
 function setDimensions(dimensions) {
   // Don't modify the window size if it's already maximized
-  if (electron.remote.getCurrentWindow().isMaximized()) {
+  if (remote.getCurrentWindow().isMaximized()) {
     state.window.bounds = null;
     return;
   }
@@ -483,7 +485,7 @@ function setDimensions(dimensions) {
     width: window.outerWidth,
     height: window.outerHeight
   };
-  state.window.wasMaximized = electron.remote.getCurrentWindow().isMaximized;
+  state.window.wasMaximized = remote.getCurrentWindow().isMaximized;
 
   // Limit window size to screen size
   const screenWidth = window.screen.width;

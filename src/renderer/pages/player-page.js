@@ -14,7 +14,7 @@ const { calculateEta } = require('../lib/time');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
-  console.log('Player state', state)
+  // console.log('Player state', state)
   const location = useLocation();
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
@@ -393,7 +393,7 @@ function renderAudioMetadata(state) {
   if (
     fileSummary.audioInfo.format.codec &&
     fileSummary.audioInfo.format.container !==
-      fileSummary.audioInfo.format.codec
+    fileSummary.audioInfo.format.codec
   ) {
     format.push(fileSummary.audioInfo.format.codec);
   }
@@ -969,7 +969,9 @@ function renderPreview(state) {
 
   const previewEl = document.querySelector('video#preview');
   if (previewEl !== null && previewXCoord !== null) {
-    previewEl.currentTime = time ?? 0;
+    // Check if time is a valid, finite number
+    const validTime = (typeof time === 'number' && isFinite(time)) ? time : 0;
+    previewEl.currentTime = validTime;
 
     // Auto adjust width to maintain video aspect ratio
     width = Math.floor((previewEl.videoWidth / previewEl.videoHeight) * height);
