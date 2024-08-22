@@ -379,7 +379,7 @@ module.exports = class PlaybackController {
       dispatch('resumePausedTorrents')
     }
 
-    this.update()
+    this.update(state)
   }
 }
 
