@@ -44,7 +44,7 @@ function isMagnetLink (link) {
 }
 
 function getFileExtension (file) {
-  const name = typeof file === 'string' ? file : file.name
+  const name = typeof file === 'string' ? file : file?.name || 'Anime Name'
   return path.extname(name).toLowerCase()
 }
 

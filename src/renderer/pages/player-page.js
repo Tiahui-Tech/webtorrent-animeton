@@ -1,8 +1,10 @@
 /* globals MediaMetadata */
 
 const React = require('react');
+const { useEffect, useRef } = React;
 const BitField = require('bitfield').default;
 const prettyBytes = require('prettier-bytes');
+const { useLocation } = require('react-router-dom');
 
 const TorrentSummary = require('../lib/torrent-summary');
 const Playlist = require('../lib/playlist');
@@ -11,37 +13,54 @@ const config = require('../../config');
 const { calculateEta } = require('../lib/time');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
-module.exports = class Player extends React.Component {
-  render() {
-    // Show the video as large as will fit in the window, play immediately
-    // If the video is on Chromecast or Airplay, show a title screen instead
-    const state = this.props.state;
-    const showVideo = state.playing.location === 'local';
-    const showControls = state.playing.location !== 'external';
-    return (
-      <div
-        className="player"
-        onWheel={handleVolumeWheel}
-        onMouseMove={dispatcher('mediaMouseMoved')}
-      >
-        {showVideo ? renderMedia(state) : renderCastScreen(state)}
-        {showControls ? renderPlayerControls(state) : null}
-      </div>
-    );
-  }
+function Player({ state }) {
+  // console.log('Player state', state)
+  const location = useLocation();
+  const { setup, destroy } = location.state || {};
+  const playerRef = useRef(null);
 
-  onComponentWillUnmount() {
-    // Unload the media element so that Chromium stops trying to fetch data
-    const tag = document.querySelector('audio,video');
-    if (!tag) return;
-    tag.pause();
-    tag.src = '';
-    tag.load();
-    navigator.mediaSession.metadata = null;
-  }
-};
+  useEffect(() => {
+    if (setup) {
+      setup((err) => {
+        if (err) dispatch('error', err);
+      });
+    }
 
-// Handles volume change by wheel
+    return () => {
+      if (destroy) {
+        destroy();
+      }
+      // Unload the media element so that Chromium stops trying to fetch data
+      const tag = document.querySelector('audio,video');
+      if (tag) {
+        tag.pause();
+        tag.src = '';
+        tag.load();
+        navigator.mediaSession.metadata = null;
+      }
+    };
+  }, [setup, destroy]);
+
+  // Show the video as large as will fit in the window, play immediately
+  // If the video is on Chromecast or Airplay, show a title screen instead
+  const showVideo = state.playing.location === 'local';
+  const showControls = state.playing.location !== 'external';
+
+  return (
+    <div
+      className="player"
+      onWheel={handleVolumeWheel}
+      onMouseMove={dispatcher('mediaMouseMoved')}
+      ref={playerRef}
+    >
+      {showVideo ? renderMedia(state) : renderCastScreen(state)}
+      {showControls ? renderPlayerControls(state) : null}
+    </div>
+  );
+}
+
+module.exports = Player;
+
 function handleVolumeWheel(e) {
   dispatch('changeVolume', (-e.deltaY | e.deltaX) / 500);
 }
@@ -177,7 +196,7 @@ function renderMedia(state) {
       onMouseMove={dispatcher('mediaMouseMoved')}
     >
       {mediaTag}
-      {renderOverlay(state)}
+      {/* {renderOverlay(state)} */}
     </div>
   );
 
@@ -288,7 +307,7 @@ function renderTrack(common, key) {
 
 function renderAudioMetadata(state) {
   const fileSummary = state.getPlayingFileSummary();
-  if (!fileSummary.audioInfo) return;
+  if (!fileSummary?.audioInfo) return;
   const common = fileSummary.audioInfo.common || {};
 
   // Get audio track info
@@ -374,7 +393,7 @@ function renderAudioMetadata(state) {
   if (
     fileSummary.audioInfo.format.codec &&
     fileSummary.audioInfo.format.container !==
-      fileSummary.audioInfo.format.codec
+    fileSummary.audioInfo.format.codec
   ) {
     format.push(fileSummary.audioInfo.format.codec);
   }
@@ -950,7 +969,9 @@ function renderPreview(state) {
 
   const previewEl = document.querySelector('video#preview');
   if (previewEl !== null && previewXCoord !== null) {
-    previewEl.currentTime = time ?? 0;
+    // Check if time is a valid, finite number
+    const validTime = (typeof time === 'number' && isFinite(time)) ? time : 0;
+    previewEl.currentTime = validTime;
 
     // Auto adjust width to maintain video aspect ratio
     width = Math.floor((previewEl.videoWidth / previewEl.videoHeight) * height);
@@ -1000,7 +1021,7 @@ function renderLoadingBar(state) {
   if (config.IS_TEST) return; // Don't integration test the loading bar. Screenshots won't match.
 
   const torrentSummary = state.getPlayingTorrentSummary();
-  if (!torrentSummary.progress) {
+  if (!torrentSummary?.progress) {
     return null;
   }
 

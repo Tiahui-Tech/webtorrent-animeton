@@ -5,7 +5,7 @@ const Marquee = require('../MagicUI/Marquee');
 const EpisodeCard = require('./episode');
 const EpisodeCardSkeleton = require('./skeleton');
 
-const LatestEpisodes = ({ state, sectionTitle }) => {
+const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
   const rssAnimes = useRSSData({
     page: 1,
     perPage: 10,
@@ -31,6 +31,6 @@ const LatestEpisodes = ({ state, sectionTitle }) => {
       </Marquee>
     </div>
   );
-};
+});
 
 module.exports = LatestEpisodes;
