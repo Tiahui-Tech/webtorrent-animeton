@@ -34,7 +34,8 @@ const AnimeDetails = ({ state }) => {
   const backgroundConfig = useMemo(
     () => ({
       primaryColor: animeColors ? animeColors[0] : null,
-      secondaryColor: bannerColors ? bannerColors[0] : null
+      secondaryColor: bannerColors ? bannerColors[0] : null,
+      opacity: 0.6
     }),
     [animeColors, bannerColors]
   );

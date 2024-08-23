@@ -4,6 +4,8 @@ async function genModernBackground(options = {}) {
     height = 1080,
     primaryColor,
     secondaryColor,
+    disablePattern = false,
+    opacity = 1
   } = options;
 
   const canvas = document.createElement('canvas');
@@ -12,7 +14,7 @@ async function genModernBackground(options = {}) {
   const ctx = canvas.getContext('2d');
 
   ctx.filter = 'blur(300px)';
-  ctx.globalAlpha = 0.6;
+  ctx.globalAlpha = opacity;
 
   ctx.fillStyle = primaryColor;
   ctx.beginPath();
@@ -45,7 +47,8 @@ async function genModernBackground(options = {}) {
     width,
     height,
     primaryColor,
-    secondaryColor
+    secondaryColor,
+    disablePattern
   );
 
   return finishedCanvas;
@@ -56,15 +59,20 @@ async function moreBlur(
   width,
   height,
   primaryColor,
-  secondaryColor
+  secondaryColor,
+  disablePattern
 ) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d');
 
-  const pattern = await genPattern(width, height, primaryColor, secondaryColor);
-  ctx.drawImage(pattern, 0, 0);
+  console.log('disablePattern', disablePattern);
+
+  if (!disablePattern) {
+    const pattern = await genPattern(width, height, primaryColor, secondaryColor);
+    ctx.drawImage(pattern, 0, 0);
+  }
 
   ctx.filter = 'blur(50px)';
   ctx.drawImage(

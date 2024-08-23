@@ -9,6 +9,8 @@ const Home = ({ state }) => {
   const background = useModernBackground({
     primaryColor: '#00d9ff',
     secondaryColor: '#ff00ea',
+    disablePattern: true,
+    opacity: 0.3
   });
 
   return (
