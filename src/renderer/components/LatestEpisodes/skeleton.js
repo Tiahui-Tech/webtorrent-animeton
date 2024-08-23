@@ -22,7 +22,7 @@ const EpisodeCardSkeleton = () => {
             </Skeleton>
           </CardHeader>
           <CardBody
-            className="w-[400px] h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 z-50 cursor-pointer"
+            className="w-[364px] h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 z-50 cursor-pointer"
           >
             <Skeleton className="w-full">
               <div className="aspect-[16/9] rounded-t-lg bg-default-300"></div>

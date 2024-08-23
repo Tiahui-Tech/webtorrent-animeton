@@ -29,9 +29,9 @@ const Episode = React.memo(({ anime }) => {
           <Image
             alt="episode-image"
             src={
-              anime.episode.image ||
-              anime.bannerImage ||
-              anime.coverImage.extraLarge
+              anime?.episode?.image ||
+              anime?.bannerImage ||
+              anime?.coverImage?.extraLarge
             }
             className="aspect-video object-cover w-auto h-32"
           />
@@ -41,10 +41,10 @@ const Episode = React.memo(({ anime }) => {
         </div>
         <div className="flex flex-row justify-between mt-1 overflow-hidden">
           <p className="text-base text-left font-medium truncate flex-grow min-w-0">
-            {`${anime.title.romaji}`}
+            {`${anime?.title?.romaji}`}
           </p>
           <p className="text-base text-right text-gray-400 whitespace-nowrap ml-2 flex-shrink-0">
-            {`${anime.duration || anime.episode.runtime || anime.episode.length} mins`}
+              {`${anime?.duration || anime?.episode?.runtime || anime?.episode?.length} mins`}
           </p>
         </div>
       </div>
