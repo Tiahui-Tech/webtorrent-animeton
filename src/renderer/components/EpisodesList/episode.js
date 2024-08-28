@@ -6,7 +6,7 @@ const { genGlassStyle } = require('../../../modules/utils');
 const EpisodeCard = React.memo(({ episode, animeColor }) => {
   return (
     <Card
-      className="w-full z-30 relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card"
+      className="w-full relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card"
       style={genGlassStyle(animeColor)}
     >
       <CardBody className="flex flex-row relative gap-4 justify-start">

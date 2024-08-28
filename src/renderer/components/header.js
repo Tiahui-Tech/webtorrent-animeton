@@ -1,8 +1,9 @@
 const React = require('react');
 const { useState, useEffect } = require('react');
 const { useNavigate, useLocation, useNavigationType } = require('react-router-dom');
-
-const { dispatcher } = require('../lib/dispatcher');
+const ShineBorder = require('../components/MagicUI/effects/ShineBorder');
+const SparklesText = require('../components/MagicUI/effects/SparklesText');
+const { Icon } = require('@iconify/react');
 
 const Header = ({ state }) => {
   const navigate = useNavigate();
@@ -18,55 +19,45 @@ const Header = ({ state }) => {
     setCanGoForward(false); // Reset on each navigation
   }, [location, navigationType]);
 
-  const handleBack = () => {
+  const handleBack = (e) => {
+    e.preventDefault();
     if (canGoBack) {
       navigate(-1);
       setCanGoForward(true);
     }
   };
 
-  const handleForward = () => {
+  const handleForward = (e) => {
+    e.preventDefault();
     if (canGoForward) {
       navigate(1);
     }
   };
 
   return (
-    <div
-      className='header'
-      onMouseMove={dispatcher('mediaMouseMoved')}
-      onMouseEnter={dispatcher('mediaControlsMouseEnter')}
-      onMouseLeave={dispatcher('mediaControlsMouseLeave')}
-      role='navigation'
+    <ShineBorder
+      color={['#FE8FB5', '#7be5ff']}
+      className="fixed w-full bg-zinc-900 overflow-hidden flex top-0 left-0 right-0 py-2 px-8 z-50"
     >
-      {process.platform === 'darwin' && (
-        <div className="title ellipsis" title={state.window.title}>
-          {state.window.title}
+      <div className="flex flex-row w-full h-full justify-between items-center">
+        <div className="flex flex-row items-center gap-2">
+          <button onClick={handleBack} disabled={!canGoBack} className={`focus:outline-none ${canGoBack ? "cursor-pointer" : "cursor-not-allowed"}`}>
+            <Icon icon="gravity-ui:chevron-left" width="28" height="28" className={canGoBack ? "text-white" : "text-gray-500"} />
+          </button>
+          <button onClick={handleForward} disabled={!canGoForward} className={`focus:outline-none ${canGoForward ? "cursor-pointer" : "cursor-not-allowed"}`}>
+            <Icon icon="gravity-ui:chevron-right" width="28" height="28" className={canGoForward ? "text-white" : "text-gray-500"} />
+          </button>
         </div>
-      )}
-      <div className='nav left float-left'>
-        <i
-          className={`icon back ${canGoBack ? '' : 'disabled'}`}
-          title='Back'
-          onClick={handleBack}
-          role='button'
-          aria-disabled={!canGoBack}
-          aria-label='Back'
-        >
-          chevron_left
-        </i>
-        <i
-          className={`icon forward ${canGoForward ? '' : 'disabled'}`}
-          title='Forward'
-          onClick={handleForward}
-          role='button'
-          aria-disabled={!canGoForward}
-          aria-label='Forward'
-        >
-          chevron_right
-        </i>
+        <SparklesText
+          sparklesCount={8}
+          className="text-white font-bold text-xl"
+          text="NyaUWU"
+        />
+        <div>
+          <Icon icon="gravity-ui:magnifier" width="26" height="26" />
+        </div>
       </div>
-    </div>
+    </ShineBorder>
   );
 }
 

@@ -38,7 +38,7 @@ const AnimeEpisodes = ({ idAnilist, animeColors, sectionTitle }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 z-30 justify-start w-full">
+    <div className="flex flex-col gap-2 justify-start w-full">
       <div className="flex flex-row w-full justify-between items-start">
         <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
         <div className="flex flex-row gap-2">

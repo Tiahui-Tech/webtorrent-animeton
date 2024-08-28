@@ -12,7 +12,7 @@ const LatestEpisodes = React.memo(({ bannerColors, sectionTitle }) => {
   });
 
   return (
-    <div className="flex flex-col p-8 gap-2 z-30 items-start">
+    <div className="flex flex-col p-8 gap-2 items-start">
       <h2 className="text-xl font-semibold">{sectionTitle}</h2>
       <div
         className="flex flex-col gap-4 p-6"

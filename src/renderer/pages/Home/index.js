@@ -1,24 +1,19 @@
 const React = require('react');
 
-const useModernBackground = require('../../hooks/useModernBackground');
+const useAnimesData = require('../../hooks/useAnimesData');
 
 const LatestEpisodes = require('../../components/LatestEpisodes');
 const AnimeSection = require('../../components/AnimeSection');
+const AnimeCarousel = require('../../components/AnimesCarrousel');
 
 const Home = ({ state }) => {
-  const background = useModernBackground({
-    primaryColor: '#00d9ff',
-    secondaryColor: '#ff00ea',
-    disablePattern: true,
-    opacity: 0.3
-  });
+  const animes = useAnimesData();
+  
+  if (!animes) return <div>Cargando...</div>;
 
   return (
     <div>
-      <div
-        className="fixed inset-0 bg-cover bg-center z-0"
-        style={{ backgroundImage: `url(${background})` }}
-      />
+      <AnimeCarousel animes={animes.slice(0, 10)} />
       <LatestEpisodes state={state} sectionTitle={'Ultimos Episodios'} />
       <AnimeSection state={state} sectionTitle={'Popular en este momento'} />
     </div>

@@ -35,7 +35,7 @@ const Episode = React.memo(({ anime }) => {
             }
             className="aspect-video object-cover w-auto h-32"
           />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50 z-40">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50">
             <Icon icon="gravity-ui:play-fill" width="64" height="64" />
           </div>
         </div>
