@@ -3,20 +3,20 @@ const React = require('react');
 
 const AnimeInfo = ({ anime, animeColors, textColor, background }) => {
   return (
-    <div className="relative w-full p-8">
+    <div className="relative w-full p-8 z-30">
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center z-10"
         style={{ backgroundImage: `url(${anime.bannerImage})` }}
       />
       <div
-        className="fixed inset-0 bg-cover bg-center"
+        className="fixed inset-0 bg-cover bg-center z-20"
         style={{ backgroundImage: `url(${background})` }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-[#000000] to-black/30" />
-      <div className="absolute right-0 top-0 bottom-0 w-1/4 bg-gradient-to-l from-[#000000] to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#000000] to-black/30 z-10" />
+      <div className="absolute right-0 top-0 bottom-0 w-1/4 bg-gradient-to-l from-[#000000] to-transparent z-10" />
 
-      <div className="relative shadow-none inset-0 bg-opacity-0">
+      <div className="relative shadow-none inset-0 bg-opacity-0 z-30">
         <div className="flex flex-row justify-start items-center p-0">
           <Image
             alt="anime-cover-image"

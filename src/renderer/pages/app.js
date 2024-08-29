@@ -93,8 +93,8 @@ function AppContent({ initialState, onUpdate }) {
   if (hideControls) cls.push('hide-video-controls');
 
   return (
-    <main className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}>
-      <div className={'app'}>
+    <main className={`app`}>
+      <div className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}>
         <Header state={state} />
         <ErrorPopover state={state} />
         <div key="content" className="content">

@@ -23,7 +23,7 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
   });
 
   return (
-    <div className="relative flex flex-col py-8 justify-center items-center">
+    <div className="relative flex flex-col py-8 justify-center items-center bg-black">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{

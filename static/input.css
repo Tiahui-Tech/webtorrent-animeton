@@ -27,6 +27,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  border-radius: 10px;
 }
 
 table {
@@ -96,7 +97,7 @@ table {
   transition: opacity 0.15s ease-out;
   font-size: 14px;
   line-height: 1.5em;
-  z-index: 9999;
+  z-index: 9000;
 }
 
 .app:not(.is-focused) .header {

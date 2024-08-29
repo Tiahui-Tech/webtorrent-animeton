@@ -4,7 +4,6 @@ const { Divider, Button } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 
 const useAnimeEpisodesData = require('../../hooks/useAnimeEpisodesData');
-const { genGlassStyle } = require('../../../modules/utils');
 
 const EpisodesList = require('../EpisodesList');
 
@@ -38,7 +37,7 @@ const AnimeEpisodes = ({ idAnilist, animeColors, sectionTitle }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 justify-start w-full">
+    <div className="flex flex-col gap-2 justify-start w-full z-30">
       <div className="flex flex-row w-full justify-between items-start">
         <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
         <div className="flex flex-row gap-2">
@@ -53,7 +52,6 @@ const AnimeEpisodes = ({ idAnilist, animeColors, sectionTitle }) => {
                 }
               />
             }
-            style={genGlassStyle(animeColors[0], 30)}
             onClick={handleSort}
           >
             {isReversed ? 'Menor a mayor' : 'Mayor a menor'}
@@ -63,7 +61,6 @@ const AnimeEpisodes = ({ idAnilist, animeColors, sectionTitle }) => {
             <input
               type="text"
               className=" h-10 py-2 pl-8 pr-4 w-64 text-white placeholder-white placeholder-opacity-70 rounded-full focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-              style={genGlassStyle(animeColors[0], 30)}
               placeholder="Buscar"
               value={searchTerm}
               onChange={handleSearch}

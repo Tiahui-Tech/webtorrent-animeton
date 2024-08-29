@@ -27,6 +27,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  border-radius: 10px;
 }
 
 table {
@@ -96,7 +97,7 @@ table {
   transition: opacity 0.15s ease-out;
   font-size: 14px;
   line-height: 1.5em;
-  z-index: 9999;
+  z-index: 9000;
 }
 
 .app:not(.is-focused) .header {
@@ -2778,6 +2779,10 @@ video {
   border-radius: var(--nextui-radius-small);
 }
 
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+
 .\!rounded-l-none {
   border-top-left-radius: 0px !important;
   border-bottom-left-radius: 0px !important;
@@ -2959,6 +2964,11 @@ video {
 .border-warning {
   --tw-border-opacity: 1;
   border-color: hsl(var(--nextui-warning) / var(--nextui-warning-opacity, var(--tw-border-opacity)));
+}
+
+.border-zinc-900 {
+  --tw-border-opacity: 1;
+  border-color: rgb(24 24 27 / var(--tw-border-opacity));
 }
 
 .border-x-transparent {

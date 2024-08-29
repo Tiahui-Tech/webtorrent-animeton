@@ -1,10 +1,12 @@
 const React = require('react');
 const { useState } = React;
+const { useNavigate } = require('react-router-dom');
 const { Icon } = require('@iconify/react');
 const FadeText = require('../MagicUI/effects/FadeText');
 const { motion, AnimatePresence } = require('framer-motion');
 
 const AnimeCarousel = ({ animes }) => {
+    const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
@@ -37,6 +39,12 @@ const AnimeCarousel = ({ animes }) => {
         }),
     };
 
+    const handleAnimeClick = (anime) => {
+        navigate(`/anime/${anime.idAnilist}`, {
+          state: { title: anime.title.romaji }
+        });
+    };
+
     return (
         <div className="relative w-full h-[480px] overflow-hidden">
             <AnimatePresence initial={false} custom={direction}>
@@ -58,9 +66,9 @@ const AnimeCarousel = ({ animes }) => {
                         alt="Anime background"
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
-                            maskImage: 'linear-gradient(to bottom, black 90%, transparent)',
+                            maskImage: 'linear-gradient(to bottom, #000 90%, transparent)',
                             WebkitMaskImage:
-                                'linear-gradient(to bottom, black 90%, transparent)',
+                                'linear-gradient(to bottom, #000 90%, transparent)',
                         }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-50 p-12">
@@ -108,6 +116,7 @@ const AnimeCarousel = ({ animes }) => {
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.7, duration: 0.3 }}
+                                    onClick={() => handleAnimeClick(currentAnime)}
                                     className="relative text-center flex justify-center items-center rounded-full px-8 py-3 bg-white text-black font-bold cursor-pointer hover:bg-opacity-90 transition-all duration-300 w-40"
                                 >
                                     Ver más
