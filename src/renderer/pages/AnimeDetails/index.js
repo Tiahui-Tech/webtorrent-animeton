@@ -4,12 +4,12 @@ const { useMemo, useState, useEffect } = require('react');
 
 const useExtractColor = require('../../hooks/useExtractColor');
 const useModernBackground = require('../../hooks/useModernBackground');
-
-const AnimeEpisodes = require('../../components/AnimeEpisodes');
-const LatestEpisodes = require('../../components/LatestEpisodesAside');
-const AnimeInfo = require('../../components/AnimeInfo');
 const useAnimeDetails = require('../../hooks/useAnimeDetails');
-const AnimeRecommendations = require('../../components/AnimeRecommendations');
+
+const AnimeOverview = require('../../components/anime/AnimeOverview');
+const AnimeRecommendationsList = require('../../components/anime/AnimeRecommendationsList');
+const AnimeEpisodesList = require('../../components/episode/EpisodesList');
+const LatestEpisodesSidebar = require('../../components/episode/LatestEpisodesSidebar');
 
 const AnimeDetails = ({ state }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -55,19 +55,18 @@ const AnimeDetails = ({ state }) => {
   return (
     <div className="flex flex-row bg-black justify-between items-start">
       <div className="relative w-full">
-        <AnimeInfo
+        <AnimeOverview
           anime={anime}
           animeColors={animeColors}
           textColor={textColor}
           background={background}
         />
         <div className="flex flex-row gap-16 p-8 pt-0 justify-between items-start h-full">
-          <AnimeRecommendations
+          <AnimeRecommendationsList
             idAnilist={idAnilist}
-            color={animeColors[0]}
             sectionTitle="Animes Similares"
           />
-          <AnimeEpisodes
+          <AnimeEpisodesList
             idAnilist={idAnilist}
             animeColors={animeColors}
             sectionTitle="Episodios"
@@ -75,7 +74,7 @@ const AnimeDetails = ({ state }) => {
         </div>
       </div>
 
-      <LatestEpisodes
+      <LatestEpisodesSidebar
         bannerColors={bannerColors}
         sectionTitle="Episodios Recientes"
       />
