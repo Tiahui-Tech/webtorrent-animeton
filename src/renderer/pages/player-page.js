@@ -14,7 +14,6 @@ const { calculateEta } = require('../lib/time');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
-  // console.log('Player state', state)
   const location = useLocation();
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
@@ -196,7 +195,6 @@ function renderMedia(state) {
       onMouseMove={dispatcher('mediaMouseMoved')}
     >
       {mediaTag}
-      {/* {renderOverlay(state)} */}
     </div>
   );
 
@@ -257,6 +255,7 @@ function renderMedia(state) {
   }
 }
 
+// WIP: will be used in the future once it works properly
 function renderOverlay(state) {
   const elems = [];
   const audioMetadataElem = renderAudioMetadata(state);
