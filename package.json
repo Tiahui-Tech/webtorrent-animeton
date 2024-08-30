@@ -125,7 +125,7 @@
     "url": "git://github.com/webtorrent/webtorrent-desktop.git"
   },
   "scripts": {
-    "build": "babel src --out-dir build",
+    "build": "npm run clean && babel src --out-dir build",
     "clean": "node ./bin/clean.js",
     "gh-release": "gh-release",
     "install-system-deps": "brew install fakeroot dpkg rpm",

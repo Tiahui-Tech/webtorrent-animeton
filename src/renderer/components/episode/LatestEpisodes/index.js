@@ -47,9 +47,11 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
           {sectionTitle}
         </h2>
       </BoxReveal>
-      <Marquee pauseOnHover className="[--duration:40s]">
+      <Marquee pauseOnHover repeat={3} className="[--duration:40s] min-h-[345px]">
         {isRssLoading ?
-          <EpisodeCardSkeleton />
+          Array.from({ length: 10 }).map((_, i) => (
+            <EpisodeCardSkeleton key={i} />
+          ))
           :
           rssAnimes.map((anime, i) => (
             <EpisodeCard anime={anime} state={state} key={i} />

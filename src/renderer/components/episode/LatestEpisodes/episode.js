@@ -11,7 +11,7 @@ const {
   Image
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
-const ShineBorder = require('../../MagicUI/effects/ShineBorder');
+const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
 const useExtractColor = require('../../../hooks/useExtractColor');
 
 const EpisodeCard = React.memo(({ anime, state }) => {

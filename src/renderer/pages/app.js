@@ -2,7 +2,7 @@ const React = require('react');
 const { useState, useEffect, useRef } = React;
 const { MemoryRouter, Routes, Route, useLocation, useNavigate } = require('react-router-dom');
 
-const Header = require('../components/header');
+const Header = require('../components/common/header');
 
 // Perf optimization: Needed immediately, so do not lazy load it
 const Home = require('./Home');
@@ -23,19 +23,19 @@ function getCurrentPath() {
 
 const Modals = {
   'open-torrent-address-modal': React.lazy(() =>
-    require('../components/open-torrent-address-modal')
+    require('../components/common/modal/open-torrent-address-modal')
   ),
   'remove-torrent-modal': React.lazy(() =>
-    require('../components/remove-torrent-modal')
+    require('../components/common/modal/remove-torrent-modal')
   ),
   'update-available-modal': React.lazy(() =>
-    require('../components/update-available-modal')
+    require('../components/common/modal/update-available-modal')
   ),
   'unsupported-media-modal': React.lazy(() =>
-    require('../components/unsupported-media-modal')
+    require('../components/common/modal/unsupported-media-modal')
   ),
   'delete-all-torrents-modal': React.lazy(() =>
-    require('../components/delete-all-torrents-modal')
+    require('../components/common/modal/delete-all-torrents-modal')
   )
 };
 

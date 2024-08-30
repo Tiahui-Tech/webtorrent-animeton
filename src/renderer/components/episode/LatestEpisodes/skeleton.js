@@ -6,7 +6,7 @@ const {
   CardFooter,
   Skeleton
 } = require('@nextui-org/react');
-const ShineBorder = require('../../MagicUI/effects/ShineBorder');
+const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
 
 const EpisodeCardSkeleton = () => {
   return (
