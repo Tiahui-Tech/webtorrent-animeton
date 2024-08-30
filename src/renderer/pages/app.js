@@ -1,6 +1,6 @@
 const React = require('react');
-const { useState, useEffect } = React;
-const { MemoryRouter, Routes, Route, useLocation } = require('react-router-dom');
+const { useState, useEffect, useRef } = React;
+const { MemoryRouter, Routes, Route, useLocation, useNavigate } = require('react-router-dom');
 
 const Header = require('../components/header');
 
@@ -8,9 +8,18 @@ const Header = require('../components/header');
 const Home = require('./Home');
 const AnimeDetails = require('./AnimeDetails');
 
-const Player = React.lazy(() => require('./player-page'));
+const Player = require('./player-page')
 const CreateTorrent = React.lazy(() => require('./create-torrent-page'));
 const Preferences = require('./preferences-page');
+
+const { EventEmitter } = require('events');
+const eventEmitter = new EventEmitter();
+const eventBus = require('../lib/event-bus');
+
+let currentPath = '/';
+function getCurrentPath() {
+  return currentPath;
+}
 
 const Modals = {
   'open-torrent-address-modal': React.lazy(() =>
@@ -41,18 +50,40 @@ function App({ initialState, onUpdate }) {
 function AppContent({ initialState, onUpdate }) {
   const [state, setState] = useState(initialState);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setState(prevState => {
-        const newState = { ...prevState /* actualiza el estado aquí */ };
-        onUpdate(newState);
-        return newState;
-      });
-    }, 1000);
+    currentPath = location.pathname;
 
-    return () => clearInterval(intervalId);
-  }, [onUpdate]);
+    const stateUpdateHandler = (newPartialState) => {
+      setState(prevState => {
+        const updatedState = { ...prevState, ...newPartialState };
+        return updatedState;
+      });
+    };
+    eventBus.on('stateUpdate', stateUpdateHandler);
+
+    const navigationHandler = ({ path, state }) => {
+      navigate(path, { state });
+    };
+    eventEmitter.on('navigate', navigationHandler);
+
+    return () => {
+      eventEmitter.off('navigate', navigationHandler);
+      eventBus.off('stateUpdate', stateUpdateHandler);
+    };
+  }, [navigate, location]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      onUpdate(stateRef.current);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [state, onUpdate]);
 
   const hideControls = state.shouldHidePlayerControls();
 
@@ -117,4 +148,4 @@ function Modal({ state }) {
   );
 }
 
-module.exports = App;
+module.exports = { App, eventEmitter, getCurrentPath };

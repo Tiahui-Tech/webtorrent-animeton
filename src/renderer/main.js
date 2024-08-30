@@ -24,6 +24,7 @@ const createGetter = require('fn-getter');
 const debounce = require('debounce');
 const dragDrop = require('drag-drop');
 const electron = require('electron');
+const remote = require('@electron/remote')
 const fs = require('fs');
 const React = require('react');
 const { createRoot } = require('react-dom/client');
@@ -33,11 +34,12 @@ const config = require('../config');
 const telemetry = require('./lib/telemetry');
 const sound = require('./lib/sound');
 const TorrentPlayer = require('./lib/torrent-player');
+const eventBus = require('./lib/event-bus');
 
 // Perf optimization: Needed immediately, so do not lazy load it below
 const TorrentListController = require('./controllers/torrent-list-controller');
 
-const App = require('./pages/app');
+const { App } = require('./pages/app');
 
 // Electron apps have two processes: a main process (node) runs first and starts
 // a renderer process (essentially a Chrome window). We're in the renderer process,
@@ -58,6 +60,10 @@ let Cast = null;
 // All other state is ephemeral. First we load state.saved then initialize the app.
 let state;
 
+function handleUpdate(newState) {
+  state = window.state = newState;
+  eventBus.emit('stateUpdate', newState);
+}
 // Called once when the application loads. (Not once per window.)
 // Connects to the torrent networks, sets up the UI and OS integrations like
 // the dock icon and drag+drop.
@@ -124,11 +130,6 @@ function onState(err, _state) {
   // Initialize ReactDOM
   const container = document.querySelector('#body');
   const root = createRoot(container);
-
-  function handleUpdate(newState) {
-    state = window.state = newState;
-    updateElectron();
-  }
 
   root.render(
     <NextUIProvider>
@@ -215,8 +216,10 @@ function lazyLoadCast() {
 // 2. event - might be a click or other DOM event, or something external
 // 3. dispatch - the event handler calls dispatch(), main.js sends it to a controller
 // 4. controller - the controller handles the event, changing the state object
-function update() {
+function update(newState = state) {
+  handleUpdate(newState);
   controllers.playback().showOrHidePlayerControls();
+  updateElectron();
 }
 
 // Some state changes can't be reflected in the DOM, instead we have to
@@ -469,7 +472,7 @@ function resumeTorrents() {
 // Set window dimensions to match video dimensions or fill the screen
 function setDimensions(dimensions) {
   // Don't modify the window size if it's already maximized
-  if (electron.remote.getCurrentWindow().isMaximized()) {
+  if (remote.getCurrentWindow().isMaximized()) {
     state.window.bounds = null;
     return;
   }
@@ -481,7 +484,7 @@ function setDimensions(dimensions) {
     width: window.outerWidth,
     height: window.outerHeight
   };
-  state.window.wasMaximized = electron.remote.getCurrentWindow().isMaximized;
+  state.window.wasMaximized = remote.getCurrentWindow().isMaximized;
 
   // Limit window size to screen size
   const screenWidth = window.screen.width;

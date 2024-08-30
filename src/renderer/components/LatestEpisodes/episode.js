@@ -1,6 +1,7 @@
 const React = require('react');
 const { getAnimeFlags, timeAgo } = require('../../../modules/utils');
 const { dispatch } = require('../../lib/dispatcher');
+const TorrentPlayer = require('../../lib/torrent-player')
 
 const {
   Card,
@@ -18,14 +19,22 @@ const EpisodeCard = React.memo(({ anime, state }) => {
       (torrent) => torrent.infoHash === hash
     );
 
-    if (torrent) {
-      return dispatch('playFile', torrent.infoHash);
+    if (!torrent) {
+      dispatch('addTorrent', anime.torrent.link);
+      setTimeout(() => {
+        dispatch('playFile', hash);
+      }, 1500);
+
+      return;
     }
 
-    dispatch('addTorrent', anime.torrent.link);
-    setTimeout(() => {
-      dispatch('playFile', hash);
-    }, 1500);
+    const file = torrent.files.at(0);
+    const isPlayable = TorrentPlayer.isPlayable(file);
+
+    if (isPlayable) {
+      dispatch('toggleSelectTorrent', torrent.infoHash);
+      return dispatch('playFile', torrent.infoHash);
+    }
   };
   return (
     <div className="max-w-[400px] z-10">

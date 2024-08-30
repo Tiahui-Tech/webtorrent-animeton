@@ -4,10 +4,11 @@ const { ipcRenderer } = require('electron')
 const TorrentSummary = require('../lib/torrent-summary')
 const sound = require('../lib/sound')
 const { dispatch } = require('../lib/dispatcher')
+const eventBus = require('../lib/event-bus');
 
 module.exports = class TorrentController {
-  constructor (state) {
-    this.state = state
+  constructor(state) {
+    this.state = state;
   }
 
   torrentParsed (torrentKey, infoHash, magnetURI) {
@@ -152,8 +153,9 @@ module.exports = class TorrentController {
     dispatch('update')
   }
 
-  torrentServerRunning (serverInfo) {
-    this.state.server = serverInfo
+  torrentServerRunning(serverInfo) {
+    this.state.server = serverInfo;
+    eventBus.emit('stateUpdate', { server: serverInfo });
   }
 
   // Gets a torrent summary {name, infoHash, status} from state.saved.torrents
