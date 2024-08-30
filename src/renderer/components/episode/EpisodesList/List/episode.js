@@ -1,12 +1,44 @@
 const React = require('react');
+const { dispatch } = require('../../../../lib/dispatcher');
+const TorrentPlayer = require('../../../../lib/torrent-player')
 
 const { Icon } = require('@iconify/react');
 const { Card, CardBody, Image } = require('@nextui-org/react');
 
-const EpisodeCard = React.memo(({ episode }) => {
+const useAnimeEpisodeTorrent = require('../../../../hooks/useAnimeEpisodeTorrent');
+
+const EpisodeCard = React.memo(({ idAnilist, episode }) => {
+  const episodeTorrent = useAnimeEpisodeTorrent(idAnilist, episode.episodeNumber);
+
+  const handlePlay = () => {
+    const hash = episodeTorrent.hash;
+    const torrent = state.saved.torrents.find(
+      (torrent) => torrent.infoHash === hash
+    );
+
+    if (!torrent) {
+      dispatch('addTorrent', episodeTorrent.link);
+      setTimeout(() => {
+        dispatch('playFile', hash);
+      }, 1500);
+
+      return;
+    }
+
+    const file = torrent.files.at(0);
+    const isPlayable = TorrentPlayer.isPlayable(file);
+
+    if (isPlayable) {
+      dispatch('toggleSelectTorrent', torrent.infoHash);
+      return dispatch('playFile', torrent.infoHash);
+    }
+  };
+
   return (
     <Card
+      onClick={() => handlePlay()}
       className="w-full relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
+      style={{ zIndex: 9999 }}
     >
       <CardBody className="flex flex-row relative gap-4 justify-start">
         <div className="flex flex-row gap-4 items-center">

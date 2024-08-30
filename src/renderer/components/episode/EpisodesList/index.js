@@ -75,6 +75,7 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
 
       <Divider orientation="horizontal" />
       <EpisodesList
+        idAnilist={idAnilist}
         episodesData={filteredAndSortedEpisodes}
         animeColors={animeColors}
       />
