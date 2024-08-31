@@ -11,7 +11,7 @@ const Playlist = require('../lib/playlist');
 const { dispatch, dispatcher } = require('../lib/dispatcher');
 const config = require('../../config');
 const { calculateEta } = require('../lib/time');
-
+const { parseSubtitles } = require('../../modules/subtitles-parser');
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
   // console.log('Player state', state)
@@ -72,6 +72,11 @@ function renderMedia(state) {
   // Instead, grab the DOM node and play/pause it if necessary
   // Get the <video> or <audio> tag
   const mediaElement = document.querySelector(state.playing.type);
+
+  parseSubtitles(mediaElement).then((subtitles) => {
+    console.log('Subtitles', subtitles);
+  });
+
   if (mediaElement !== null) {
     if (
       navigator.mediaSession.metadata === null &&
