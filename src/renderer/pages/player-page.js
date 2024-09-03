@@ -196,7 +196,7 @@ function renderMedia(state) {
       onMouseMove={dispatcher('mediaMouseMoved')}
     >
       {mediaTag}
-      {/* {renderOverlay(state)} */}
+      {renderOverlay(state)}
     </div>
   );
 
@@ -259,9 +259,7 @@ function renderMedia(state) {
 
 function renderOverlay(state) {
   const elems = [];
-  const audioMetadataElem = renderAudioMetadata(state);
   const spinnerElem = renderLoadingSpinner(state);
-  if (audioMetadataElem) elems.push(audioMetadataElem);
   if (spinnerElem) elems.push(spinnerElem);
 
   // Video fills the window, centered with black bars if necessary
@@ -458,6 +456,8 @@ function renderLoadingSpinner(state) {
     const file = prog.files[state.playing.fileIndex];
     fileProgress = Math.floor((100 * file.numPiecesPresent) / file.numPieces);
   }
+
+  if (fileProgress === 100) return;
 
   return (
     <div key="loading" className="media-stalled">

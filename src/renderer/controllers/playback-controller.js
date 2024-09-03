@@ -275,7 +275,7 @@ module.exports = class PlaybackController {
     const state = this.state
 
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
-    const fileSummary = torrentSummary.files[index]
+    const fileSummary = torrentSummary.files.at(index)
 
     if (!TorrentPlayer.isPlayable(fileSummary)) {
       torrentSummary.mostRecentFileIndex = undefined
