@@ -2144,6 +2144,10 @@ video {
   max-width: 56rem;
 }
 
+.max-w-52 {
+  max-width: 13rem;
+}
+
 .max-w-5xl {
   max-width: 64rem;
 }
