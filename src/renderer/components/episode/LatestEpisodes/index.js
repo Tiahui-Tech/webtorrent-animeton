@@ -17,8 +17,8 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
     emptyState: false
   });
   const background = useModernBackground({
-    primaryColor: '#00d9ff',
-    secondaryColor: '#ff00ea',
+    primaryColor: '#63e8ff',
+    secondaryColor: '#ff9af7',
     disablePattern: true,
     opacity: 0.6
   });
