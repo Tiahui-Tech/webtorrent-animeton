@@ -6,8 +6,7 @@ const EpisodeCardSkeleton = ({ color }) => {
   return (
     <Card className="w-full">
       <CardBody
-        className="flex flex-row relative gap-4 justify-start p-4"
-        style={genGlassStyle(color)}
+        className="flex flex-row relative gap-4 justify-start p-4 bg-zinc-950 rounded-xl border-2 border-zinc-900"
       >
         <div className="flex flex-row gap-4 items-center">
           <Skeleton
