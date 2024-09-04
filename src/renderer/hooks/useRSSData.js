@@ -2,8 +2,8 @@ const { useEffect, useState } = require('react');
 const { processRssAnimes } = require('../../modules/anime');
 const { fetchAndParseRSS } = require('../../modules/rss');
 
-const useRSSData = ({ page, perPage, displayCount }) => {
-  const [rssAnimes, setRSSAnimes] = useState(null);
+const useRSSData = ({ page, perPage, displayCount, emptyState }) => {
+  const [rssAnimes, setRSSAnimes] = useState(emptyState ? Array.from({ length: displayCount }) : null);
 
   useEffect(() => {
     const fetchRSSAnimes = async () => {

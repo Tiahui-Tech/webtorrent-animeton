@@ -9,8 +9,8 @@ const FormControlLabel = require('@mui/material/FormControlLabel').default;
 const Box = require('@mui/material/Box').default;
 const Typography = require('@mui/material/Typography').default;
 
-const Heading = require('../components/heading');
-const PathSelector = require('../components/path-selector');
+const Heading = require('../components/common/heading');
+const PathSelector = require('../components/common/path-selector');
 
 const { dispatch } = require('../lib/dispatcher');
 const config = require('../../config');

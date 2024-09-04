@@ -10,9 +10,9 @@ const TextField = require('@mui/material/TextField').default;
 const Checkbox = require('@mui/material/Checkbox').default;
 const FormControlLabel = require('@mui/material/FormControlLabel').default;
 
-const CreateTorrentErrorPage = require('../components/create-torrent-error-page');
-const Heading = require('../components/heading');
-const ShowMore = require('../components/show-more');
+const CreateTorrentErrorPage = require('../components/common/modal/create-torrent-error-page');
+const Heading = require('../components/common/heading');
+const ShowMore = require('../components/common/show-more');
 
 // Shows a basic UI to create a torrent, from an already-selected file or folder.
 // Includes a "Show Advanced..." button and more advanced UI.
