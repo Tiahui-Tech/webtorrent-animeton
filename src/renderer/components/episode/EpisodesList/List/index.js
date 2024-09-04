@@ -4,8 +4,6 @@ const EpisodeCard = require('./episode');
 const EpisodeCardSkeleton = require('./skeleton');
 
 const EpisodesList = React.memo(({ episodesData, animeColors }) => {
-
-  console.log(episodesData)
   return (
     <div className="relative w-full">
       <div className="flex flex-col gap-4">
