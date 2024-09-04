@@ -965,7 +965,7 @@ function renderPreview(state) {
   const time = fraction * state.playing?.duration; /* seconds */
 
   const height = 70;
-  let width = 0;
+  let width = Math.floor(height * 16 / 9); // Default width with 16:9 aspect ratio
 
   const previewEl = document.querySelector('video#preview');
   if (previewEl !== null && previewXCoord !== null) {
@@ -974,7 +974,10 @@ function renderPreview(state) {
     previewEl.currentTime = validTime;
 
     // Auto adjust width to maintain video aspect ratio
-    width = Math.floor((previewEl.videoWidth / previewEl.videoHeight) * height);
+    const aspectRatio = previewEl.videoWidth / previewEl.videoHeight;
+    if (!isNaN(aspectRatio)) {
+      width = Math.floor(aspectRatio * height);
+    }
   }
 
   // Center preview window on mouse cursor,
