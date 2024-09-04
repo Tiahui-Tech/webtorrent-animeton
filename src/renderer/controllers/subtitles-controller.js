@@ -2,6 +2,7 @@ const remote = require('@electron/remote')
 const fs = require('fs')
 const path = require('path')
 const parallel = require('run-parallel')
+const { parseSubtitles } = require('../../modules/subtitles-parser')
 
 const { dispatch } = require('../lib/dispatcher')
 
@@ -62,6 +63,7 @@ module.exports = class SubtitlesController {
   }
 
   checkForSubtitles () {
+    console.log('checkForSubtitles activated')
     if (this.state.playing.type !== 'video') return
     const torrentSummary = this.state.getPlayingTorrentSummary()
     if (!torrentSummary || !torrentSummary.progress) return
@@ -69,6 +71,8 @@ module.exports = class SubtitlesController {
     torrentSummary.progress.files.forEach((fp, ix) => {
       if (fp.numPieces !== fp.numPiecesPresent) return // ignore incomplete files
       const file = torrentSummary.files[ix]
+      const parsedSubtitles = parseSubtitles(file)
+      console.log(parsedSubtitles)
       if (!this.isSubtitle(file.name)) return
       const filePath = path.join(torrentSummary.path, file.path)
       this.addSubtitles([filePath], false)
