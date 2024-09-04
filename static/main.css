@@ -2176,6 +2176,10 @@ video {
   max-width: 400px;
 }
 
+.max-w-\[480px\] {
+  max-width: 480px;
+}
+
 .max-w-\[50vw\] {
   max-width: 50vw;
 }
@@ -2190,6 +2194,10 @@ video {
 
 .max-w-\[768px\] {
   max-width: 768px;
+}
+
+.max-w-\[860px\] {
+  max-width: 860px;
 }
 
 .max-w-fit {

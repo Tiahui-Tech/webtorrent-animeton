@@ -21,7 +21,7 @@ const EpisodeCard = React.memo(({ episode }) => {
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <p className="text-3xl font-medium truncate w-full">
+            <p className="text-3xl font-medium truncate w-full max-w-[480px]">
               {`E${episode.episodeNumber} - ${episode.title.en}`}
             </p>
             <span className="text-xl text-gray-400">{episode.title.ja}</span>
