@@ -26,7 +26,7 @@ module.exports = class PlaybackController {
   // * Start torrenting, if necessary
   // * Stream, if not already fully downloaded
   // * If no file index is provided, restore the most recently viewed file or autoplay the first
-  playFile(infoHash, index /* optional */) {
+  playFile(infoHash, index = 0 /* optional */) {
     this.pauseActiveTorrents(infoHash)
 
     const currentPath = getCurrentPath();
@@ -275,7 +275,7 @@ module.exports = class PlaybackController {
     const state = this.state
 
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
-    const fileSummary = torrentSummary.files[index]
+    const fileSummary = torrentSummary.files.at(index)
 
     if (!TorrentPlayer.isPlayable(fileSummary)) {
       torrentSummary.mostRecentFileIndex = undefined

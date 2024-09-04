@@ -195,6 +195,7 @@ function renderMedia(state) {
       onMouseMove={dispatcher('mediaMouseMoved')}
     >
       {mediaTag}
+      {renderOverlay(state)}
     </div>
   );
 
@@ -258,9 +259,7 @@ function renderMedia(state) {
 // WIP: will be used in the future once it works properly
 function renderOverlay(state) {
   const elems = [];
-  const audioMetadataElem = renderAudioMetadata(state);
   const spinnerElem = renderLoadingSpinner(state);
-  if (audioMetadataElem) elems.push(audioMetadataElem);
   if (spinnerElem) elems.push(spinnerElem);
 
   // Video fills the window, centered with black bars if necessary
@@ -457,6 +456,8 @@ function renderLoadingSpinner(state) {
     const file = prog.files[state.playing.fileIndex];
     fileProgress = Math.floor((100 * file.numPiecesPresent) / file.numPieces);
   }
+
+  if (fileProgress === 100) return;
 
   return (
     <div key="loading" className="media-stalled">
@@ -964,7 +965,7 @@ function renderPreview(state) {
   const time = fraction * state.playing?.duration; /* seconds */
 
   const height = 70;
-  let width = 0;
+  let width = Math.floor(height * 16 / 9); // Default width with 16:9 aspect ratio
 
   const previewEl = document.querySelector('video#preview');
   if (previewEl !== null && previewXCoord !== null) {
@@ -973,7 +974,10 @@ function renderPreview(state) {
     previewEl.currentTime = validTime;
 
     // Auto adjust width to maintain video aspect ratio
-    width = Math.floor((previewEl.videoWidth / previewEl.videoHeight) * height);
+    const aspectRatio = previewEl.videoWidth / previewEl.videoHeight;
+    if (!isNaN(aspectRatio)) {
+      width = Math.floor(aspectRatio * height);
+    }
   }
 
   // Center preview window on mouse cursor,
