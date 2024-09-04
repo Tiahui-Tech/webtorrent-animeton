@@ -1,7 +1,7 @@
 {
   "name": "webtorrent-desktop",
   "description": "WebTorrent, the streaming torrent client. For Mac, Windows, and Linux.",
-  "version": "0.24.0",
+  "version": "0.1.0",
   "author": {
     "name": "WebTorrent, LLC",
     "email": "feross@webtorrent.io",
@@ -34,6 +34,7 @@
     "@nextui-org/react": "^2.4.6",
     "@nextui-org/system": "^2.2.5",
     "@nextui-org/theme": "^2.2.9",
+    "adm-zip": "^0.5.16",
     "airplayer": "github:webtorrent/airplayer#fix-security",
     "anitomyscript": "github:Tiahui-Tech/anitomyscript",
     "application-config": "2.0.0",
