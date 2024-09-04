@@ -10,7 +10,7 @@ const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
 
 const EpisodeCardSkeleton = () => {
   return (
-    <div className="max-w-[400px] px-4">
+    <div className="w-[373px] max-w-[400px] px-4">
       <ShineBorder borderRadius={16} borderWidth={2} color="gray">
         <Card className="flex flex-col relative overflow-visible">
           <CardHeader className="flex flex-col truncate items-start justify-start">
@@ -22,9 +22,9 @@ const EpisodeCardSkeleton = () => {
             </Skeleton>
           </CardHeader>
           <CardBody
-            className="w-[364px] h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
+            className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
           >
-            <Skeleton className="w-full">
+            <Skeleton className="w-full h-full">
               <div className="aspect-[16/9] rounded-t-lg bg-default-300"></div>
             </Skeleton>
             <Skeleton className="flex flex-row gap-2 px-1 py-0.5 rounded-md absolute top-2 right-2">

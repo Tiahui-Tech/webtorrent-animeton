@@ -1884,8 +1884,8 @@ video {
   min-height: 32px;
 }
 
-.min-h-\[345px\] {
-  min-height: 345px;
+.min-h-\[700px\] {
+  min-height: 700px;
 }
 
 .min-h-\[inherit\] {
@@ -2008,8 +2008,8 @@ video {
   width: 227px;
 }
 
-.w-\[364px\] {
-  width: 364px;
+.w-\[373px\] {
+  width: 373px;
 }
 
 .w-\[80\%\] {
@@ -2502,6 +2502,10 @@ video {
   -webkit-appearance: none;
      -moz-appearance: none;
           appearance: none;
+}
+
+.auto-cols-max {
+  grid-auto-columns: max-content;
 }
 
 .auto-rows-max {

@@ -63,7 +63,7 @@ const EpisodeCard = React.memo(({ anime, state }) => {
             </span>
           </CardHeader>
           <CardBody
-            className="w-[364px] h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
+            className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
             onClick={() => handlePlay(anime)}
           >
             <Image
