@@ -11,7 +11,6 @@ const Playlist = require('../lib/playlist');
 const { dispatch, dispatcher } = require('../lib/dispatcher');
 const config = require('../../config');
 const { calculateEta } = require('../lib/time');
-const { parseSubtitles } = require('../../modules/subtitles-parser');
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
   const location = useLocation();
@@ -71,11 +70,6 @@ function renderMedia(state) {
   // Instead, grab the DOM node and play/pause it if necessary
   // Get the <video> or <audio> tag
   const mediaElement = document.querySelector(state.playing.type);
-
-  parseSubtitles(mediaElement).then((subtitles) => {
-    console.log('Subtitles', subtitles);
-  });
-
   if (mediaElement !== null) {
     if (
       navigator.mediaSession.metadata === null &&
@@ -173,6 +167,9 @@ function renderMedia(state) {
       );
     });
   }
+
+  console.log('trackTags: ', trackTags);
+  console.log('Render Media Subtitles: ', state.playing)
 
   // Create the <audio> or <video> tag
   const MediaTagName = state.playing.type;
@@ -716,7 +713,7 @@ function renderPlayerControls(state) {
     <i
       key="play"
       className="icon play-pause float-left"
-      onClick={dispatcher('playPause')}
+      onClick={() => dispatch('playPause')}
       role="button"
       aria-label={state.playing.isPaused ? 'Play' : 'Pause'}
     >

@@ -1,48 +1,57 @@
-async function parseSubtitles(file) {
-  const Metadata = (await import('matroska-metadata')).default;
-  console.log('Initializing parser for file: ' + file.name)
-  const metadata = new Metadata(file)
-  const subtitles = {}
+const fs = require('fs');
+const path = require('path');
 
-  return new Promise((resolve, reject) => {
-    metadata.getTracks().then(tracks => {
-      console.log('Tracks received: ' + tracks.length)
-      const subtitleTracks = tracks.filter(track => track.type === 'subtitles')
-      
-      if (subtitleTracks.length === 0) {
-        console.log('No subtitle tracks found')
-        resolve({})
-      } else {
-        subtitleTracks.forEach(track => {
-          subtitles[track.number] = {
-            track: track,
-            cues: []
-          }
-        })
+async function parseSubtitles(filePath) {
+  const { default: Metadata } = await import('matroska-metadata');
+  console.log('Initializing parser for file: ' + path.basename(filePath));
+  
+  const file = {
+    name: path.basename(filePath),
+    stream: () => fs.createReadStream(filePath),
+    [Symbol.asyncIterator]: async function* () {
+      const stream = this.stream();
+      for await (const chunk of stream) {
+        yield chunk;
       }
-    })
+    }
+  };
+
+  const metadata = new Metadata(file);
+  const subtitles = {};
+
+  try {
+    const tracks = await metadata.getTracks();
+    console.log('Tracks received:', JSON.stringify(tracks));
+
+    tracks.forEach(track => {
+      subtitles[track.number] = {
+        track: track,
+        cues: []
+      };
+    });
 
     metadata.on('subtitle', (subtitle, trackNumber) => {
-      console.log(`Found subtitle for track: ${trackNumber}`)
+      console.log(`Found subtitle for track: ${trackNumber}`);
       if (subtitles[trackNumber]) {
-        subtitles[trackNumber].cues.push(subtitle)
+        subtitles[trackNumber].cues.push(subtitle);
       }
-    })
+    });
 
     if (file.name.endsWith('.mkv') || file.name.endsWith('.webm')) {
-      file.on('iterator', ({ iterator }, cb) => {
-        const parsingStream = metadata.parseStream(iterator)
-        parsingStream.on('finish', () => {
-          console.log('Finished parsing subtitles')
-          resolve(subtitles)
-        })
-        cb(parsingStream)
-      })
+      const fileStream = file[Symbol.asyncIterator]();
+      for await (const chunk of metadata.parseStream(fileStream)) {
+        // Process each chunk if needed
+      }
+      
+      console.log('Finished parsing subtitles');
+      return subtitles;
     } else {
-      console.error('Unsupported file format: ' + file.name)
-      reject(new Error('Unsupported file format'))
+      throw new Error('Unsupported file format: ' + file.name);
     }
-  })
+  } catch (error) {
+    console.error('Error parsing subtitles:', error);
+    throw error;
+  }
 }
 
 function convertSubtitlesToASS(subtitles) {
