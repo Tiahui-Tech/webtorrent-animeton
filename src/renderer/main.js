@@ -299,7 +299,7 @@ const dispatchHandlers = {
   openSubtitles: () => controllers.subtitles().openSubtitles(),
   selectSubtitle: (index) => controllers.subtitles().selectSubtitle(index),
   toggleSubtitlesMenu: () => controllers.subtitles().toggleSubtitlesMenu(),
-  checkForSubtitles: () => controllers.subtitles().checkForSubtitles(),
+  checkForSubtitles: () => controllers.subtitles().checkForSubtitles().then(sub => sub),
   addSubtitles: (files, autoSelect) =>
     controllers.subtitles().addSubtitles(files, autoSelect),
 

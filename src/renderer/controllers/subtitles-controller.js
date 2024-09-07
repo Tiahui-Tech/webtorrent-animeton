@@ -2,7 +2,9 @@ const remote = require('@electron/remote')
 const fs = require('fs')
 const path = require('path')
 const parallel = require('run-parallel')
-
+const { fork } = require('child_process')
+const { convertAssTextToVtt, formatVttTime } = require('../../modules/subtitles-parser')
+const eventBus = require('../lib/event-bus')
 const { dispatch } = require('../lib/dispatcher')
 
 module.exports = class SubtitlesController {
@@ -61,17 +63,36 @@ module.exports = class SubtitlesController {
     })
   }
 
-  checkForSubtitles () {
+  async checkForSubtitles() {
     if (this.state.playing.type !== 'video') return
     const torrentSummary = this.state.getPlayingTorrentSummary()
     if (!torrentSummary || !torrentSummary.progress) return
+  
+    const filePath = path.join(torrentSummary.path, torrentSummary.name)
 
-    torrentSummary.progress.files.forEach((fp, ix) => {
-      if (fp.numPieces !== fp.numPiecesPresent) return // ignore incomplete files
-      const file = torrentSummary.files[ix]
-      if (!this.isSubtitle(file.name)) return
-      const filePath = path.join(torrentSummary.path, file.path)
-      this.addSubtitles([filePath], false)
+    try {
+      const subtitles = await this.parseSubtitles(filePath)
+      await this.convertAndAddSubtitles(subtitles)
+    } catch (err) {
+      console.error('Error checking for subtitles: ', err)
+    }
+  }
+
+  parseSubtitles(filePath) {
+    return new Promise((resolve, reject) => {
+      const child = fork('./src/modules/subtitles-worker.js')
+      
+      child.on('message', (result) => {
+        if (result.success) {
+          resolve(result.subtitles)
+        } else {
+          reject(new Error(result.error))
+        }
+      })
+  
+      child.on('error', reject)
+  
+      child.send(filePath)
     })
   }
 
@@ -79,6 +100,55 @@ module.exports = class SubtitlesController {
     const name = typeof file === 'string' ? file : file.name
     const ext = path.extname(name).toLowerCase()
     return ext === '.srt' || ext === '.vtt'
+  }
+
+  async convertAndAddSubtitles(subtitles) {
+    const convertedTracks = []
+
+    for (const [trackNumber, subtitle] of Object.entries(subtitles)) {
+      if (subtitle.track.type === 'ass') {
+        try {
+          const vttContent = await this.convertAssToVtt(subtitle)
+          convertedTracks.push({
+            buffer: 'data:text/vtt;base64,' + Buffer.from(vttContent).toString('base64'),
+            language: subtitle.track.language || 'Unknown',
+            label: subtitle.track.name || `Track ${trackNumber}`,
+            filePath: `memory:${trackNumber}`
+          })
+        } catch (error) {
+          console.error('Error converting subtitle:', error)
+        }
+      }
+    }
+
+    const updatedTracks = [...this.state.playing.subtitles.tracks, ...convertedTracks]
+    let selectedIndex = this.state.playing.subtitles.selectedIndex
+    if (selectedIndex === -1 && convertedTracks.length > 0) {
+      selectedIndex = this.state.playing.subtitles.tracks.length
+    }
+
+    eventBus.emit('stateUpdate', {
+      playing: {
+        subtitles: {
+          tracks: updatedTracks,
+          selectedIndex: selectedIndex
+        }
+      }
+    })
+  }
+
+  convertAssToVtt(subtitle) {
+    return new Promise((resolve) => {
+      const vttContent = 'WEBVTT\n\n' + subtitle.cues.map((cue, index) => {
+        const startTime = formatVttTime(cue.time);
+        const endTime = formatVttTime(cue.time + cue.duration);
+        const text = convertAssTextToVtt(cue.text);
+        
+        return `${startTime} --> ${endTime}\n${text}\n`;
+      }).join('\n');
+
+      resolve(vttContent);
+    });
   }
 }
 
@@ -89,12 +159,16 @@ function loadSubtitle (file, cb) {
   const srtToVtt = require('srt-to-vtt')
 
   // Read the .SRT or .VTT file, parse it, add subtitle track
-  const filePath = file.path || file
+  const filePath = typeof file === 'string' ? file : file.path
+
+  if (!filePath) {
+    return dispatch('error', 'Can\'t parse subtitles file.')
+  }
 
   const vttStream = fs.createReadStream(filePath).pipe(srtToVtt())
 
   concat(vttStream, (err, buf) => {
-    if (err) return dispatch('error', 'Can\'t parse subtitles file.')
+    if (err) return cb(new Error('Can\'t parse subtitles file.'))
 
     // Detect what language the subtitles are in
     const vttContents = buf.toString().replace(/(.*-->.*)/g, '')
@@ -124,11 +198,11 @@ function isSystemLanguage (language) {
 
 // Make sure we don't have two subtitle tracks with the same label
 // Labels each track by language, eg 'German', 'English', 'English 2', ...
-function relabelSubtitles (subtitles) {
+function relabelSubtitles(subtitles) {
   const counts = {}
   subtitles.tracks.forEach(track => {
     const lang = track.language
     counts[lang] = (counts[lang] || 0) + 1
-    track.label = counts[lang] > 1 ? (lang + ' ' + counts[lang]) : lang
+    track.label = counts[lang] > 1 ? `${lang} ${counts[lang]}` : lang
   })
 }
