@@ -168,9 +168,6 @@ function renderMedia(state) {
     });
   }
 
-  console.log('trackTags: ', trackTags);
-  console.log('Render Media Subtitles: ', state.playing)
-
   // Create the <audio> or <video> tag
   const MediaTagName = state.playing.type;
   const mediaTag = (

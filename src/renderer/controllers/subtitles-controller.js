@@ -3,9 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const parallel = require('run-parallel')
 const { fork } = require('child_process')
-const assToVtt = require('ass-to-vtt')
-const { Readable } = require('stream')
-
+const { convertAssTextToVtt, formatVttTime } = require('../../modules/subtitles-parser')
 const eventBus = require('../lib/event-bus')
 const { dispatch } = require('../lib/dispatcher')
 
@@ -132,8 +130,6 @@ module.exports = class SubtitlesController {
       selectedIndex = this.state.playing.subtitles.tracks.length
     }
 
-    // relabelSubtitles({ tracks: updatedTracks })
-
     eventBus.emit('stateUpdate', {
       playing: {
         subtitles: {
@@ -145,30 +141,17 @@ module.exports = class SubtitlesController {
   }
 
   convertAssToVtt(subtitle) {
-    return new Promise((resolve, reject) => {
-      const assContent = subtitle.track.header + '\n' + subtitle.cues.map(cue => 
-        `Dialogue: 0,${this.formatTime(cue.time)},${this.formatTime(cue.time + cue.duration)},Default,,0,0,0,,${cue.text}`
-      ).join('\n')
+    return new Promise((resolve) => {
+      const vttContent = 'WEBVTT\n\n' + subtitle.cues.map((cue, index) => {
+        const startTime = formatVttTime(cue.time);
+        const endTime = formatVttTime(cue.time + cue.duration);
+        const text = convertAssTextToVtt(cue.text);
+        
+        return `${startTime} --> ${endTime}\n${text}\n`;
+      }).join('\n');
 
-      const readable = new Readable()
-      readable.push(assContent)
-      readable.push(null)
-      
-      let vttData = ''
-      readable
-        .pipe(assToVtt())
-        .on('data', chunk => { vttData += chunk })
-        .on('end', () => resolve(vttData))
-        .on('error', reject)
-    })
-  }
-
-  formatTime(seconds) {
-    const h = Math.floor(seconds / 3600)
-    const m = Math.floor((seconds % 3600) / 60)
-    const s = Math.floor(seconds % 60)
-    const ms = Math.floor((seconds % 1) * 100)
-    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`
+      resolve(vttContent);
+    });
   }
 }
 

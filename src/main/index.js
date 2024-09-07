@@ -87,7 +87,6 @@ function init () {
     windows.webtorrent.init()
 
     windows.main.toggleDevTools()
-    windows.webtorrent.toggleDevTools()
 
     // To keep app startup fast, some code is delayed.
     setTimeout(() => {
