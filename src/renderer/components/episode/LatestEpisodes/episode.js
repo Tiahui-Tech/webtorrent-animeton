@@ -1,6 +1,6 @@
 const React = require('react');
 const { getAnimeFlags, timeAgo, getNeonColor } = require('../../../../modules/utils');
-const { dispatch, dispatcher } = require('../../../lib/dispatcher');
+const { dispatch } = require('../../../lib/dispatcher');
 const TorrentPlayer = require('../../../lib/torrent-player')
 
 const {

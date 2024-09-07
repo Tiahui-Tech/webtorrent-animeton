@@ -68,13 +68,10 @@ module.exports = class SubtitlesController {
     const torrentSummary = this.state.getPlayingTorrentSummary()
     if (!torrentSummary || !torrentSummary.progress) return
   
-    console.log('Checking for subtitles in: ', torrentSummary)
-  
     const filePath = path.join(torrentSummary.path, torrentSummary.name)
 
     try {
       const subtitles = await this.parseSubtitles(filePath)
-      console.log('Subtitles parsed successfully: ', subtitles)
       await this.convertAndAddSubtitles(subtitles)
     } catch (err) {
       console.error('Error checking for subtitles: ', err)
@@ -165,7 +162,7 @@ function loadSubtitle (file, cb) {
   const filePath = typeof file === 'string' ? file : file.path
 
   if (!filePath) {
-    return cb(new Error('Invalid subtitle file path'))
+    return dispatch('error', 'Can\'t parse subtitles file.')
   }
 
   const vttStream = fs.createReadStream(filePath).pipe(srtToVtt())
