@@ -8,7 +8,7 @@ const useAnimeEpisodesData = require('../../../hooks/useAnimeEpisodesData');
 const EpisodesList = require('./List');
 
 const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
-  const episodesData = useAnimeEpisodesData(idAnilist, true);
+  const { episodes: episodesData, isLoading } = useAnimeEpisodesData(idAnilist, true);
   const [isReversed, setIsReversed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -37,7 +37,7 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2 justify-start w-full z-30">
+    <div className="flex flex-col gap-2 justify-start w-full max-w-[860px] z-30">
       <div className="flex flex-row w-full justify-between items-start">
         <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
         <div className="flex flex-row gap-2">
@@ -75,7 +75,8 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
 
       <Divider orientation="horizontal" />
       <EpisodesList
-        episodesData={filteredAndSortedEpisodes}
+        episodesData={isLoading ? [] : filteredAndSortedEpisodes}
+        isLoading={isLoading}
         animeColors={animeColors}
       />
     </div>

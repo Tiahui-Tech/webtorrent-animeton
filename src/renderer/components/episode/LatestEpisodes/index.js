@@ -13,20 +13,18 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
   const rssAnimes = useRSSData({
     page: 1,
     perPage: 10,
-    displayCount: 10,
-    emptyState: true
+    displayCount: 8,
+    emptyState: false
   });
   const background = useModernBackground({
-    primaryColor: '#00d9ff',
-    secondaryColor: '#ff00ea',
+    primaryColor: '#63e8ff',
+    secondaryColor: '#ff9af7',
     disablePattern: true,
     opacity: 0.6
   });
 
-  const isRssLoading = rssAnimes.every(anime => anime === undefined)
-
   return (
-    <div className="relative flex flex-col py-8 justify-center items-center bg-black">
+    <div className="relative flex flex-col py-8 px-6 justify-center items-center bg-black">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -47,9 +45,9 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
           {sectionTitle}
         </h2>
       </BoxReveal>
-      <Marquee pauseOnHover repeat={3} className="[--duration:40s] min-h-[345px]">
-        {isRssLoading ?
-          Array.from({ length: 10 }).map((_, i) => (
+      <div className="grid grid-cols-4 auto-cols-max gap-4 justify-center items-center min-h-[700px]">
+        {!rssAnimes ?
+          Array.from({ length: 8 }).map((_, i) => (
             <EpisodeCardSkeleton key={i} />
           ))
           :
@@ -57,7 +55,7 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
             <EpisodeCard anime={anime} state={state} key={i} />
           ))
         }
-      </Marquee>
+      </div>
     </div>
   );
 });
