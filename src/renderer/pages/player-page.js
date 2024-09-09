@@ -11,7 +11,6 @@ const Playlist = require('../lib/playlist');
 const { dispatch, dispatcher } = require('../lib/dispatcher');
 const config = require('../../config');
 const { calculateEta } = require('../lib/time');
-
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
   const location = useLocation();
@@ -711,7 +710,7 @@ function renderPlayerControls(state) {
     <i
       key="play"
       className="icon play-pause float-left"
-      onClick={dispatcher('playPause')}
+      onClick={() => dispatch('playPause')}
       role="button"
       aria-label={state.playing.isPaused ? 'Play' : 'Pause'}
     >

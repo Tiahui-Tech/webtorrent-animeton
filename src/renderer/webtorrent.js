@@ -198,10 +198,11 @@ function addTorrentEvents(torrent) {
 
     updateTorrentProgress();
 
-    torrent.getFileModtimes((err, fileModtimes) => {
-      if (err) return onError(err);
-      ipcRenderer.send('wt-file-modtimes', torrent.key, fileModtimes);
-    });
+    // TODO: This crash the video player, idk why xD (Fix in the future)
+    // torrent.getFileModtimes((err, fileModtimes) => {
+    //   if (err) return onError(err);
+    //   ipcRenderer.send('wt-file-modtimes', torrent.key, fileModtimes);
+    // });
   }
 }
 

@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 const Cast = require('../lib/cast')
 const { dispatch } = require('../lib/dispatcher')
@@ -74,8 +75,10 @@ module.exports = class PlaybackController {
 
   // Toggle (play or pause) the currently playing media
   playPause() {
-    const state = this.state
-    if (state.location.url() !== 'player') return
+    const currentPath = getCurrentPath();
+    const state = this.state;
+
+    if (currentPath !== '/player') return
 
     // force rerendering if window is hidden,
     // in order to bypass `raf` and play/pause media immediately
