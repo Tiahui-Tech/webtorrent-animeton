@@ -13,6 +13,7 @@ const path = require('path')
 const rimraf = require('rimraf')
 const series = require('run-series')
 const zip = require('cross-zip')
+const AdmZip = require('adm-zip');
 
 const config = require('../src/config')
 const pkg = require('../package.json')
@@ -474,24 +475,43 @@ function buildWin32 (cb) {
         .catch(cb)
     }
 
-    function packagePortable (filesPath, cb) {
+    function packagePortable(filesPath, cb) {
       console.log('Windows: Creating portable app...')
+    
+      try {
+        const portablePath = path.join(filesPath, 'Portable Settings')
+        fs.mkdirSync(portablePath, { recursive: true })
+    
+        const downloadsPath = path.join(portablePath, 'Downloads')
+        fs.mkdirSync(downloadsPath, { recursive: true })
+    
+        const tempPath = path.join(portablePath, 'Temp')
+        fs.mkdirSync(tempPath, { recursive: true })
+    
+        const inPath = path.join(DIST_PATH, path.basename(filesPath))
+        const outPath = path.join(DIST_PATH, BUILD_NAME + '-win.zip')
 
-      const portablePath = path.join(filesPath, 'Portable Settings')
-      fs.mkdirSync(portablePath, { recursive: true })
-
-      const downloadsPath = path.join(portablePath, 'Downloads')
-      fs.mkdirSync(downloadsPath, { recursive: true })
-
-      const tempPath = path.join(portablePath, 'Temp')
-      fs.mkdirSync(tempPath, { recursive: true })
-
-      const inPath = path.join(DIST_PATH, path.basename(filesPath))
-      const outPath = path.join(DIST_PATH, BUILD_NAME + '-win.zip')
-      zip.zipSync(inPath, outPath)
-
-      console.log('Windows: Created portable app.')
-      cb(null)
+        console.log(`DIST_PATH: ${DIST_PATH}`);
+        console.log(`BUILD_NAME: ${BUILD_NAME}`); 
+        console.log(`Input path: ${inPath}`);
+        console.log(`Output path: ${outPath}`);
+    
+        if (!fs.existsSync(inPath)) {
+          throw new Error(`Input path does not exist: ${inPath}`)
+        }
+    
+        const zip = new AdmZip();
+    
+        zip.addLocalFolder(inPath);
+    
+        zip.writeZip(outPath);
+    
+        console.log('Windows: Created portable app.')
+        cb(null)
+      } catch (error) {
+        console.error('Error creating portable app:', error)
+        cb(error)
+      }
     }
   }).catch(function (err) {
     cb(err)

@@ -14,11 +14,12 @@ const AUTO_UPDATE_URL = config.AUTO_UPDATE_URL +
   '&platform=' + process.platform +
   '&sysarch=' + config.OS_SYSARCH
 
+// TODO: Implement auto-updater
 function init () {
   if (process.platform === 'linux') {
-    initLinux()
+    // initLinux()
   } else {
-    initDarwinWin32()
+    // initDarwinWin32()
   }
 }
 
