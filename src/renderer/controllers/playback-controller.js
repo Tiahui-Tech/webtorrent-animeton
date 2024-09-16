@@ -45,6 +45,7 @@ module.exports = class PlaybackController {
           infoHash,
           index,
           setup: (cb) => {
+            console.log('getByKey 1');
             const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
 
             if (index === undefined || initialized) index = torrentSummary.mostRecentFileIndex
@@ -66,6 +67,7 @@ module.exports = class PlaybackController {
 
   // Open a file in OS default app.
   openPath(infoHash, index) {
+    console.log('getByKey 2');
     const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
     const filePath = path.join(
       torrentSummary.path,
@@ -96,8 +98,15 @@ module.exports = class PlaybackController {
     // Playback Priority: pause all active torrents if needed.
     if (!this.state.saved.prefs.highestPlaybackPriority) return
 
+    const state = this.state;
+
+    console.log('pauseActiveTorrents state', state)
+    console.log('infoHash', infoHash)
+
+    console.log('getByKey 3');
     // Do not pause active torrents if playing a fully downloaded torrent.
-    const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
+    const torrentSummary = TorrentSummary.getByKey(state, infoHash)
+    console.log('torrentSummary', torrentSummary)
     if (torrentSummary.status === 'seeding') return
 
     dispatch('prioritizeTorrent', infoHash)
@@ -242,6 +251,7 @@ module.exports = class PlaybackController {
   // Opens the video player to a specific torrent
   openPlayer(infoHash, index, cb) {
     const state = this.state
+    console.log('getByKey 4');
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
 
     state.playing.infoHash = torrentSummary.infoHash
@@ -277,6 +287,7 @@ module.exports = class PlaybackController {
   updatePlayer(infoHash, index, resume, cb) {
     const state = this.state
 
+    console.log('getByKey 5');
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
     const fileSummary = torrentSummary.files.at(index)
 

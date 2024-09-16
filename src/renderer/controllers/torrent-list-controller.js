@@ -78,6 +78,7 @@ module.exports = class TorrentListController {
 
   // Starts downloading and/or seeding a given torrentSummary.
   startTorrentingSummary (torrentKey) {
+    console.log('getByKey 7');
     const s = TorrentSummary.getByKey(this.state, torrentKey)
     if (!s) throw new TorrentKeyNotFoundError(torrentKey)
 
@@ -119,6 +120,7 @@ module.exports = class TorrentListController {
 
   // TODO: use torrentKey, not infoHash
   toggleTorrent (infoHash) {
+    console.log('getByKey 8');
     const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
     if (torrentSummary.status === 'paused') {
       torrentSummary.status = 'new'
@@ -185,6 +187,7 @@ module.exports = class TorrentListController {
   }
 
   toggleTorrentFile (infoHash, index) {
+    console.log('getByKey 9');
     const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
     torrentSummary.selections[index] = !torrentSummary.selections[index]
 
@@ -254,6 +257,7 @@ module.exports = class TorrentListController {
   }
 
   openTorrentContextMenu (infoHash) {
+    console.log('getByKey 10');
     const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
     const menu = new remote.Menu()
 
@@ -313,6 +317,7 @@ module.exports = class TorrentListController {
   // Takes a torrentSummary or torrentKey
   // Shows a Save File dialog, then saves the .torrent file wherever the user requests
   saveTorrentFileAs (torrentKey) {
+    console.log('getByKey 11');
     const torrentSummary = TorrentSummary.getByKey(this.state, torrentKey)
     if (!torrentSummary) throw new TorrentKeyNotFoundError(torrentKey)
     const downloadPath = this.state.saved.prefs.downloadPath

@@ -40,7 +40,15 @@ function getTorrentId (torrentSummary) {
 // Expects a torrentKey or infoHash
 // Returns the corresponding torrentSummary, or undefined
 function getByKey (state, torrentKey) {
+  console.log('getByKey state', state)
+  console.log('getByKey torrentKey', torrentKey)
+  console.log('typeof getByKey torrentKey', typeof torrentKey)
   if (!torrentKey) return undefined
+
+  console.log('state.saved.torrents', state.saved.torrents)
+  console.log('state.saved.torrents find', state.saved.torrents.find((x) =>
+    x.torrentKey === torrentKey || x.infoHash === torrentKey))
+
   return state.saved.torrents.find((x) =>
     x.torrentKey === torrentKey || x.infoHash === torrentKey)
 }
