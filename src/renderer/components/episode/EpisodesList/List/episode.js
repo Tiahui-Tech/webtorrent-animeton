@@ -37,7 +37,7 @@ const EpisodeCard = React.memo(({ episode }) => {
   return (
     <div onClick={() => handlePlay()}>
       <Card
-        className="w-full relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
+        className="w-full max-w-[1130px] relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
         style={{ zIndex: 9999 }}
       >
         <CardBody className="flex flex-row relative gap-4 justify-start">
@@ -63,7 +63,7 @@ const EpisodeCard = React.memo(({ episode }) => {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-3xl font-medium truncate w-full max-w-[480px]">
+                <p className="text-3xl font-medium truncate w-full max-w-[500px]">
                   {`E${episode.episodeNumber} - ${episode.title.en}`}
                 </p>
                 <span className="text-xl text-gray-400">{episode.title.ja}</span>
