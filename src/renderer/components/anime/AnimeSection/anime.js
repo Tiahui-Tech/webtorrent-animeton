@@ -37,7 +37,7 @@ const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
             img: 'aspect-[9/14] rounded-t-lg'
           }}
         />
-        <div className="flex flex-row absolute top-2 right-2">
+        <div className="flex flex-row absolute top-2 right-2 z-10">
           <Chip
             variant="shadow"
             startContent={<Icon icon="gravity-ui:circle-fill" />}

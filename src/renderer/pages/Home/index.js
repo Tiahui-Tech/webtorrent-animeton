@@ -15,7 +15,7 @@ const Home = ({ state }) => {
     <div>
       <AnimeCarousel animes={animes} />
       <LatestEpisodes state={state} sectionTitle={'Ultimos Episodios'} />
-      <AnimeSection state={state} sectionTitle={'Popular en este momento'} />
+      <AnimeSection state={state} sectionTitle={'Lista de Animes'} />
     </div>
   );
 };
