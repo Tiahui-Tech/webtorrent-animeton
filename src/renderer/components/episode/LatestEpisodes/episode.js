@@ -82,7 +82,7 @@ const EpisodeCard = React.memo(({ anime, state }) => {
                 img: 'aspect-[16/9] rounded-t-lg'
               }}
             />
-            <div className="flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2">
+            <div className="flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2 z-10">
               {getAnimeFlags(anime?.torrent?.title)}
             </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-50">
