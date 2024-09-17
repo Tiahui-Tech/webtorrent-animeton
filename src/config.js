@@ -67,7 +67,7 @@ module.exports = {
     height: 900
   },
   WINDOW_MIN_HEIGHT: 500,
-  WINDOW_MIN_WIDTH: 900,
+  WINDOW_MIN_WIDTH: 1260,
 
   UI_HEADER_HEIGHT,
   UI_TORRENT_HEIGHT

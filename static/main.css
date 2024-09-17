@@ -2124,6 +2124,10 @@ video {
   min-width: 200px;
 }
 
+.min-w-\[227px\] {
+  min-width: 227px;
+}
+
 .min-w-full {
   min-width: 100%;
 }
