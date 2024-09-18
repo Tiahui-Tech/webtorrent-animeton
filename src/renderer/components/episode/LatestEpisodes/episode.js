@@ -1,11 +1,7 @@
 const React = require('react');
-const {
-  getAnimeFlags,
-  timeAgo,
-  getNeonColor
-} = require('../../../../modules/utils');
+const { getAnimeFlags, timeAgo, getNeonColor } = require('../../../../modules/utils');
 const { dispatch } = require('../../../lib/dispatcher');
-const TorrentPlayer = require('../../../lib/torrent-player');
+const TorrentPlayer = require('../../../lib/torrent-player')
 
 const {
   Card,
@@ -16,15 +12,11 @@ const {
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
-
 const useExtractColor = require('../../../hooks/useExtractColor');
 
 const EpisodeCard = React.memo(({ anime, state }) => {
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const handlePlay = (anime) => {
-    setIsLoading(true);
-
     console.log('anime', anime);
     const hash = anime.torrent?.infohash || anime.torrent?.infoHash;
     console.log('hash', hash);
@@ -39,8 +31,7 @@ const EpisodeCard = React.memo(({ anime, state }) => {
       dispatch('addTorrent', anime.torrent.link);
       setTimeout(() => {
         dispatch('playFile', hash);
-        setIsLoading(false);
-      }, 5000);
+      }, 1500);
 
       return;
     }
@@ -50,24 +41,19 @@ const EpisodeCard = React.memo(({ anime, state }) => {
 
     if (isPlayable) {
       dispatch('toggleSelectTorrent', torrent.infoHash);
-
-      setTimeout(() => {
-        dispatch('playFile', hash);
-        setIsLoading(false);
-      }, 5000);
+      return dispatch('playFile', torrent.infoHash);
     }
   };
 
-  const episodeImage =
-    anime?.episode?.image ||
+  const episodeImage = anime?.episode?.image ||
     anime?.bannerImage ||
-    anime?.coverImage?.extraLarge;
+    anime?.coverImage?.extraLarge
 
-  const { animeColors } = useExtractColor(episodeImage);
+  const { animeColors } = useExtractColor(episodeImage)
 
-  if (!animeColors) return null;
+  if (!animeColors) return null
 
-  const cardColor = getNeonColor(animeColors[0]);
+  const cardColor = getNeonColor(animeColors[0])
 
   return (
     <div className="max-w-[400px] px-4">
@@ -87,9 +73,11 @@ const EpisodeCard = React.memo(({ anime, state }) => {
           >
             <Image
               component="img"
-              src={episodeImage}
+              src={
+                episodeImage
+              }
               alt={anime?.title?.romaji}
-              className={`w-full h-full object-cover ${isLoading && 'grayscale'}`}
+              className="w-full h-full object-cover"
               classNames={{
                 img: 'aspect-[16/9] rounded-t-lg'
               }}
@@ -97,26 +85,14 @@ const EpisodeCard = React.memo(({ anime, state }) => {
             <div className="flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2 z-10">
               {getAnimeFlags(anime?.torrent?.title)}
             </div>
-            {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center opacity-100 z-50">
-                <Icon
-                  icon="fluent:spinner-ios-16-filled"
-                  width="64"
-                  height="64"
-                  className="animate-spin"
-                  style={{ color: cardColor }}
-                />
-              </div>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-50">
-                <Icon
-                  icon="gravity-ui:play-fill"
-                  width="64"
-                  height="64"
-                  style={{ color: cardColor }}
-                />
-              </div>
-            )}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-50">
+              <Icon
+                icon="gravity-ui:play-fill"
+                width="64"
+                height="64"
+                style={{ color: cardColor }}
+              />
+            </div>
           </CardBody>
           <CardFooter>
             <div className="flex justify-between items-center w-full mt-2">

@@ -12,7 +12,6 @@ module.exports = class TorrentController {
   }
 
   torrentParsed (torrentKey, infoHash, magnetURI) {
-    console.log('getTorrentSummary 1');
     let torrentSummary = this.getTorrentSummary(torrentKey)
     console.log('got infohash for %s torrent %s',
       torrentSummary ? 'existing' : 'new', torrentKey)
@@ -51,7 +50,6 @@ module.exports = class TorrentController {
     }
     dispatch('error', message)
 
-    console.log('getTorrentSummary 2');
     const torrentSummary = this.getTorrentSummary(torrentKey)
     if (torrentSummary) {
       console.log('Pausing torrent %s due to error: %s', torrentSummary.infoHash, message)
@@ -62,7 +60,6 @@ module.exports = class TorrentController {
 
   torrentMetadata (torrentKey, torrentInfo) {
     // Summarize torrent
-    console.log('getTorrentSummary 3');
     const torrentSummary = this.getTorrentSummary(torrentKey)
     torrentSummary.status = 'downloading'
     torrentSummary.name = torrentSummary.displayName || torrentInfo.name
@@ -87,7 +84,6 @@ module.exports = class TorrentController {
 
   torrentDone (torrentKey, torrentInfo) {
     // Update the torrent summary
-    console.log('getTorrentSummary 4');
     const torrentSummary = this.getTorrentSummary(torrentKey)
     torrentSummary.status = 'seeding'
 
@@ -115,7 +111,6 @@ module.exports = class TorrentController {
     this.state.dock.progress = progress
 
     // Update progress for each individual torrent
-    console.log('getTorrentSummary 5');
     progressInfo.torrents.forEach((p) => {
       const torrentSummary = this.getTorrentSummary(p.torrentKey)
       if (!torrentSummary) {
@@ -132,7 +127,6 @@ module.exports = class TorrentController {
   }
 
   torrentFileModtimes (torrentKey, fileModtimes) {
-    console.log('getTorrentSummary 6');
     const torrentSummary = this.getTorrentSummary(torrentKey)
     if (!torrentSummary) throw new Error('Not saving modtimes for deleted torrent ' + torrentKey)
     torrentSummary.fileModtimes = fileModtimes
@@ -141,21 +135,18 @@ module.exports = class TorrentController {
 
   torrentFileSaved (torrentKey, torrentFileName) {
     console.log('torrent file saved %s: %s', torrentKey, torrentFileName)
-    console.log('getTorrentSummary 7');
     const torrentSummary = this.getTorrentSummary(torrentKey)
     torrentSummary.torrentFileName = torrentFileName
     dispatch('stateSave')
   }
 
   torrentPosterSaved (torrentKey, posterFileName) {
-    console.log('getTorrentSummary 8');
     const torrentSummary = this.getTorrentSummary(torrentKey)
     torrentSummary.posterFileName = posterFileName
     dispatch('stateSave')
   }
 
   torrentAudioMetadata (infoHash, index, info) {
-    console.log('getTorrentSummary 9');
     const torrentSummary = this.getTorrentSummary(infoHash)
     const fileSummary = torrentSummary.files[index]
     fileSummary.audioInfo = info

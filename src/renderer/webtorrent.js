@@ -181,7 +181,6 @@ function addTorrentEvents(torrent) {
     const info = getTorrentInfo(torrent);
     ipcRenderer.send('wt-metadata', torrent.key, info);
 
-    console.log('updateTorrentProgress 1');
     updateTorrentProgress();
   }
 
@@ -190,7 +189,6 @@ function addTorrentEvents(torrent) {
     ipcRenderer.send('wt-ready', torrent.key, info);
     ipcRenderer.send('wt-ready-' + torrent.infoHash, torrent.key, info);
 
-    console.log('updateTorrentProgress 2');
     updateTorrentProgress();
   }
 
@@ -198,7 +196,6 @@ function addTorrentEvents(torrent) {
     const info = getTorrentInfo(torrent);
     ipcRenderer.send('wt-done', torrent.key, info);
 
-    console.log('updateTorrentProgress 3');
     updateTorrentProgress();
 
     // TODO: This crash the video player, idk why xD (Fix in the future)

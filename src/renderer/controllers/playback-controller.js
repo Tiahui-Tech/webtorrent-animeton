@@ -12,8 +12,7 @@ const TorrentSummary = require('../lib/torrent-summary')
 const Playlist = require('../lib/playlist')
 const State = require('../lib/state')
 
-const { getCurrentPath } = require('../pages/app');
-const eventBus = require('../lib/event-bus');
+const { eventEmitter, getCurrentPath } = require('../pages/app');
 
 // Controls playback of torrents and files within torrents
 // both local (<video>,<audio>,external player) and remote (cast)
@@ -40,7 +39,7 @@ module.exports = class PlaybackController {
       })
     } else {
       let initialized = false
-      eventBus.emit('navigate', {
+      eventEmitter.emit('navigate', {
         path: '/player',
         state: {
           infoHash,
@@ -255,9 +254,8 @@ module.exports = class PlaybackController {
     console.log('getByKey 4');
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
 
-    state.playing.infoHash = infoHash;
-    state.playing.isReady = false;
-    this.update(state);
+    state.playing.infoHash = torrentSummary.infoHash
+    state.playing.isReady = false
 
     // update UI to show pending playback
     sound.play('PLAY')
@@ -269,6 +267,8 @@ module.exports = class PlaybackController {
 
   // Starts WebTorrent server for media streaming
   startServer(torrentSummary) {
+    const state = this.state
+
     if (torrentSummary.status === 'paused') {
       dispatch('startTorrentingSummary', torrentSummary.torrentKey)
       ipcRenderer.once('wt-ready-' + torrentSummary.infoHash,
@@ -279,9 +279,7 @@ module.exports = class PlaybackController {
 
     function onTorrentReady() {
       ipcRenderer.send('wt-start-server', torrentSummary.infoHash)
-      ipcRenderer.once('wt-server-running', () => {
-        this.state.playing.isReady = true;
-      })
+      ipcRenderer.once('wt-server-running', () => { state.playing.isReady = true })
     }
   }
 
@@ -309,8 +307,6 @@ module.exports = class PlaybackController {
       : TorrentPlayer.isAudio(fileSummary)
         ? 'audio'
         : 'other'
-
-    this.update(state);
 
     // pick up where we left off
     let jumpToTime = 0
@@ -397,10 +393,6 @@ module.exports = class PlaybackController {
     if (this.state.saved.prefs.highestPlaybackPriority) {
       dispatch('resumePausedTorrents')
     }
-
-    eventBus.emit('navigate', {
-      path: '/'
-    });
 
     this.update(state)
   }
