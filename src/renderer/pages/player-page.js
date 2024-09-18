@@ -13,6 +13,7 @@ const config = require('../../config');
 const { calculateEta } = require('../lib/time');
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
+  console.log('Player state', state);
   const location = useLocation();
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);

@@ -12,8 +12,6 @@ const Player = require('./player-page')
 const CreateTorrent = React.lazy(() => require('./create-torrent-page'));
 const Preferences = require('./preferences-page');
 
-const { EventEmitter } = require('events');
-const eventEmitter = new EventEmitter();
 const eventBus = require('../lib/event-bus');
 
 let currentPath = '/';
@@ -41,7 +39,7 @@ const Modals = {
 
 function App({ initialState, onUpdate }) {
   return (
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter>
       <AppContent initialState={initialState} onUpdate={onUpdate} />
     </MemoryRouter>
   );
@@ -69,10 +67,10 @@ function AppContent({ initialState, onUpdate }) {
     const navigationHandler = ({ path, state }) => {
       navigate(path, { state });
     };
-    eventEmitter.on('navigate', navigationHandler);
+    eventBus.on('navigate', navigationHandler);
 
     return () => {
-      eventEmitter.off('navigate', navigationHandler);
+      eventBus.off('navigate', navigationHandler);
       eventBus.off('stateUpdate', stateUpdateHandler);
     };
   }, [navigate, location]);
