@@ -11,7 +11,7 @@ const processRssAnimes = async (rssData) => {
   const anitomyAnimes = await anitomyscript(animeTitles);
   const anitomyTitles = anitomyAnimes.map((a) => a.anime_title);
 
-  const response = await fetch(`${API_BASE_URL}/anime/search`, {
+  const response = await fetch(`${API_BASE_URL}/anime/search/batch`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ animes: anitomyTitles })

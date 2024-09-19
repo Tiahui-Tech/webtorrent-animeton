@@ -2014,8 +2014,8 @@ video {
   width: 227px;
 }
 
-.w-\[373px\] {
-  width: 373px;
+.w-\[337px\] {
+  width: 337px;
 }
 
 .w-\[80\%\] {
@@ -2128,6 +2128,10 @@ video {
   min-width: 227px;
 }
 
+.min-w-\[250px\] {
+  min-width: 250px;
+}
+
 .min-w-full {
   min-width: 100%;
 }
@@ -2184,6 +2188,10 @@ video {
 
 .max-w-\[270px\] {
   max-width: 270px;
+}
+
+.max-w-\[337px\] {
+  max-width: 337px;
 }
 
 .max-w-\[400px\] {
