@@ -160,4 +160,4 @@ function deepMerge(target, source) {
   return target;
 }
 
-module.exports = { App, eventEmitter, getCurrentPath };
+module.exports = { App, getCurrentPath };

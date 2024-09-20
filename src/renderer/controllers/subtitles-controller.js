@@ -8,11 +8,11 @@ const eventBus = require('../lib/event-bus')
 const { dispatch } = require('../lib/dispatcher')
 
 module.exports = class SubtitlesController {
-  constructor (state) {
+  constructor(state) {
     this.state = state
   }
 
-  openSubtitles () {
+  openSubtitles() {
     const filenames = remote.dialog.showOpenDialogSync({
       title: 'Select a subtitles file.',
       filters: [{ name: 'Subtitles', extensions: ['vtt', 'srt'] }],
@@ -22,16 +22,16 @@ module.exports = class SubtitlesController {
     this.addSubtitles(filenames, true)
   }
 
-  selectSubtitle (ix) {
+  selectSubtitle(ix) {
     this.state.playing.subtitles.selectedIndex = ix
   }
 
-  toggleSubtitlesMenu () {
+  toggleSubtitlesMenu() {
     const subtitles = this.state.playing.subtitles
     subtitles.showMenu = !subtitles.showMenu
   }
 
-  addSubtitles (files, autoSelect) {
+  addSubtitles(files, autoSelect) {
     // Subtitles are only supported when playing video files
     if (this.state.playing.type !== 'video') return
     if (files.length === 0) return
@@ -59,7 +59,7 @@ module.exports = class SubtitlesController {
       })
 
       // Finally, make sure no two tracks have the same label
-      relabelSubtitles(subtitles)
+      relabelAndFilterSubtitles(subtitles)
     })
   }
 
@@ -67,7 +67,7 @@ module.exports = class SubtitlesController {
     if (this.state.playing.type !== 'video') return
     const torrentSummary = this.state.getPlayingTorrentSummary()
     if (!torrentSummary || !torrentSummary.progress) return
-  
+
     const filePath = path.join(torrentSummary.path, torrentSummary.name)
 
     try {
@@ -81,7 +81,7 @@ module.exports = class SubtitlesController {
   parseSubtitles(filePath) {
     return new Promise((resolve, reject) => {
       const child = fork('./src/modules/subtitles-worker.js')
-      
+
       child.on('message', (result) => {
         if (result.success) {
           resolve(result.subtitles)
@@ -89,14 +89,14 @@ module.exports = class SubtitlesController {
           reject(new Error(result.error))
         }
       })
-  
+
       child.on('error', reject)
-  
+
       child.send(filePath)
     })
   }
 
-  isSubtitle (file) {
+  isSubtitle(file) {
     const name = typeof file === 'string' ? file : file.name
     const ext = path.extname(name).toLowerCase()
     return ext === '.srt' || ext === '.vtt'
@@ -127,10 +127,15 @@ module.exports = class SubtitlesController {
       selectedIndex = this.state.playing.subtitles.tracks.length
     }
 
+    const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks)
+    const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
+
+    console.table(filteredAndSortedTracks);
+
     eventBus.emit('stateUpdate', {
       playing: {
         subtitles: {
-          tracks: updatedTracks,
+          tracks: filteredAndSortedTracks,
           selectedIndex: selectedIndex
         }
       }
@@ -143,7 +148,7 @@ module.exports = class SubtitlesController {
         const startTime = formatVttTime(cue.time);
         const endTime = formatVttTime(cue.time + cue.duration);
         const text = convertAssTextToVtt(cue.text);
-        
+
         return `${startTime} --> ${endTime}\n${text}\n`;
       }).join('\n');
 
@@ -152,7 +157,7 @@ module.exports = class SubtitlesController {
   }
 }
 
-function loadSubtitle (file, cb) {
+function loadSubtitle(file, cb) {
   // Lazy load to keep startup fast
   const concat = require('simple-concat')
   const LanguageDetect = require('languagedetect')
@@ -189,7 +194,7 @@ function loadSubtitle (file, cb) {
 
 // Checks whether a language name like 'English' or 'German' matches the system
 // language, aka the current locale
-function isSystemLanguage (language) {
+function isSystemLanguage(language) {
   const iso639 = require('iso-639-1')
   const osLangISO = window.navigator.language.split('-')[0] // eg 'en'
   const langIso = iso639.getCode(language) // eg 'de' if language is 'German'
@@ -198,11 +203,56 @@ function isSystemLanguage (language) {
 
 // Make sure we don't have two subtitle tracks with the same label
 // Labels each track by language, eg 'German', 'English', 'English 2', ...
-function relabelSubtitles(subtitles) {
+function relabelAndFilterSubtitles(subtitles) {
   const counts = {}
-  subtitles.tracks.forEach(track => {
-    const lang = track.language
-    counts[lang] = (counts[lang] || 0) + 1
-    track.label = counts[lang] > 1 ? `${lang} ${counts[lang]}` : lang
+  const uniquePaths = new Set()
+  const uniqueSubtitles = []
+
+  subtitles.forEach(track => {
+    // Avoid duplicate subtitles based on filePath
+    if (!uniquePaths.has(track.filePath)) {
+      uniquePaths.add(track.filePath)
+      uniqueSubtitles.push(track)
+
+      const lang = track.language
+      counts[lang] = (counts[lang] || 0) + 1
+      track.label = counts[lang] > 1 ? `${lang} ${counts[lang]}` : lang
+    }
   })
+
+  return uniqueSubtitles
+}
+
+function filterRenameAndSortSubtitles(subtitles) {
+  const languageMap = {
+    'Unknown': 'Ingles',
+  };
+
+  console.table(subtitles);
+
+  // Helper function to determine Spanish subtitle type
+  const getSpanishLabel = (track) => {
+    const label = track.label.toLowerCase();
+    if (label === 'spa' || label.includes('latin')) {
+      return 'Español Latino';
+    } else if (label.includes('spain') || label === 'spa 2') {
+      return 'Español España';
+    } else {
+      return 'Español'; // Default case for unspecified Spanish subtitles
+    }
+  };
+
+  const filteredAndRenamed = subtitles
+    .filter(track => track.language === 'Unknown' || track.language === 'spa')
+    .map(track => ({
+      ...track,
+      label: track.language === 'spa' ? getSpanishLabel(track) : languageMap[track.language]
+    }));
+
+  // Sort order with 'Español' as the last option for Spanish subtitles
+  const sortOrder = ['Español Latino', 'Español España', 'Español', 'Ingles'];
+
+  return filteredAndRenamed.sort((a, b) =>
+    sortOrder.indexOf(a.label) - sortOrder.indexOf(b.label)
+  );
 }
