@@ -24,16 +24,11 @@ const EpisodeCard = React.memo(({ anime, state }) => {
 
   const handlePlay = (anime) => {
     setIsLoading(true);
-
-    console.log('anime', anime);
+    
     const hash = anime.torrent?.infohash || anime.torrent?.infoHash;
-    console.log('hash', hash);
-    console.log('state.saved', state.saved);
     const torrent = state.saved.torrents.find(
       (torrent) => torrent.infoHash === hash
     );
-
-    console.log('torrent', torrent);
 
     if (!torrent) {
       dispatch('addTorrent', anime.torrent.link);
