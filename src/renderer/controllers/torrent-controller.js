@@ -161,7 +161,6 @@ module.exports = class TorrentController {
   // Gets a torrent summary {name, infoHash, status} from state.saved.torrents
   // Returns undefined if we don't know that infoHash
   getTorrentSummary (torrentKey) {
-    console.log('getByKey 6');
     return TorrentSummary.getByKey(this.state, torrentKey)
   }
 }

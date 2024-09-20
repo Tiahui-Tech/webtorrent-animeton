@@ -631,7 +631,7 @@ function renderSubtitleOptions(state) {
       {items}
       <li onClick={dispatcher('selectSubtitle', -1)}>
         <i className="icon">{noneClass}</i>
-        None
+        Sin subtítulos
       </li>
     </ul>
   );
