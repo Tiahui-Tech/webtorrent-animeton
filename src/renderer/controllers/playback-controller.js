@@ -338,13 +338,9 @@ module.exports = class PlaybackController {
     // play in VLC if set as default player (Preferences / Playback / Play in VLC)
     if (this.state.saved.prefs.openExternalPlayer) {
       dispatch('openExternalPlayer')
-      // this.update(state)
       cb()
       return
     }
-
-    // otherwise, play the video
-    // this.update(state)
 
     ipcRenderer.send('onPlayerUpdate', Playlist.hasNext(state), Playlist.hasPrevious(state))
     cb()
