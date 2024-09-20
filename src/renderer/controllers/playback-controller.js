@@ -382,12 +382,6 @@ module.exports = class PlaybackController {
     if (this.state.saved.prefs.highestPlaybackPriority) {
       dispatch('resumePausedTorrents')
     }
-
-    // eventBus.emit('navigate', {
-    //   path: '/'
-    // });
-
-    // this.update(state)
   }
 }
 
