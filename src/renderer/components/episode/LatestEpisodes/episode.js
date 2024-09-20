@@ -32,6 +32,8 @@ const EpisodeCard = React.memo(({ anime, state }) => {
 
     if (!torrent) {
       dispatch('addTorrent', anime.torrent.link);
+
+      // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
       setTimeout(() => {
         dispatch('playFile', hash);
         setIsLoading(false);
@@ -46,6 +48,8 @@ const EpisodeCard = React.memo(({ anime, state }) => {
     if (isPlayable) {
       dispatch('toggleSelectTorrent', torrent.infoHash);
 
+      // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
+      // Improves effectiveness as it's not the first to play in the app
       setTimeout(() => {
         dispatch('playFile', hash);
         setIsLoading(false);

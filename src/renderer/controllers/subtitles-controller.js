@@ -130,8 +130,6 @@ module.exports = class SubtitlesController {
     const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks)
     const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
 
-    console.table(filteredAndSortedTracks);
-
     eventBus.emit('stateUpdate', {
       playing: {
         subtitles: {
@@ -227,8 +225,6 @@ function filterRenameAndSortSubtitles(subtitles) {
   const languageMap = {
     'Unknown': 'Ingles',
   };
-
-  console.table(subtitles);
 
   // Helper function to determine Spanish subtitle type
   const getSpanishLabel = (track) => {
