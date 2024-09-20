@@ -4,11 +4,12 @@ module.exports = {
   isAudio,
   isTorrent,
   isMagnetLink,
-  isPlayableTorrentSummary
+  isPlayableTorrentSummary,
+  playTorrent
 }
 
 const path = require('path')
-
+const { dispatch } = require('./dispatcher');
 const mediaExtensions = require('./media-extensions')
 
 // Checks whether a fileSummary or file path is audio/video that we can play,
@@ -51,3 +52,38 @@ function getFileExtension (file) {
 function isPlayableTorrentSummary (torrentSummary) {
   return torrentSummary.files && torrentSummary.files.some(isPlayable)
 }
+
+function playTorrent (anime, state, setIsLoading) {
+  setIsLoading(true);
+  
+  const hash = anime.torrent?.infohash || anime.torrent?.infoHash;
+  const torrent = state.saved.torrents.find(
+    (torrent) => torrent.infoHash === hash
+  );
+
+  if (!torrent) {
+    dispatch('addTorrent', anime.torrent.link);
+
+    // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
+    setTimeout(() => {
+      dispatch('playFile', hash);
+      setIsLoading(false);
+    }, 5000);
+
+    return;
+  }
+
+  const file = torrent.files.at(0);
+  const isTorrentPlayable = isPlayable(file);
+
+  if (isTorrentPlayable) {
+    dispatch('toggleSelectTorrent', torrent.infoHash);
+
+    // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
+    // Improves effectiveness as it's not the first to play in the app
+    setTimeout(() => {
+      dispatch('playFile', hash);
+      setIsLoading(false);
+    }, 5000);
+  }
+};

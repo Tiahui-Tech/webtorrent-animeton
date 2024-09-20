@@ -1,6 +1,5 @@
 const React = require('react');
 const { TIME_UNITS } = require('../constants/config');
-const { LiveTv, Movie, MusicNote, Book } = require('@mui/icons-material');
 const { Icon } = require('@iconify/react');
 
 const timeAgo = (dateISO) => {

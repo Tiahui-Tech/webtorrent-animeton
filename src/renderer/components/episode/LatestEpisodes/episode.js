@@ -1,10 +1,10 @@
 const React = require('react');
+const { useState, memo } = React;
 const {
   getAnimeFlags,
   timeAgo,
   getNeonColor
 } = require('../../../../modules/utils');
-const { dispatch } = require('../../../lib/dispatcher');
 const TorrentPlayer = require('../../../lib/torrent-player');
 
 const {
@@ -19,43 +19,12 @@ const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
 
 const useExtractColor = require('../../../hooks/useExtractColor');
 
-const EpisodeCard = React.memo(({ anime, state }) => {
-  const [isLoading, setIsLoading] = React.useState(false);
+const EpisodeCard = memo(({ anime, state }) => {
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePlay = (anime) => {
-    setIsLoading(true);
-    
-    const hash = anime.torrent?.infohash || anime.torrent?.infoHash;
-    const torrent = state.saved.torrents.find(
-      (torrent) => torrent.infoHash === hash
-    );
-
-    if (!torrent) {
-      dispatch('addTorrent', anime.torrent.link);
-
-      // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
-      setTimeout(() => {
-        dispatch('playFile', hash);
-        setIsLoading(false);
-      }, 5000);
-
-      return;
-    }
-
-    const file = torrent.files.at(0);
-    const isPlayable = TorrentPlayer.isPlayable(file);
-
-    if (isPlayable) {
-      dispatch('toggleSelectTorrent', torrent.infoHash);
-
-      // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
-      // Improves effectiveness as it's not the first to play in the app
-      setTimeout(() => {
-        dispatch('playFile', hash);
-        setIsLoading(false);
-      }, 5000);
-    }
-  };
+  const handlePlay = () => {
+    TorrentPlayer.playTorrent(anime, state, setIsLoading);
+  }
 
   const episodeImage =
     anime?.episode?.image ||
@@ -82,7 +51,7 @@ const EpisodeCard = React.memo(({ anime, state }) => {
           </CardHeader>
           <CardBody
             className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
-            onClick={() => handlePlay(anime)}
+            onClick={handlePlay}
           >
             <Image
               component="img"
