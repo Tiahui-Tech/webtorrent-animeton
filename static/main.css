@@ -2759,6 +2759,10 @@ video {
   border-radius: 0.25rem;
 }
 
+.rounded-2xl {
+  border-radius: 1rem;
+}
+
 .rounded-\[--border-radius\] {
   border-radius: var(--border-radius);
 }
@@ -6094,11 +6098,6 @@ video {
   opacity: 0.8;
 }
 
-.hover\:grayscale:hover {
-  --tw-grayscale: grayscale(100%);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
 .hover\:after\:bg-danger\/20:hover::after {
   content: var(--tw-content);
   background-color: hsl(var(--nextui-danger) / 0.2);
@@ -6292,6 +6291,11 @@ video {
 
 .group\/card:hover .group-hover\/card\:blur-\[5px\] {
   --tw-blur: blur(5px);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+.group\/card:hover .group-hover\/card\:brightness-\[120\%\] {
+  --tw-brightness: brightness(120%);
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 

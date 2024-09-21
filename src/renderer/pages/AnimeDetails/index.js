@@ -86,6 +86,7 @@ const AnimeDetails = ({ state }) => {
 
       {showSidebar && (
         <LatestEpisodesSidebar
+          state={state}
           bannerColors={bannerColors}
           sectionTitle="Episodios Recientes"
         />

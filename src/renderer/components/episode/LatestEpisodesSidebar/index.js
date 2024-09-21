@@ -3,7 +3,7 @@ const useRSSData = require('../../../hooks/useRSSData');
 const Episode = require('./episode');
 const EpisodeSkeleton = require('./skeleton');
 
-const LatestEpisodesSidebar = React.memo(({ bannerColors, sectionTitle }) => {
+const LatestEpisodesSidebar = React.memo(({ state, bannerColors, sectionTitle }) => {
   const rssAnimes = useRSSData({
     page: 1,
     perPage: 10,
@@ -18,7 +18,7 @@ const LatestEpisodesSidebar = React.memo(({ bannerColors, sectionTitle }) => {
       >
         {rssAnimes
           ? rssAnimes.map((anime, i) => (
-            <Episode anime={anime} key={`rss-episode-${i}`} />
+            <Episode anime={anime} state={state} key={`rss-episode-${i}`} />
           ))
           // While loading, shows 8 EpisodeSkeletons per row
           : Array.from({ length: 8 }).map((_, i) => (

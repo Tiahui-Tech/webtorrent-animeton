@@ -57,7 +57,7 @@ const AnimeOverview = ({ anime, animeColors, textColor, background }) => {
                 WebkitBoxOrient: 'vertical'
               }}
             >
-              {anime.description}
+              {anime?.description || 'Sin descripción'}
             </p>
           </div>
         </div>

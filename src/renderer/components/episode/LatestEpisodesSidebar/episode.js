@@ -18,7 +18,7 @@ const Episode = memo(({ anime, state }) => {
         className="flex flex-col w-[227px] max-w-[227px]"
         onClick={handlePlay}
       >
-        <div className="relative cursor-pointer transition-all duration-300 hover:grayscale">
+        <div className="relative cursor-pointer transition-all duration-300">
           <Image
             alt="episode-image"
             src={
@@ -26,13 +26,13 @@ const Episode = memo(({ anime, state }) => {
               anime?.bannerImage ||
               anime?.coverImage?.extraLarge
             }
-            className="aspect-video object-cover w-auto h-32"
+            className={`aspect-video object-cover w-auto h-32 ${isLoading && 'grayscale'}`}
           />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50">
-            <Icon icon="gravity-ui:play-fill" width="64" height="64" />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50 z-10">
+            <Icon icon="gravity-ui:play-fill" width="64" height="64" style={{ color: '#000' }} />
           </div>
           {isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center opacity-100 z-50">
+            <div className="absolute inset-0 flex items-center justify-center opacity-100 z-10">
               <Icon
                 icon="fluent:spinner-ios-16-filled"
                 width="64"
