@@ -7,7 +7,7 @@ const useAnimeEpisodesData = require('../../../hooks/useAnimeEpisodesData');
 
 const EpisodesList = require('./List');
 
-const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
+const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
   const { episodes: episodesData, isLoading } = useAnimeEpisodesData(idAnilist, true);
   const [isReversed, setIsReversed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,6 +84,7 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
 
       <Divider orientation="horizontal" />
       <EpisodesList
+        state={state}
         episodesData={isLoading ? [] : filteredAndSortedEpisodes}
         isLoading={isLoading}
         animeColors={animeColors}

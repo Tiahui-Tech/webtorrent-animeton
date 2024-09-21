@@ -16,7 +16,7 @@ const EpisodeCard = React.memo(({ episode, state }) => {
   };
 
   return (
-    <div onClick={() => handlePlay()}>
+    <div onClick={handlePlay}>
       <Card
         className="w-full max-w-[1130px] relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
         style={{ zIndex: 9999 }}
@@ -28,15 +28,26 @@ const EpisodeCard = React.memo(({ episode, state }) => {
                 <Image
                   alt="episode-image"
                   src={episode.image}
-                  className={`aspect-video object-cover w-auto h-32 transition-all duration-300 ease-in-out z-20 ${!episodeHasTorrent && 'group-hover/card:grayscale group-hover/card:blur-[5px] group-hover/card:brightness-[120%] group-hover/card:opacity-70'}`}
+                  className={`aspect-video object-cover w-auto h-32 transition-all duration-300 ease-in-out z-20 group-hover/card:brightness-[120%] group-hover/card:blur-[5px] group-hover/card:opacity-70 ${!episodeHasTorrent && 'group-hover/card:grayscale'}`}
                 />
                 {!episodeHasTorrent && <div
                   className="absolute inset-0 bg-white rounded-2xl z-10"
                 />}
                 <div
                   className="absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover/card:opacity-70 z-30"
+                  style={{
+                    zIndex: 9999
+                  }}
                 >
-                  {episodeHasTorrent ? (
+                  {isLoading ? (
+                    <Icon
+                      icon="fluent:spinner-ios-16-filled"
+                      width="64"
+                      height="64"
+                      className="animate-spin"
+                      style={{ color: '#000' }}
+                    />
+                  ) : episodeHasTorrent ? (
                     <Icon icon="gravity-ui:play-fill" width="64" height="64" style={{ color: '#000' }} />
                   ) : (
                     <p className="text-black text-xl font-bold">No disponible...</p>
