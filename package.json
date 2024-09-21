@@ -1,6 +1,6 @@
 {
-  "name": "nyauwu",
-  "description": "NyaUWU, the streaming torrent client. For Mac, Windows, and Linux.",
+  "name": "animeton",
+  "description": "Animeton, the streaming torrent client. For Mac, Windows, and Linux.",
   "version": "0.1.0",
   "author": {
     "name": "Tiahui Tech",
@@ -112,7 +112,7 @@
     "torrent",
     "torrent client",
     "webtorrent",
-    "nyauwu"
+    "animeton"
   ],
   "license": "MIT",
   "main": "index.js",
@@ -122,7 +122,7 @@
     "electron-installer-redhat": "^3.4.0"
   },
   "private": true,
-  "productName": "NyaUWU",
+  "productName": "Animeton",
   "repository": {
     "type": "git",
     "url": "git://github.com/Tiahui-Tech/webtorrent-animerso.git"

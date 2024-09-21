@@ -3,7 +3,7 @@ const path = require('path')
 const { app } = require('electron')
 const arch = require('arch')
 
-const APP_NAME = 'NyaUWU'
+const APP_NAME = 'Animeton'
 const APP_TEAM = 'Tiahui Tech'
 const APP_VERSION = require('../package.json').version
 
@@ -24,8 +24,8 @@ module.exports = {
   TELEMETRY_URL: 'https://webtorrent.io/desktop/telemetry',
 
   APP_COPYRIGHT: `Copyright © 2024-${new Date().getFullYear()} ${APP_TEAM}`,
-  APP_FILE_ICON: path.join(__dirname, '..', 'static', 'assets', 'nyauwu_file'),
-  APP_ICON: path.join(__dirname, '..', 'static', 'assets', 'nyauwu'),
+  APP_FILE_ICON: path.join(__dirname, '..', 'static', 'assets', 'animeton_file'),
+  APP_ICON: path.join(__dirname, '..', 'static', 'assets', 'animeton'),
   APP_NAME,
   APP_TEAM,
   APP_VERSION,

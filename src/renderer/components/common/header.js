@@ -117,7 +117,7 @@ const Header = ({ state }) => {
             <SparklesText
               sparklesCount={8}
               className="text-white font-bold text-xl"
-              text="NyaUWU"
+              text="Animeton"
             />
           </button>
           <div className="flex flex-row items-center gap-2">
