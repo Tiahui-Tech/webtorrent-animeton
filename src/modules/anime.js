@@ -3,41 +3,6 @@ const fastLevenshtein = require('fast-levenshtein');
 const { API_BASE_URL } = require('../constants/config');
 const { normalize } = require('./utils');
 
-// Receives basic RSS data and from it gets the data of the anilist anime, torrent, episode, etc
-const processRssAnimes = async (rssData) => {
-  const animeTitles = rssData.map((anime) => anime.title);
-
-  // Convert anime titles to Anitomy Animes (title, episode_number, file_name etc)
-  const anitomyAnimes = await anitomyscript(animeTitles);
-  const anitomyTitles = anitomyAnimes.map((a) => a.anime_title);
-
-  const response = await fetch(`${API_BASE_URL}/anime/search/batch`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ animes: anitomyTitles })
-  });
-  const anilistAnimes = await response.json();
-
-  const animeDataPromises = anilistAnimes.map((anilistAnime) =>
-    findAnilistEpisodeAndTorrent(anilistAnime, anitomyAnimes, rssData)
-  );
-  const resolvedAnimes = await Promise.all(animeDataPromises);
-
-  // Keeps in the Array only animes with data, removes all null or undefined animes
-  // And removes duplicated animes or with incomplete data
-  const filteredAnimes = resolvedAnimes
-    .filter(Boolean)
-    .filter(
-      (anime, index, self) =>
-        index === self.findIndex((t) => t.id === anime.id) &&
-        anime.episode &&
-        !anime.episode.error &&
-        anime.torrent
-    );
-
-  return filteredAnimes;
-};
-
 // Compare Anilist and Anitomy anime to find the same title and combine Anime data from both sources
 const findAnilistEpisodeAndTorrent = async (
   anilistAnime,
@@ -109,4 +74,4 @@ async function anitomyscript(...args) {
   return parseObjs;
 }
 
-module.exports = { anitomyscript, processRssAnimes };
+module.exports = { anitomyscript, findAnilistEpisodeAndTorrent };

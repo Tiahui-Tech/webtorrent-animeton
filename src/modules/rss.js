@@ -1,4 +1,5 @@
-const { ERAI_RAWS_CONFIG } = require('../constants/config.js');
+const { ERAI_RAWS_CONFIG, API_BASE_URL } = require('../constants/config');
+const { findAnilistEpisodeAndTorrent, anitomyscript } = require('./anime.js');
 
 async function fetchAndParseRSS(page = 1, perPage = 20) {
   const { FEED_URL, RSS_URL } = ERAI_RAWS_CONFIG;
@@ -50,4 +51,39 @@ async function fetchAndParseRSS(page = 1, perPage = 20) {
   }
 }
 
-module.exports = { fetchAndParseRSS };
+// Receives basic RSS data and from it gets the data of the anilist anime, torrent, episode, etc
+const processRssAnimes = async (rssData) => {
+  const animeTitles = rssData.map((anime) => anime.title);
+
+  // Convert anime titles to Anitomy Animes (title, episode_number, file_name etc)
+  const anitomyAnimes = await anitomyscript(animeTitles);
+  const anitomyTitles = anitomyAnimes.map((a) => a.anime_title);
+
+  const response = await fetch(`${API_BASE_URL}/anime/search/batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ animes: anitomyTitles })
+  });
+  const anilistAnimes = await response.json();
+
+  const animeDataPromises = anilistAnimes.map((anilistAnime) =>
+    findAnilistEpisodeAndTorrent(anilistAnime, anitomyAnimes, rssData)
+  );
+  const resolvedAnimes = await Promise.all(animeDataPromises);
+
+  // Keeps in the Array only animes with data, removes all null or undefined animes
+  // And removes duplicated animes or with incomplete data
+  const filteredAnimes = resolvedAnimes
+    .filter(Boolean)
+    .filter(
+      (anime, index, self) =>
+        index === self.findIndex((t) => t.id === anime.id) &&
+        anime.episode &&
+        !anime.episode.error &&
+        anime.torrent
+    );
+
+  return filteredAnimes;
+};
+
+module.exports = { fetchAndParseRSS, processRssAnimes };
