@@ -10,6 +10,7 @@ const AnimeOverview = require('../../components/anime/AnimeOverview');
 const AnimeRecommendationsList = require('../../components/anime/AnimeRecommendationsList');
 const AnimeEpisodesList = require('../../components/episode/EpisodesList');
 const LatestEpisodesSidebar = require('../../components/episode/LatestEpisodesSidebar');
+const Spinner = require('../../components/common/spinner');
 
 const AnimeDetails = ({ state }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -59,8 +60,9 @@ const AnimeDetails = ({ state }) => {
   }, []);
 
   if (isLoading) {
-    return null;
+    return <Spinner />;
   }
+
 
   return (
     <div className="flex flex-row bg-black justify-between items-start">
