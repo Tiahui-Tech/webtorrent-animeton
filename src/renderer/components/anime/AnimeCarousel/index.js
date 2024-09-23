@@ -3,6 +3,8 @@ const { useState } = React;
 const { useNavigate } = require('react-router-dom');
 const { motion, AnimatePresence } = require('framer-motion');
 
+const { translateGenres } = require('../../../../modules/utils');
+
 const { Icon } = require('@iconify/react');
 const FadeText = require('../../ui/MagicUI/Effects/FadeText');
 
@@ -90,7 +92,7 @@ const AnimeCarousel = ({ animes }) => {
                                         transition={{ delay: 0.6, duration: 0.5 }}
                                         className="flex gap-2"
                                     >
-                                        {currentAnime.genres.map((genre, index) => (
+                                        {translateGenres(currentAnime.genres).map((genre, index) => (
                                             <span
                                                 key={index}
                                                 className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm"

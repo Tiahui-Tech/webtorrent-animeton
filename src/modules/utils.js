@@ -88,7 +88,7 @@ function getNeonColor(hexColor) {
   g = Math.max(Math.min(g, 255), 100);
   b = Math.max(Math.min(b, 255), 100);
 
-  const neonHex = '#' + 
+  const neonHex = '#' +
     r.toString(16).padStart(2, '0') +
     g.toString(16).padStart(2, '0') +
     b.toString(16).padStart(2, '0');
@@ -129,6 +129,31 @@ const genGlassStyle = (color, opacity = 15, blur = 15) => {
   };
 };
 
+const translateGenres = (genres) => {
+  const translations = {
+    'Comedy': 'Comedia',
+    'Fantasy': 'Fantasía',
+    'Romance': 'Romance',
+    'Slice of Life': 'Vida Cotidiana',
+    'Supernatural': 'Sobrenatural',
+    'Action': 'Acción',
+    'Adventure': 'Aventura',
+    'Drama': 'Drama',
+    'Mahou Shoujo': 'Mahou Shoujo',
+    'Mystery': 'Misterio',
+    'Psychological': 'Psicológico',
+    'Sci-Fi': 'Ciencia Ficción',
+    'Ecchi': 'Ecchi',
+    'Thriller': 'Suspenso',
+    'Horror': 'Terror',
+    'Mecha': 'Mecha',
+    'Sports': 'Deportes',
+    'Music': 'Música'
+  };
+
+  return genres.map(genre => translations[genre] || genre);
+}
+
 module.exports = {
   timeAgo,
   normalize,
@@ -137,5 +162,6 @@ module.exports = {
   getContrastColor,
   getNeonColor,
   sortColorsByBrightness,
-  genGlassStyle
+  genGlassStyle,
+  translateGenres
 };

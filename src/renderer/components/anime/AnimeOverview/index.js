@@ -1,6 +1,8 @@
 const { Image } = require('@nextui-org/react');
 const React = require('react');
 
+const { translateGenres } = require('../../../../modules/utils');
+
 const AnimeOverview = ({ anime, animeColors, textColor, background }) => {
   return (
     <div className="relative w-full p-8 z-30">
@@ -33,7 +35,7 @@ const AnimeOverview = ({ anime, animeColors, textColor, background }) => {
               </h2>
             </div>
             <div className="flex flex-row gap-4">
-              {anime.genres.map((genr, i) => (
+              {translateGenres(anime.genres).map((genr, i) => (
                 <span
                   key={`genre-${i}`}
                   className="mt-2 text-zinc-900 font-medium p-2.5 py-0.5 rounded-full"
