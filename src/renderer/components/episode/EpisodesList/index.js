@@ -7,7 +7,7 @@ const useAnimeEpisodesData = require('../../../hooks/useAnimeEpisodesData');
 
 const EpisodesList = require('./List');
 
-const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
+const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
   const { episodes: episodesData, isLoading } = useAnimeEpisodesData(idAnilist, true);
   const [isReversed, setIsReversed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,7 +17,7 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
   };
 
   const filteredAndSortedEpisodes = useMemo(() => {
-    let result = [...episodesData];
+    let result = Array.isArray(episodesData) ? [...episodesData] : [];
 
     if (searchTerm) {
       result = result.filter((episode) =>
@@ -36,8 +36,17 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
     setSearchTerm(event.target.value);
   };
 
+  const isEpisodesDataEmpty = filteredAndSortedEpisodes.length === 0;
+
+  if (isEpisodesDataEmpty && !isLoading) {
+    return <div className="flex flex-col justify-center items-center w-full min-h-[400px]">
+      <Icon icon="gravity-ui:circle-xmark" width="128" height="128" style={{ color: '#d1d5db ' }} />
+      <p className="text-2xl font-bold text-gray-300">No se encontraron episodios</p>
+    </div>
+  }
+
   return (
-    <div className="flex flex-col gap-2 justify-start w-full max-w-[860px] z-30">
+    <div className="flex flex-col gap-2 justify-start w-full z-30">
       <div className="flex flex-row w-full justify-between items-start">
         <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
         <div className="flex flex-row gap-2">
@@ -75,6 +84,7 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
 
       <Divider orientation="horizontal" />
       <EpisodesList
+        state={state}
         episodesData={isLoading ? [] : filteredAndSortedEpisodes}
         isLoading={isLoading}
         animeColors={animeColors}

@@ -1,11 +1,11 @@
 {
-  "name": "webtorrent-desktop",
-  "description": "WebTorrent, the streaming torrent client. For Mac, Windows, and Linux.",
-  "version": "0.24.0",
+  "name": "animeton",
+  "description": "Animeton, the streaming torrent client. For Mac, Windows, and Linux.",
+  "version": "0.1.0",
   "author": {
-    "name": "WebTorrent, LLC",
-    "email": "feross@webtorrent.io",
-    "url": "https://webtorrent.io"
+    "name": "Tiahui Tech",
+    "email": "contact@tiahui.tech",
+    "url": "https://tiahui.tech"
   },
   "babel": {
     "plugins": [
@@ -18,7 +18,7 @@
     ]
   },
   "bugs": {
-    "url": "https://github.com/webtorrent/webtorrent-desktop/issues"
+    "url": "https://github.com/Tiahui-Tech/webtorrent-animerso/issues"
   },
   "engines": {
     "node": ">=20.0.0 <21.0.0",
@@ -34,6 +34,7 @@
     "@nextui-org/react": "^2.4.6",
     "@nextui-org/system": "^2.2.5",
     "@nextui-org/theme": "^2.2.9",
+    "adm-zip": "^0.5.16",
     "airplayer": "github:webtorrent/airplayer#fix-security",
     "anitomyscript": "github:Tiahui-Tech/anitomyscript",
     "application-config": "2.0.0",
@@ -101,7 +102,7 @@
     "standard": "17.0.0",
     "tape": "5.8.1"
   },
-  "homepage": "https://webtorrent.io",
+  "homepage": "https://www.tiahui.tech/",
   "keywords": [
     "desktop",
     "electron",
@@ -110,7 +111,8 @@
     "mad science",
     "torrent",
     "torrent client",
-    "webtorrent"
+    "webtorrent",
+    "animeton"
   ],
   "license": "MIT",
   "main": "index.js",
@@ -120,10 +122,10 @@
     "electron-installer-redhat": "^3.4.0"
   },
   "private": true,
-  "productName": "WebTorrent",
+  "productName": "Animeton",
   "repository": {
     "type": "git",
-    "url": "git://github.com/webtorrent/webtorrent-desktop.git"
+    "url": "git://github.com/Tiahui-Tech/webtorrent-animerso.git"
   },
   "scripts": {
     "build": "npm run clean && babel src --out-dir build",
@@ -140,10 +142,5 @@
   },
   "standard": {
     "parser": "@babel/eslint-parser"
-  },
-  "renovate": {
-    "extends": [
-      "github>webtorrent/renovate-config"
-    ]
   }
 }

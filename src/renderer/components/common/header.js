@@ -21,6 +21,7 @@ const Header = ({ state }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [isHome, setIsHome] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
     // Updates the navigation state every time the location or navigation type changes
@@ -28,6 +29,20 @@ const Header = ({ state }) => {
     setCanGoForward(false); // Reset on each navigation
     setIsHome(location.pathname === '/'); // Update isHome state based on current path
   }, [location, navigationType]);
+
+  useEffect(() => {
+    const updateMaximizedState = () => {
+      const focusedWindow = remote.BrowserWindow.getFocusedWindow();
+      setIsMaximized(focusedWindow ? focusedWindow.isMaximized() : false);
+    };
+
+    updateMaximizedState();
+    window.addEventListener('resize', updateMaximizedState);
+
+    return () => {
+      window.removeEventListener('resize', updateMaximizedState);
+    };
+  }, []);
 
   const handleBack = (e) => {
     e.preventDefault();
@@ -60,10 +75,13 @@ const Header = ({ state }) => {
   };
 
   const handleMaximize = () => {
-    if (remote.BrowserWindow.getFocusedWindow().isMaximized()) {
-      remote.BrowserWindow.getFocusedWindow().unmaximize()
-    } else {
-      remote.BrowserWindow.getFocusedWindow().maximize()
+    const focusedWindow = remote.BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+      if (isMaximized) {
+        focusedWindow.unmaximize();
+      } else {
+        focusedWindow.maximize();
+      }
     }
   };
 
@@ -117,7 +135,7 @@ const Header = ({ state }) => {
             <SparklesText
               sparklesCount={8}
               className="text-white font-bold text-xl"
-              text="NyaUWU"
+              text="Animeton"
             />
           </button>
           <div className="flex flex-row items-center gap-2">
@@ -125,7 +143,7 @@ const Header = ({ state }) => {
               <Icon icon="gravity-ui:minus" width="26" height="26" />
             </button>
             <button onClick={handleMaximize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-              <Icon icon="gravity-ui:square" width="26" height="26" />
+              <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
             </button>
             <button onClick={handleClose} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
               <Icon icon="gravity-ui:xmark" width="26" height="26" />

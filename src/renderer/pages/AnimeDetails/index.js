@@ -10,9 +10,11 @@ const AnimeOverview = require('../../components/anime/AnimeOverview');
 const AnimeRecommendationsList = require('../../components/anime/AnimeRecommendationsList');
 const AnimeEpisodesList = require('../../components/episode/EpisodesList');
 const LatestEpisodesSidebar = require('../../components/episode/LatestEpisodesSidebar');
+const Spinner = require('../../components/common/spinner');
 
 const AnimeDetails = ({ state }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(window.innerWidth >= 1500);
 
   const { idAnilist } = useParams();
   const location = useLocation();
@@ -48,9 +50,19 @@ const AnimeDetails = ({ state }) => {
     }
   }, [anime, animeColors, bannerColors, background]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setShowSidebar(window.innerWidth >= 1500);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (isLoading) {
-    return null;
+    return <Spinner />;
   }
+
 
   return (
     <div className="flex flex-row bg-black justify-between items-start">
@@ -61,12 +73,13 @@ const AnimeDetails = ({ state }) => {
           textColor={textColor}
           background={background}
         />
-        <div className="flex flex-row gap-16 p-8 pt-0 justify-between items-start h-full">
+        <div className="flex flex-row gap-8 p-8 pt-0 justify-between items-start h-full">
           <AnimeRecommendationsList
             idAnilist={idAnilist}
             sectionTitle="Animes Similares"
           />
           <AnimeEpisodesList
+            state={state}
             idAnilist={idAnilist}
             animeColors={animeColors}
             sectionTitle="Episodios"
@@ -74,10 +87,13 @@ const AnimeDetails = ({ state }) => {
         </div>
       </div>
 
-      <LatestEpisodesSidebar
-        bannerColors={bannerColors}
-        sectionTitle="Episodios Recientes"
-      />
+      {showSidebar && (
+        <LatestEpisodesSidebar
+          state={state}
+          bannerColors={bannerColors}
+          sectionTitle="Episodios Recientes"
+        />
+      )}
     </div>
   );
 };

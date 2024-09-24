@@ -41,6 +41,7 @@ function getTorrentId (torrentSummary) {
 // Returns the corresponding torrentSummary, or undefined
 function getByKey (state, torrentKey) {
   if (!torrentKey) return undefined
+
   return state.saved.torrents.find((x) =>
     x.torrentKey === torrentKey || x.infoHash === torrentKey)
 }

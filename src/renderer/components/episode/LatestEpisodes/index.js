@@ -2,7 +2,6 @@ const React = require('react');
 const useRSSData = require('../../../hooks/useRSSData');
 const useModernBackground = require('../../../hooks/useModernBackground');
 
-const Marquee = require('../../ui/MagicUI/Marquee');
 const Particles = require('../../ui/MagicUI/Particles');
 const BoxReveal = require('../../ui/MagicUI/Text/BoxReveal');
 

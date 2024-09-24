@@ -72,6 +72,8 @@ function updateCache (state) {
 }
 
 function findPreviousIndex (state) {
+  if (!state.playing.infoHash) return null;
+
   const files = TorrentSummary.getByKey(state, state.playing.infoHash)?.files || []
   for (let i = state.playing.fileIndex - 1; i >= 0; i--) {
     if (TorrentPlayer.isPlayable(files[i])) return i
@@ -80,6 +82,8 @@ function findPreviousIndex (state) {
 }
 
 function findNextIndex (state) {
+  if (!state.playing.infoHash) return null;
+  
   const files = TorrentSummary.getByKey(state, state.playing.infoHash)?.files || []
   for (let i = state.playing.fileIndex + 1; i < files.length; i++) {
     if (TorrentPlayer.isPlayable(files[i])) return i

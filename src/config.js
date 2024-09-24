@@ -3,8 +3,8 @@ const path = require('path')
 const { app } = require('electron')
 const arch = require('arch')
 
-const APP_NAME = 'WebTorrent'
-const APP_TEAM = 'WebTorrent, LLC'
+const APP_NAME = 'Animeton'
+const APP_TEAM = 'Tiahui Tech'
 const APP_VERSION = require('../package.json').version
 
 const IS_TEST = isTest()
@@ -23,9 +23,9 @@ module.exports = {
   CRASH_REPORT_URL: 'https://webtorrent.io/desktop/crash-report',
   TELEMETRY_URL: 'https://webtorrent.io/desktop/telemetry',
 
-  APP_COPYRIGHT: `Copyright © 2014-${new Date().getFullYear()} ${APP_TEAM}`,
-  APP_FILE_ICON: path.join(__dirname, '..', 'static', 'WebTorrentFile'),
-  APP_ICON: path.join(__dirname, '..', 'static', 'WebTorrent'),
+  APP_COPYRIGHT: `Copyright © 2024-${new Date().getFullYear()} ${APP_TEAM}`,
+  APP_FILE_ICON: path.join(__dirname, '..', 'static', 'assets', 'animeton_file'),
+  APP_ICON: path.join(__dirname, '..', 'static', 'assets', 'animeton'),
   APP_NAME,
   APP_TEAM,
   APP_VERSION,
@@ -67,7 +67,7 @@ module.exports = {
     height: 900
   },
   WINDOW_MIN_HEIGHT: 500,
-  WINDOW_MIN_WIDTH: 900,
+  WINDOW_MIN_WIDTH: 1260,
 
   UI_HEADER_HEIGHT,
   UI_TORRENT_HEIGHT

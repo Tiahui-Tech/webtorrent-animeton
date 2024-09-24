@@ -12,7 +12,8 @@ const TorrentSummary = require('../lib/torrent-summary')
 const Playlist = require('../lib/playlist')
 const State = require('../lib/state')
 
-const { eventEmitter, getCurrentPath } = require('../pages/app');
+const { getCurrentPath } = require('../pages/app');
+const eventBus = require('../lib/event-bus');
 
 // Controls playback of torrents and files within torrents
 // both local (<video>,<audio>,external player) and remote (cast)
@@ -39,7 +40,7 @@ module.exports = class PlaybackController {
       })
     } else {
       let initialized = false
-      eventEmitter.emit('navigate', {
+      eventBus.emit('navigate', {
         path: '/player',
         state: {
           infoHash,
@@ -96,8 +97,10 @@ module.exports = class PlaybackController {
     // Playback Priority: pause all active torrents if needed.
     if (!this.state.saved.prefs.highestPlaybackPriority) return
 
+    const state = this.state;
+
     // Do not pause active torrents if playing a fully downloaded torrent.
-    const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
+    const torrentSummary = TorrentSummary.getByKey(state, infoHash)
     if (torrentSummary.status === 'seeding') return
 
     dispatch('prioritizeTorrent', infoHash)
@@ -244,8 +247,8 @@ module.exports = class PlaybackController {
     const state = this.state
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
 
-    state.playing.infoHash = torrentSummary.infoHash
-    state.playing.isReady = false
+    state.playing.infoHash = infoHash;
+    state.playing.isReady = false;
 
     // update UI to show pending playback
     sound.play('PLAY')
@@ -257,8 +260,7 @@ module.exports = class PlaybackController {
 
   // Starts WebTorrent server for media streaming
   startServer(torrentSummary) {
-    const state = this.state
-
+    const state = this.state;
     if (torrentSummary.status === 'paused') {
       dispatch('startTorrentingSummary', torrentSummary.torrentKey)
       ipcRenderer.once('wt-ready-' + torrentSummary.infoHash,
@@ -269,7 +271,9 @@ module.exports = class PlaybackController {
 
     function onTorrentReady() {
       ipcRenderer.send('wt-start-server', torrentSummary.infoHash)
-      ipcRenderer.once('wt-server-running', () => { state.playing.isReady = true })
+      ipcRenderer.once('wt-server-running', () => {
+        state.playing.isReady = true;
+      })
     }
   }
 
@@ -334,13 +338,9 @@ module.exports = class PlaybackController {
     // play in VLC if set as default player (Preferences / Playback / Play in VLC)
     if (this.state.saved.prefs.openExternalPlayer) {
       dispatch('openExternalPlayer')
-      this.update(state)
       cb()
       return
     }
-
-    // otherwise, play the video
-    this.update(state)
 
     ipcRenderer.send('onPlayerUpdate', Playlist.hasNext(state), Playlist.hasPrevious(state))
     cb()
@@ -382,8 +382,6 @@ module.exports = class PlaybackController {
     if (this.state.saved.prefs.highestPlaybackPriority) {
       dispatch('resumePausedTorrents')
     }
-
-    this.update(state)
   }
 }
 
