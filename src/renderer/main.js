@@ -502,7 +502,8 @@ function setDimensions(dimensions) {
     Math.floor(dimensions.height * scaleFactor),
     config.WINDOW_MIN_HEIGHT
   );
-
+  
+  console.log('setDimensions', aspectRatio, width, height);
   ipcRenderer.send('setAspectRatio', aspectRatio);
   ipcRenderer.send('setBounds', {
     contentBounds: true,
@@ -619,6 +620,7 @@ function onVisibilityChange() {
 }
 
 function onFullscreenChanged(e, isFullScreen) {
+  console.log('onFullscreenChanged', isFullScreen);
   state.window.isFullScreen = isFullScreen;
   if (!isFullScreen) {
     // Aspect ratio gets reset in fullscreen mode, so restore it (Mac)

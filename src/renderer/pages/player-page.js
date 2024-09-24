@@ -116,9 +116,12 @@ function renderMedia(state) {
     }
 
     // Set volume
+    console.log('// Set volume state.playing.setVolume', state.playing.setVolume);
     if (state.playing.setVolume !== null && isFinite(state.playing.setVolume)) {
+      console.log('renderMedia state.playing.setVolume', state.playing.setVolume);
       mediaElement.volume = state.playing.setVolume;
       state.playing.setVolume = null;
+      console.log('renderMedia state.playing.setVolume after', state.playing.setVolume);  
     }
 
     // Switch to the newly added subtitle track, if available
@@ -915,6 +918,7 @@ function renderPlayerControls(state) {
 
   // Handles volume muting and Unmuting
   function handleVolumeMute() {
+    console.log('handleVolumeMute', state.playing);
     if (state.playing.volume === 0.0) {
       dispatch('setVolume', 1.0);
     } else {
@@ -924,6 +928,7 @@ function renderPlayerControls(state) {
 
   // Handles volume slider scrub
   function handleVolumeScrub(e) {
+    console.log('handleVolumeScrub', state.playing);
     dispatch('setVolume', e.target.value);
   }
 

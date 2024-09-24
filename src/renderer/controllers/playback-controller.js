@@ -18,10 +18,9 @@ const eventBus = require('../lib/event-bus');
 // Controls playback of torrents and files within torrents
 // both local (<video>,<audio>,external player) and remote (cast)
 module.exports = class PlaybackController {
-  constructor(state, config, update) {
+  constructor(state, config) {
     this.state = state
     this.config = config
-    this.update = update
   }
 
   // Play a file in a torrent.
@@ -219,10 +218,18 @@ module.exports = class PlaybackController {
     volume = Math.max(0, Math.min(1, volume))
 
     const state = this.state
+    console.log('setVolume', state.playing);
+    console.log('setVolume volume', volume);
     if (isCasting(state)) {
       Cast.setVolume(volume)
     } else {
       state.playing.setVolume = volume
+      console.log('setVolume state.playing.setVolume', state.playing.setVolume);
+      eventBus.emit('stateUpdate', {
+        playing: {
+          setVolume: volume
+        }
+      })
     }
   }
 
@@ -382,6 +389,8 @@ module.exports = class PlaybackController {
     if (this.state.saved.prefs.highestPlaybackPriority) {
       dispatch('resumePausedTorrents')
     }
+
+    console.log('closePlayer s.playing', state.playing);
   }
 }
 
