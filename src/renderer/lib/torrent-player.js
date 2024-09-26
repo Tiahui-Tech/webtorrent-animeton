@@ -77,7 +77,7 @@ function playTorrent (anime, state, setIsLoading) {
   const isTorrentPlayable = isPlayable(file);
 
   if (isTorrentPlayable) {
-    dispatch('toggleSelectTorrent', torrent.infoHash);
+    // dispatch('toggleSelectTorrent', torrent.infoHash);
 
     // Wait 5 seconds to avoid errors and allow backend to prepare the torrent
     // Improves effectiveness as it's not the first to play in the app

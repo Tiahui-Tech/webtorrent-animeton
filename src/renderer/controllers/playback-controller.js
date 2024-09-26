@@ -46,6 +46,7 @@ module.exports = class PlaybackController {
           index,
           setup: (cb) => {
             const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
+            console.log('playFile torrentSummary', torrentSummary);
 
             if (index === undefined || initialized) index = torrentSummary.mostRecentFileIndex
             if (index === undefined) index = torrentSummary.files.findIndex(TorrentPlayer.isPlayable)
@@ -133,6 +134,8 @@ module.exports = class PlaybackController {
   play() {
     const state = this.state
     if (!state.playing.isPaused) return
+
+    state.playing.isPaused = false;
     eventBus.emit('stateUpdate', {
       playing: {
         isPaused: false
@@ -148,6 +151,8 @@ module.exports = class PlaybackController {
   pause() {
     const state = this.state
     if (state.playing.isPaused) return
+
+    state.playing.isPaused = true;
     eventBus.emit('stateUpdate', {
       playing: {
         isPaused: true
@@ -172,11 +177,14 @@ module.exports = class PlaybackController {
       return console.trace()
     }
     if (isCasting(this.state)) Cast.seek(time)
-    else eventBus.emit('stateUpdate', {
-      playing: {
-        jumpToTime: time
-      }
-    });
+    else {
+      this.state.playing.jumpToTime = time;
+      eventBus.emit('stateUpdate', {
+        playing: {
+          jumpToTime: time
+        }
+      });
+    }
   }
 
   // Show video preview
@@ -185,20 +193,12 @@ module.exports = class PlaybackController {
       console.error('Tried to preview a non-finite position ' + x)
       return console.trace()
     }
-    eventBus.emit('stateUpdate', {
-      playing: {
-        previewXCoord: x
-      }
-    });
+    this.state.playing.previewXCoord = x;
   }
 
   // Hide video preview
   clearPreview() {
-    eventBus.emit('stateUpdate', {
-      playing: {
-        previewXCoord: null
-      }
-    });
+    this.state.playing.previewXCoord = null;
   }
 
   // Change playback speed. 1 = faster, -1 = slower
@@ -219,18 +219,10 @@ module.exports = class PlaybackController {
     }
     state.playing.playbackRate = rate
     if (isCasting(state) && !Cast.setRate(rate)) {
-      eventBus.emit('stateUpdate', {
-        playing: {
-          playbackRate: 1
-        }
-      });
+      state.playing.playbackRate = 1;
     }
     // Wait a bit before we hide the controls and header again
-    eventBus.emit('stateUpdate', {
-      playing: {
-        mouseStationarySince: new Date().getTime()
-      }
-    });
+    state.playing.mouseStationarySince = new Date().getTime();
   }
 
   // Change the volume, in range [0, 1], by some amount
@@ -249,6 +241,7 @@ module.exports = class PlaybackController {
     if (isCasting(state)) {
       Cast.setVolume(volume)
     } else {
+      state.playing.setVolume = volume;
       eventBus.emit('stateUpdate', {
         playing: {
           setVolume: volume
@@ -267,6 +260,7 @@ module.exports = class PlaybackController {
     const hideControls = state.shouldHidePlayerControls()
 
     if (hideControls !== state.playing.hideControls) {
+      state.playing.hideControls = hideControls;
       eventBus.emit('stateUpdate', {
         playing: {
           hideControls: hideControls
@@ -282,15 +276,8 @@ module.exports = class PlaybackController {
     const state = this.state
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
 
-    // state.playing.infoHash = infoHash;
-    // state.playing.isReady = false;
-
-    eventBus.emit('stateUpdate', {
-      playing: {
-        infoHash: infoHash,
-        isReady: false
-      }
-    });
+    state.playing.infoHash = infoHash;
+    state.playing.isReady = false;
 
     // update UI to show pending playback
     sound.play('PLAY')
@@ -419,11 +406,6 @@ module.exports = class PlaybackController {
     state.playing = State.getDefaultPlayState()
     state.server = null
 
-    eventBus.emit('stateUpdate', {
-      playing: State.getDefaultPlayState(),
-      server: null
-    });
-
     // Reset the window size and location back to where it was
     if (state.window.isFullScreen) {
       dispatch('toggleFullScreen', false)
@@ -439,8 +421,6 @@ module.exports = class PlaybackController {
     if (this.state.saved.prefs.highestPlaybackPriority) {
       dispatch('resumePausedTorrents')
     }
-
-    console.log('closePlayer s.playing', state.playing);
   }
 }
 
