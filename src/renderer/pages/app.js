@@ -95,7 +95,10 @@ function AppContent({ initialState, onUpdate }) {
       <div className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}>
         <Header state={state} />
         <ErrorPopover state={state} />
-        <div key="content" className="content">
+        <div 
+          key="content" 
+          className={`content ${location.pathname === '/player' ? 'mt-0' : 'mt-[38px]'}`}
+        >
           <React.Suspense fallback={<div>Loading...</div>}>
             <Routes>
               <Route path="/" element={<Home state={state} />} />
