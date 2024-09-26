@@ -124,10 +124,8 @@ function renderMedia(state) {
 
     // Set volume
     if (state.playing.setVolume !== null && isFinite(state.playing.setVolume)) {
-      console.log('renderMedia state.playing.setVolume', state.playing.setVolume);
       mediaElement.volume = state.playing.setVolume;
       state.playing.setVolume = null;
-      console.log('renderMedia state.playing.setVolume after', state.playing.setVolume);
     }
 
     // Switch to the newly added subtitle track, if available

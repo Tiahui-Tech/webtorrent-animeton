@@ -96,7 +96,7 @@ function getDefaultPlayState () {
     currentTime: 0, /* seconds */
     duration: 1, /* seconds */
     isReady: false,
-    isPaused: true,
+    isPaused: false,
     isStalled: false,
     lastTimeUpdate: 0, /* Unix time in ms */
     mouseStationarySince: 0, /* Unix time in ms */
