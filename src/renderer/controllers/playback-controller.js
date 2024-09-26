@@ -133,7 +133,11 @@ module.exports = class PlaybackController {
   play() {
     const state = this.state
     if (!state.playing.isPaused) return
-    state.playing.isPaused = false
+    eventBus.emit('stateUpdate', {
+      playing: {
+        isPaused: false
+      }
+    });
     if (isCasting(state)) {
       Cast.play()
     }
@@ -144,7 +148,11 @@ module.exports = class PlaybackController {
   pause() {
     const state = this.state
     if (state.playing.isPaused) return
-    state.playing.isPaused = true
+    eventBus.emit('stateUpdate', {
+      playing: {
+        isPaused: true
+      }
+    });
     if (isCasting(state)) {
       Cast.pause()
     }
@@ -164,7 +172,11 @@ module.exports = class PlaybackController {
       return console.trace()
     }
     if (isCasting(this.state)) Cast.seek(time)
-    else this.state.playing.jumpToTime = time
+    else eventBus.emit('stateUpdate', {
+      playing: {
+        jumpToTime: time
+      }
+    });
   }
 
   // Show video preview
@@ -173,12 +185,20 @@ module.exports = class PlaybackController {
       console.error('Tried to preview a non-finite position ' + x)
       return console.trace()
     }
-    this.state.playing.previewXCoord = x
+    eventBus.emit('stateUpdate', {
+      playing: {
+        previewXCoord: x
+      }
+    });
   }
 
   // Hide video preview
   clearPreview() {
-    this.state.playing.previewXCoord = null
+    eventBus.emit('stateUpdate', {
+      playing: {
+        previewXCoord: null
+      }
+    });
   }
 
   // Change playback speed. 1 = faster, -1 = slower
@@ -199,10 +219,18 @@ module.exports = class PlaybackController {
     }
     state.playing.playbackRate = rate
     if (isCasting(state) && !Cast.setRate(rate)) {
-      state.playing.playbackRate = 1
+      eventBus.emit('stateUpdate', {
+        playing: {
+          playbackRate: 1
+        }
+      });
     }
     // Wait a bit before we hide the controls and header again
-    state.playing.mouseStationarySince = new Date().getTime()
+    eventBus.emit('stateUpdate', {
+      playing: {
+        mouseStationarySince: new Date().getTime()
+      }
+    });
   }
 
   // Change the volume, in range [0, 1], by some amount
@@ -218,13 +246,9 @@ module.exports = class PlaybackController {
     volume = Math.max(0, Math.min(1, volume))
 
     const state = this.state
-    console.log('setVolume', state.playing);
-    console.log('setVolume volume', volume);
     if (isCasting(state)) {
       Cast.setVolume(volume)
     } else {
-      state.playing.setVolume = volume
-      console.log('setVolume state.playing.setVolume', state.playing.setVolume);
       eventBus.emit('stateUpdate', {
         playing: {
           setVolume: volume
@@ -243,7 +267,11 @@ module.exports = class PlaybackController {
     const hideControls = state.shouldHidePlayerControls()
 
     if (hideControls !== state.playing.hideControls) {
-      state.playing.hideControls = hideControls
+      eventBus.emit('stateUpdate', {
+        playing: {
+          hideControls: hideControls
+        }
+      })
       return true
     }
     return false
@@ -254,8 +282,15 @@ module.exports = class PlaybackController {
     const state = this.state
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
 
-    state.playing.infoHash = infoHash;
-    state.playing.isReady = false;
+    // state.playing.infoHash = infoHash;
+    // state.playing.isReady = false;
+
+    eventBus.emit('stateUpdate', {
+      playing: {
+        infoHash: infoHash,
+        isReady: false
+      }
+    });
 
     // update UI to show pending playback
     sound.play('PLAY')
@@ -280,6 +315,11 @@ module.exports = class PlaybackController {
       ipcRenderer.send('wt-start-server', torrentSummary.infoHash)
       ipcRenderer.once('wt-server-running', () => {
         state.playing.isReady = true;
+        eventBus.emit('stateUpdate', {
+          playing: {
+            isReady: true
+          }
+        });
       })
     }
   }
@@ -367,12 +407,22 @@ module.exports = class PlaybackController {
 
     // Save volume (this session only, not in state.saved)
     state.previousVolume = state.playing.volume
+    eventBus.emit('stateUpdate', {
+      playing: {
+        previousVolume: state.playing.volume
+      }
+    });
 
     if (!state.playing.isReady) telemetry.logPlayAttempt('abandoned') // user gave up waiting
 
     // Reset the window contents back to the home screen
     state.playing = State.getDefaultPlayState()
     state.server = null
+
+    eventBus.emit('stateUpdate', {
+      playing: State.getDefaultPlayState(),
+      server: null
+    });
 
     // Reset the window size and location back to where it was
     if (state.window.isFullScreen) {

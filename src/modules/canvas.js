@@ -67,8 +67,6 @@ async function moreBlur(
   canvas.height = height;
   const ctx = canvas.getContext('2d');
 
-  console.log('disablePattern', disablePattern);
-
   if (!disablePattern) {
     const pattern = await genPattern(width, height, primaryColor, secondaryColor);
     ctx.drawImage(pattern, 0, 0);
