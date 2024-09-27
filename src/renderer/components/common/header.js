@@ -134,7 +134,13 @@ const Header = ({ state }) => {
                 />
               </button>
             </div>
-            <div className="flex-grow"></div>
+            <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+              <SparklesText
+                sparklesCount={8}
+                className="text-white font-bold text-xl"
+                text="Animeton"
+              />
+            </button>
             <div className="flex flex-row items-center gap-2">
               <button onClick={handleMinimize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
                 <Icon icon="gravity-ui:minus" width="26" height="26" />

@@ -56,7 +56,7 @@ const EpisodeCard = React.memo(({ episode, state }) => {
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-3xl font-medium truncate w-full max-w-[500px]">
-                  {`E${episode.episodeNumber} - ${episode.title.en}`}
+                  {`E${episode.episodeNumber}`}{episode.title.en && ` - ${episode.title.en}`}
                 </p>
                 <span className="text-xl text-gray-400">{episode.title.ja}</span>
               </div>

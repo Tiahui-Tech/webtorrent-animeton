@@ -632,21 +632,19 @@ function onFullscreenChanged() {
   const currentWindow = remote.getCurrentWindow();
   const actualFullScreenState = currentWindow.isFullScreen();
   
-  console.log('Actual fullscreen state:', actualFullScreenState);
-  
   // Update the state with the actual fullscreen state
-  // state.window.isFullScreen = actualFullScreenState;
+  state.window.isFullScreen = actualFullScreenState;
   
   if (!actualFullScreenState) {
     // Aspect ratio gets reset in fullscreen mode, so restore it (Mac)
     ipcRenderer.send('setAspectRatio', state.playing.aspectRatio);
   }
 
-  // eventBus.emit('stateUpdate', {
-  //   window: {
-  //     isFullScreen: actualFullScreenState
-  //   }
-  // })
+  eventBus.emit('stateUpdate', {
+    window: {
+      isFullScreen: actualFullScreenState
+    }
+  })
 }
 
 function onWindowBoundsChanged(e, newBounds) {

@@ -738,13 +738,13 @@ function renderPlayerControls(state) {
     <i
       key="fullscreen"
       className="icon fullscreen float-right"
-      onClick={handleFullScreen(state)}
+      onClick={handleFullScreen}
       role="button"
       aria-label={
-        state.window.isFullScreen ? 'Exit full screen' : 'Enter full screen'
+        state.window.isVideoFullScreen ? 'Exit full screen' : 'Enter full screen'
       }
     >
-      {state.window.isFullScreen ? 'fullscreen_exit' : 'fullscreen'}
+      {state.window.isVideoFullScreen ? 'fullscreen_exit' : 'fullscreen'}
     </i>
   ];
 
@@ -950,6 +950,28 @@ function renderPlayerControls(state) {
     dispatch('toggleAudioTracksMenu');
   }
 
+  function handleFullScreen() {
+    const currentWindow = remote.getCurrentWindow();
+    const isCurrentlyFullScreen = currentWindow.isMaximized() || state.window.isVideoFullScreen;
+
+    if (isCurrentlyFullScreen) {
+      exitFullScreen(currentWindow);
+    } else {
+      enterFullScreen(currentWindow);
+    }
+
+    state.window.isVideoFullScreen = !isCurrentlyFullScreen;
+  }
+
+  function exitFullScreen(window) {
+    window.unmaximize();
+    window.setFullScreen(false);
+  }
+
+  function enterFullScreen(window) {
+    window.setFullScreen(true);
+  }
+
   return (
     <div
       key="controls"
@@ -1102,30 +1124,4 @@ function formatTime(time, total) {
   const seconds = `0${Math.floor(time % 60)}`.slice(-2);
 
   return (totalHours > 0 ? hours + ':' : '') + minutes + ':' + seconds;
-}
-
-function handleFullScreen(state) {
-  const currentWindow = remote.getCurrentWindow();
-  const isCurrentlyFullScreen = currentWindow.isMaximized() || state.window.isFullScreen;
-
-  if (isCurrentlyFullScreen) {
-    exitFullScreen(currentWindow);
-  } else {
-    enterFullScreen(currentWindow);
-  }
-
-  updateFullScreenState(state, !isCurrentlyFullScreen);
-}
-
-function exitFullScreen(window) {
-  window.unmaximize();
-  window.setFullScreen(false);
-}
-
-function enterFullScreen(window) {
-  window.setFullScreen(true);
-}
-
-function updateFullScreenState(state, isFullScreen) {
-  state.window.isFullScreen = isFullScreen;
 }
