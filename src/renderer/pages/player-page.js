@@ -182,7 +182,7 @@ function renderMedia(state) {
   const mediaTag = (
     <MediaTagName
       src={Playlist.getCurrentLocalURL(state)}
-      onDoubleClick={dispatcher('toggleFullScreen')}
+      onDoubleClick={handleFullScreen(state)}
       onClick={dispatcher('playPause')}
       onLoadedMetadata={onLoadedMetadata}
       onEnded={onEnded}
@@ -739,7 +739,7 @@ function renderPlayerControls(state) {
     <i
       key="fullscreen"
       className="icon fullscreen float-right"
-      onClick={handleFullScreen}
+      onClick={handleFullScreen(state)}
       role="button"
       aria-label={
         state.window.isFullScreen ? 'Exit full screen' : 'Enter full screen'
@@ -951,32 +951,6 @@ function renderPlayerControls(state) {
     dispatch('toggleAudioTracksMenu');
   }
 
-  function handleFullScreen() {
-    const currentWindow = remote.getCurrentWindow();
-    const isCurrentlyFullScreen = currentWindow.isMaximized() || state.window.isFullScreen;
-
-    if (isCurrentlyFullScreen) {
-      exitFullScreen(currentWindow);
-    } else {
-      enterFullScreen(currentWindow);
-    }
-
-    updateFullScreenState(!isCurrentlyFullScreen);
-  }
-
-  function exitFullScreen(window) {
-    window.unmaximize();
-    window.setFullScreen(false);
-  }
-
-  function enterFullScreen(window) {
-    window.setFullScreen(true);
-  }
-
-  function updateFullScreenState(isFullScreen) {
-    state.window.isFullScreen = isFullScreen;
-  }
-
   return (
     <div
       key="controls"
@@ -1129,4 +1103,30 @@ function formatTime(time, total) {
   const seconds = `0${Math.floor(time % 60)}`.slice(-2);
 
   return (totalHours > 0 ? hours + ':' : '') + minutes + ':' + seconds;
+}
+
+function handleFullScreen(state) {
+  const currentWindow = remote.getCurrentWindow();
+  const isCurrentlyFullScreen = currentWindow.isMaximized() || state.window.isFullScreen;
+
+  if (isCurrentlyFullScreen) {
+    exitFullScreen(currentWindow);
+  } else {
+    enterFullScreen(currentWindow);
+  }
+
+  updateFullScreenState(state, !isCurrentlyFullScreen);
+}
+
+function exitFullScreen(window) {
+  window.unmaximize();
+  window.setFullScreen(false);
+}
+
+function enterFullScreen(window) {
+  window.setFullScreen(true);
+}
+
+function updateFullScreenState(state, isFullScreen) {
+  state.window.isFullScreen = isFullScreen;
 }
