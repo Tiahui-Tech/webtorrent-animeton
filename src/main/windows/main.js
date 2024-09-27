@@ -227,8 +227,6 @@ function toggleFullScreen () {
 
   const newFullScreenState = !main.win.isFullScreen()
 
-  log(`toggleFullScreen ${newFullScreenState}`)
-
   if (newFullScreenState) {
     // Fullscreen and aspect ratio do not play well together. (Mac)
     main.win.setAspectRatio(0)

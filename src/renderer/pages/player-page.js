@@ -2,6 +2,8 @@
 
 const React = require('react');
 const { useEffect, useRef } = React;
+
+const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
 const prettyBytes = require('prettier-bytes');
 const { useLocation } = require('react-router-dom');
@@ -737,7 +739,7 @@ function renderPlayerControls(state) {
     <i
       key="fullscreen"
       className="icon fullscreen float-right"
-      onClick={dispatcher('toggleFullScreen')}
+      onClick={handleFullScreen}
       role="button"
       aria-label={
         state.window.isFullScreen ? 'Exit full screen' : 'Enter full screen'
@@ -947,6 +949,32 @@ function renderPlayerControls(state) {
 
   function handleAudioTracks() {
     dispatch('toggleAudioTracksMenu');
+  }
+
+  function handleFullScreen() {
+    const currentWindow = remote.getCurrentWindow();
+    const isCurrentlyFullScreen = currentWindow.isMaximized() || state.window.isFullScreen;
+
+    if (isCurrentlyFullScreen) {
+      exitFullScreen(currentWindow);
+    } else {
+      enterFullScreen(currentWindow);
+    }
+
+    updateFullScreenState(!isCurrentlyFullScreen);
+  }
+
+  function exitFullScreen(window) {
+    window.unmaximize();
+    window.setFullScreen(false);
+  }
+
+  function enterFullScreen(window) {
+    window.setFullScreen(true);
+  }
+
+  function updateFullScreenState(isFullScreen) {
+    state.window.isFullScreen = isFullScreen;
   }
 
   return (
