@@ -182,7 +182,6 @@ function renderMedia(state) {
   const mediaTag = (
     <MediaTagName
       src={Playlist.getCurrentLocalURL(state)}
-      onDoubleClick={dispatcher('toggleFullScreen')}
       onClick={dispatcher('playPause')}
       onLoadedMetadata={onLoadedMetadata}
       onEnded={onEnded}
