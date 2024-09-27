@@ -17,7 +17,7 @@ const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
   };
 
   const filteredAndSortedEpisodes = useMemo(() => {
-    let result = Array.isArray(episodesData) ? [...episodesData] : [];
+    let result = [...episodesData];
 
     if (searchTerm) {
       result = result.filter((episode) =>
@@ -85,7 +85,7 @@ const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
       <Divider orientation="horizontal" />
       <EpisodesList
         state={state}
-        episodesData={isLoading ? [] : filteredAndSortedEpisodes}
+        episodesData={filteredAndSortedEpisodes}
         isLoading={isLoading}
         animeColors={animeColors}
       />

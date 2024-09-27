@@ -174,6 +174,8 @@ function getTorrentPath (torrentSummary) {
 }
 
 function showDoneNotification (torrent) {
+  return; // Disabled temporarily
+  
   const notif = new window.Notification('Download Complete', {
     body: torrent.name,
     silent: true

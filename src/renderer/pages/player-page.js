@@ -923,7 +923,6 @@ function renderPlayerControls(state) {
 
   // Handles volume muting and Unmuting
   function handleVolumeMute() {
-    console.log('handleVolumeMute', state.playing);
     if (state.playing.volume === 0.0) {
       dispatch('setVolume', 1.0);
     } else {
@@ -933,7 +932,6 @@ function renderPlayerControls(state) {
 
   // Handles volume slider scrub
   function handleVolumeScrub(e) {
-    console.log('handleVolumeScrub', state.playing);
     dispatch('setVolume', e.target.value);
   }
 

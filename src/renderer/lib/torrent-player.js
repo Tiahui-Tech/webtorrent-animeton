@@ -64,6 +64,7 @@ function playTorrent(anime, state, setIsLoading) {
   const torrent = state.saved.torrents.find(
     (torrent) => torrent.infoHash === hash
   );
+  const torrentUrl = anime.torrent?.torrentUrl || anime.torrent?.magnetUrl || anime.torrent?.link;
 
   if (!torrent) {
     dispatch('addTorrent', anime.torrent.link);
