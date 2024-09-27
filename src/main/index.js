@@ -86,8 +86,6 @@ function init () {
     windows.main.init(state, { hidden })
     windows.webtorrent.init()
 
-    windows.main.toggleDevTools()
-
     // To keep app startup fast, some code is delayed.
     setTimeout(() => {
       delayedInit(state)
