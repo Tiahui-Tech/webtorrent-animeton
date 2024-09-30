@@ -46,7 +46,6 @@ module.exports = class PlaybackController {
           index,
           setup: (cb) => {
             const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
-            console.log('playFile torrentSummary', torrentSummary);
 
             if (index === undefined || initialized) index = torrentSummary.mostRecentFileIndex
             if (index === undefined) index = torrentSummary.files.findIndex(TorrentPlayer.isPlayable)
@@ -381,8 +380,6 @@ module.exports = class PlaybackController {
   }
 
   closePlayer() {
-    console.log('closePlayer')
-
     // Quit any external players, like Chromecast/Airplay/etc or VLC
     const state = this.state
     if (isCasting(state)) {
