@@ -4,6 +4,7 @@ const { useState, useMemo, useEffect } = React;
 const useAnimesData = require('../../../hooks/useAnimesData');
 const useSearchAnimes = require('../../../hooks/useSearchAnimes');
 
+const BoxReveal = require('../../ui/MagicUI/Text/BoxReveal');
 const SearchInput = require('../../common/search-input');
 const AnimeCard = require('./anime');
 const AnimeCardSkeleton = require('./skeleton');
@@ -37,9 +38,11 @@ const AnimeSection = ({ state, sectionTitle }) => {
   return (
     <div className="flex flex-col p-8 justify-center items-center bg-zinc-960">
       <div className="relative flex flex-row justify-center items-center w-full mb-4">
-        <h2 className="relative text-2xl font-bold z-10">
-          {sectionTitle}
-        </h2>
+        <BoxReveal boxColor={'#fff'} duration={0.8}>
+          <h2 className="relative text-2xl font-bold z-10">
+            {sectionTitle}
+          </h2>
+        </BoxReveal>
         <div className="absolute right-0 flex items-center">
           <SearchInput searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         </div>

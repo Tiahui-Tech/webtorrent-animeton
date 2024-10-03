@@ -6,6 +6,7 @@ const { motion, AnimatePresence } = require('framer-motion');
 const { translateGenres } = require('../../../../modules/utils');
 
 const { Icon } = require('@iconify/react');
+const FadeText = require('../../ui/MagicUI/Effects/FadeText');
 
 const AnimeCarousel = ({ animes }) => {
     const navigate = useNavigate();
@@ -77,14 +78,14 @@ const AnimeCarousel = ({ animes }) => {
                         <div className="relative h-full flex flex-row justify-center items-center gap-8 text-white py-12">
                             <div className="flex flex-col justify-between max-w-[60%] h-full">
                                 <div className="flex flex-col gap-2">
-                                    <motion.p
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.6, duration: 0.5 }}
+                                    <FadeText
+                                        direction="left"
+                                        framerProps={{
+                                            show: { transition: { delay: 0.3 } },
+                                        }}
                                         className="text-5xl font-bold text-left w-full"
-                                    >
-                                        {currentAnime.title.romaji}
-                                    </motion.p>
+                                        text={currentAnime.title.romaji}
+                                    />
                                     <motion.div
                                         initial={{ opacity: 0, x: -50 }}
                                         animate={{ opacity: 1, x: 0 }}

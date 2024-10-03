@@ -10,6 +10,8 @@ const { ipcRenderer } = require('electron');
 const remote = require('@electron/remote')
 
 const { Icon } = require('@iconify/react');
+const ShineBorder = require('../ui/MagicUI/Effects/ShineBorder');
+const SparklesText = require('../ui/MagicUI/Effects/SparklesText');
 
 const Header = ({ state }) => {
   const navigate = useNavigate();
@@ -96,7 +98,8 @@ const Header = ({ state }) => {
       style={{ WebkitAppRegion: 'drag' }}
     >
       {!onPlayerPage ? (
-        <div
+        <ShineBorder
+          color={['#FE8FB5', '#7be5ff']}
           className="fixed w-full bg-zinc-950 overflow-hidden flex top-0 left-0 right-0 py-2 px-8"
         >
           <div
@@ -132,9 +135,11 @@ const Header = ({ state }) => {
               </button>
             </div>
             <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-              <p
+              <SparklesText
+                sparklesCount={8}
                 className="text-white font-bold text-xl"
-              >Animeton</p>
+                text="Animeton"
+              />
             </button>
             <div className="flex flex-row items-center gap-2">
               <button onClick={handleMinimize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
@@ -148,7 +153,7 @@ const Header = ({ state }) => {
               </button>
             </div>
           </div>
-        </div>
+        </ShineBorder>
       ) : (
         <div className="fixed w-full overflow-hidden flex top-0 left-0 right-0 py-2 px-8">
           <div className="flex flex-row w-full h-full justify-between items-center" style={{ zIndex: 9000 }}>
