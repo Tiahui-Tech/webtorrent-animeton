@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://api.nyauwu.com';
+const API_BASE_URL = 'https://api.animeton.com';
 
 const DEFAULTS = {
   volume: 1,

@@ -450,7 +450,7 @@ function buildWin32 (cb) {
          * If you hit a "GitHub API rate limit exceeded" error, set this token!
          */
         // remoteToken: process.env.WEBTORRENT_GITHUB_API_TOKEN,
-        setupExe: config.APP_NAME + 'Setup-v' + config.APP_VERSION + '.exe',
+        setupExe: config.APP_NAME + '-v' + config.APP_VERSION + '-SETUP.exe',
         setupIcon: config.APP_ICON + '.ico',
         signWithParams,
         title: config.APP_NAME,
@@ -489,7 +489,7 @@ function buildWin32 (cb) {
         fs.mkdirSync(tempPath, { recursive: true })
     
         const inPath = path.join(DIST_PATH, path.basename(filesPath))
-        const outPath = path.join(DIST_PATH, BUILD_NAME + '-win.zip')
+        const outPath = path.join(DIST_PATH, BUILD_NAME + '-PORTABLE.zip')
 
         console.log(`DIST_PATH: ${DIST_PATH}`);
         console.log(`BUILD_NAME: ${BUILD_NAME}`); 

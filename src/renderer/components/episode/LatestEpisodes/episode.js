@@ -15,7 +15,6 @@ const {
   Image
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
-const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
 
 const useExtractColor = require('../../../hooks/useExtractColor');
 
@@ -39,7 +38,6 @@ const EpisodeCard = memo(({ anime, state }) => {
 
   return (
     <div className="max-w-[400px] px-4">
-      <ShineBorder borderRadius={16} borderWidth={2} color={cardColor}>
         <Card className="flex flex-col relative overflow-visible">
           <CardHeader className="flex flex-col truncate items-start justify-start">
             <p className="text-base font-medium truncate w-full">
@@ -103,7 +101,6 @@ const EpisodeCard = memo(({ anime, state }) => {
             </div>
           </CardFooter>
         </Card>
-      </ShineBorder>
     </div>
   );
 });
