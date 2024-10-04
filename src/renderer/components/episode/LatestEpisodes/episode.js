@@ -12,7 +12,6 @@ const {
   CardHeader,
   CardBody,
   CardFooter,
-  Image
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 
@@ -51,14 +50,11 @@ const EpisodeCard = memo(({ anime, state }) => {
             className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
             onClick={handlePlay}
           >
-            <Image
+            <img
               component="img"
               src={episodeImage}
               alt={anime?.title?.romaji}
-              className={`w-full h-full object-cover ${isLoading && 'grayscale'}`}
-              classNames={{
-                img: 'aspect-[16/9] rounded-t-lg'
-              }}
+              className={`aspect-[16/9] rounded-t-lg w-full h-full object-cover ${isLoading && 'grayscale'}`}
             />
             <div className="flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2 z-10">
               {getAnimeFlags(anime?.torrent?.title)}
