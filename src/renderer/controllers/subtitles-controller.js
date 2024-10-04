@@ -63,9 +63,9 @@ module.exports = class SubtitlesController {
     })
   }
 
-  async checkForSubtitles() {
+  async checkForSubtitles(torrentSummary) {
     if (this.state.playing.type !== 'video') return
-    const torrentSummary = this.state.getPlayingTorrentSummary()
+    console.log('checkForSubtitles torrentSummary', torrentSummary);
     if (!torrentSummary || !torrentSummary.progress) return
 
     const filePath = path.join(torrentSummary.path, torrentSummary.name)
@@ -79,6 +79,7 @@ module.exports = class SubtitlesController {
   }
 
   parseSubtitles(filePath) {
+    console.log('parseSubtitles filePath', filePath);
     return new Promise((resolve, reject) => {
       const child = fork('./src/modules/subtitles-worker.js')
 
@@ -88,6 +89,7 @@ module.exports = class SubtitlesController {
         } else {
           reject(new Error(result.error))
         }
+        child.kill()
       })
 
       child.on('error', reject)
@@ -121,14 +123,16 @@ module.exports = class SubtitlesController {
       }
     }
 
-    const updatedTracks = [...this.state.playing.subtitles.tracks, ...convertedTracks]
+    const updatedTracks = [...convertedTracks]
     let selectedIndex = this.state.playing.subtitles.selectedIndex
     if (selectedIndex === -1 && convertedTracks.length > 0) {
       selectedIndex = this.state.playing.subtitles.tracks.length
     }
 
     const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks)
+    console.log('uniqueSubtitles', uniqueSubtitles);
     const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
+    console.log('filteredAndSortedTracks', filteredAndSortedTracks);
 
     eventBus.emit('stateUpdate', {
       playing: {
@@ -207,8 +211,8 @@ function relabelAndFilterSubtitles(subtitles) {
   const uniqueSubtitles = []
 
   subtitles.forEach(track => {
-    // Avoid duplicate subtitles based on filePath
-    if (!uniquePaths.has(track.filePath)) {
+    // Avoid duplicate subtitles based on filePath and remove empty subtitles
+    if (!uniquePaths.has(track.filePath) && track.buffer !== 'data:text/vtt;base64,V0VCVlRUCgo=') {
       uniquePaths.add(track.filePath)
       uniqueSubtitles.push(track)
 

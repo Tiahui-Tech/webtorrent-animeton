@@ -22,6 +22,7 @@ function Player({ state }) {
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
 
+
   useEffect(() => {
     if (setup) {
       setup((err) => {
@@ -43,6 +44,35 @@ function Player({ state }) {
       }
     };
   }, [setup, destroy]);
+
+  // New useEffect hook for checking subtitles
+  useEffect(() => {
+    let intervalId;
+
+    const maxSubLength = state.playing.subtitles.tracks.length > 0
+      ? state.playing.subtitles.tracks.reduce((max, track) => 
+          track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
+      : null;
+
+    if (state.playing.isReady && maxSubLength !== null && maxSubLength < 300) {
+      intervalId = setInterval(() => {
+        const torrentSummary = state.getPlayingTorrentSummary();
+        dispatch('checkForSubtitles', torrentSummary);
+        
+        // If subtitles are found, clear the interval
+        if (state.playing.subtitles.tracks.length > 0) {
+          clearInterval(intervalId);
+        }
+      }, 3000); // 3 seconds
+    }
+
+    // Clean up the interval on component unmount or when subtitles are found
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [state.playing.isReady, state.playing.subtitles.tracks.length]);
 
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
@@ -938,7 +968,7 @@ function renderPlayerControls(state) {
   function handleSubtitles(e) {
     if (!state.playing.subtitles.tracks.length || e.ctrlKey || e.metaKey) {
       // if no subtitles available select it
-      dispatch('openSubtitles');
+      // dispatch('openSubtitles');
     } else {
       dispatch('toggleSubtitlesMenu');
     }

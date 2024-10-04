@@ -58,7 +58,9 @@ module.exports = class PlaybackController {
               cb(err)
             })
           },
-          destroy: () => this.closePlayer()
+          destroy: () => {
+            this.closePlayer();
+          }
         }
       });
     }
@@ -359,7 +361,7 @@ module.exports = class PlaybackController {
     }
 
     // if it's video, check for subtitles files that are done downloading
-    dispatch('checkForSubtitles')
+    dispatch('checkForSubtitles', torrentSummary)
 
     // enable previously selected subtitle track
     if (fileSummary.selectedSubtitle) {
@@ -380,6 +382,7 @@ module.exports = class PlaybackController {
   }
 
   closePlayer() {
+    console.log('closePlayer');
     // Quit any external players, like Chromecast/Airplay/etc or VLC
     const state = this.state
     if (isCasting(state)) {
