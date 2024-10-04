@@ -10,8 +10,8 @@ const EpisodesList = React.memo(({ episodesData, isLoading, animeColors }) => {
 
   const handlePlay = (episode) => {
     if (loadingEpisodeId) return;
-    
-    setLoadingEpisodeId(episode.tvdbId);
+
+    setLoadingEpisodeId(episode?.torrent?.infoHash);
     TorrentPlayer.playTorrent(episode, state, setLoadingEpisodeId);
   };
 
@@ -26,7 +26,7 @@ const EpisodesList = React.memo(({ episodesData, isLoading, animeColors }) => {
             <EpisodeCard
               episode={episode}
               key={`episode-${episode.episodeNumber}-${i}`}
-              isLoading={loadingEpisodeId === episode.tvdbId}
+              isLoading={loadingEpisodeId === episode?.torrent?.infoHash}
               onPlay={() => handlePlay(episode)}
             />
           ))}

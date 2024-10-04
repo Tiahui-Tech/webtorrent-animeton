@@ -31,11 +31,12 @@ class TorrentKeyNotFoundError extends TorrentError {
 
 /* Global */
 
-const sendError = (state, { message, title = 'Ha ocurrido un error...' }) => {
+const sendError = (state, { message, title = 'Ha ocurrido un error...', type = 'error' }) => {
   state.errors.push({
     time: new Date().getTime(),
     message,
-    title
+    title,
+    type
   });
 }
 

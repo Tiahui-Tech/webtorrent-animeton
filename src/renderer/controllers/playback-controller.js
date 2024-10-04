@@ -335,6 +335,19 @@ module.exports = class PlaybackController {
       : TorrentPlayer.isAudio(fileSummary)
         ? 'audio'
         : 'other'
+    
+    // eventBus.emit('stateUpdate', {
+    //   playing: {
+    //     infoHash: infoHash,
+    //     fileIndex: index,
+    //     fileName: fileSummary.name,
+    //     type: TorrentPlayer.isVideo(fileSummary)
+    //       ? 'video'
+    //       : TorrentPlayer.isAudio(fileSummary)
+    //         ? 'audio'
+    //         : 'other'
+    //   }
+    // });
 
     // pick up where we left off
     let jumpToTime = 0

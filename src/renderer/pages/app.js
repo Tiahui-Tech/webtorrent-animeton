@@ -124,15 +124,21 @@ function ErrorPopover({ state }) {
 
   if (!hasErrors) return null;
 
+  const errorColors = {
+    error: '#f31260',
+    alert: '#ff961f'
+  }
+
   return (
-    <div key="errors" className="fixed bottom-4 left-4 flex flex-col space-y-4 z-50">
+    <div key="errors" className="fixed bottom-4 left-4 flex flex-col space-y-4" style={{ zIndex: 9999 }}>
       {recentErrors.map((error, i) => (
         <motion.div 
           key={i} 
           initial={{ opacity: 0, x: -100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-[#f31260] text-white px-4 pr-6 py-3 rounded-xl shadow-md flex items-center"
+          className={`text-white px-4 pr-6 py-3 rounded-xl shadow-md flex items-center`}
+          style={{ backgroundColor: errorColors[error.type] || errorColors.error }}
         >
           <Icon icon="gravity-ui:diamond-exclamation" width="32" height="32" style={{color: 'white'}} className="mr-3" />
           <div>

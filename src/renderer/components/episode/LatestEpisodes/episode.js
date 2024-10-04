@@ -1,11 +1,10 @@
 const React = require('react');
-const { useState, memo } = React;
+const { memo } = React;
 const {
   getAnimeFlags,
   timeAgo,
   getNeonColor
 } = require('../../../../modules/utils');
-const TorrentPlayer = require('../../../lib/torrent-player');
 
 const {
   Card,
@@ -17,17 +16,19 @@ const { Icon } = require('@iconify/react');
 
 const useExtractColor = require('../../../hooks/useExtractColor');
 
-const EpisodeCard = memo(({ anime, state }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handlePlay = () => {
-    TorrentPlayer.playTorrent(anime, state, setIsLoading);
-  }
+const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
 
   const episodeImage =
     anime?.episode?.image ||
     anime?.bannerImage ||
     anime?.coverImage?.extraLarge;
+
+  const episode = anime?.episode;
+
+  const handlePlay = (e) => {
+    e.preventDefault();
+    onPlay(episode);
+  }
 
   const { animeColors } = useExtractColor(episodeImage);
 
@@ -47,7 +48,7 @@ const EpisodeCard = memo(({ anime, state }) => {
             </span>
           </CardHeader>
           <CardBody
-            className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
+            className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer z-50"
             onClick={handlePlay}
           >
             <img

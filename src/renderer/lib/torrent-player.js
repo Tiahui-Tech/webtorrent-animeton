@@ -58,7 +58,7 @@ function playTorrent(anime, state, setIsLoading) {
   const torrentData = anime?.torrent;
 
   try {
-    const hash = torrentData?.hash ||torrentData?.infohash || torrentData?.infoHash;
+    const hash = torrentData?.infoHash ||torrentData?.infohash || torrentData?.hash;
     const torrent = state.saved.torrents.find(
       (torrent) => torrent.infoHash === hash
     );

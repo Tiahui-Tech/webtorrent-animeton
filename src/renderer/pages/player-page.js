@@ -6,7 +6,7 @@ const { useEffect, useRef } = React;
 const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
 const prettyBytes = require('prettier-bytes');
-const { useLocation } = require('react-router-dom');
+const { useLocation, useNavigate } = require('react-router-dom');
 
 const TorrentSummary = require('../lib/torrent-summary');
 const Playlist = require('../lib/playlist');
@@ -15,10 +15,12 @@ const config = require('../../config');
 const { calculateEta } = require('../lib/time');
 
 const Spinner = require('../components/common/spinner');
+const { sendError } = require('../lib/errors');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
 
@@ -45,22 +47,60 @@ function Player({ state }) {
     };
   }, [setup, destroy]);
 
+  const subtitlesExist = state.playing.subtitles.tracks.length > 0;
+
+  const maxSubLength = subtitlesExist
+    ? state.playing.subtitles.tracks.reduce((max, track) =>
+      track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
+    : null;
+
+  const tracksAreFromActualTorrent = subtitlesExist
+    ? state.playing.subtitles.tracks.every(track => track.infoHash === state.playing.infoHash)
+    : false;
+
+  const actualTracksHash = state.playing.subtitles.tracks.map(track => track.infoHash);
+
+  const isTorrentReady = state.server && state.playing.isReady;
+
+  useEffect(() => {
+    let intervalId;
+
+    if (!isTorrentReady) {
+      intervalId = setInterval(() => {
+        if (!state.server || !state.playing.isReady) {
+          console.log('Torrent not ready after 10 seconds, destroying player');
+          if (destroy) {
+            destroy();
+          }
+          // Navigate back to the previous page or a default page
+          navigate('/');
+
+          sendError(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' })
+        } else {
+          clearInterval(intervalId);
+        }
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isTorrentReady, destroy]);
+
   // New useEffect hook for checking subtitles
   useEffect(() => {
     let intervalId;
 
-    const subtitlesExist = state.playing.subtitles.tracks.length > 0;
+    console.log('state.server', state.server);
+    console.log('state.playing', state.playing);
+    console.log('subtitlesExist', subtitlesExist);
+    console.log('maxSubLength', maxSubLength);
+    console.log('tracksAreFromActualTorrent', tracksAreFromActualTorrent);
+    console.log('actualTracksHash', actualTracksHash);
 
-    const maxSubLength = subtitlesExist
-      ? state.playing.subtitles.tracks.reduce((max, track) =>
-        track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
-      : null;
-
-    const tracksAreFromActualTorrent = subtitlesExist
-      ? state.playing.subtitles.tracks.every(track => track.infoHash === state.playing.infoHash)
-      : false;
-
-    if (state.playing.isReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
+    if (isTorrentReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
       intervalId = setInterval(() => {
         const torrentSummary = state.getPlayingTorrentSummary();
         dispatch('checkForSubtitles', torrentSummary);
@@ -78,14 +118,14 @@ function Player({ state }) {
         clearInterval(intervalId);
       }
     };
-  }, [state.playing.isReady, state.playing.subtitles.tracks.length]);
+  }, [isTorrentReady, state.playing.subtitles.tracks.length, actualTracksHash]);
 
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
   const showVideo = state.playing.location === 'local';
   const showControls = state.playing.location !== 'external';
 
-  if (!state.server || !state.playing.isReady) {
+  if (!isTorrentReady) {
     return <Spinner />
   }
 

@@ -1,11 +1,17 @@
 const React = require('react');
+const { useState } = React;
 const useRSSData = require('../../../hooks/useRSSData');
 const useModernBackground = require('../../../hooks/useModernBackground');
+
+const TorrentPlayer = require('../../../lib/torrent-player');
+const { sendError } = require('../../../lib/errors');
 
 const EpisodeCard = require('./episode');
 const EpisodeCardSkeleton = require('./skeleton');
 
 const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
+  const [loadingEpisodeId, setLoadingEpisodeId] = useState(null);
+
   const rssAnimes = useRSSData({
     page: 1,
     perPage: 10,
@@ -19,6 +25,20 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
     opacity: 0.6
   });
 
+  const handlePlay = (anime) => {
+    const infoHash = anime?.torrent?.infoHash;
+    if (!infoHash) {
+      return sendError(state, { message: 'Episodio no disponible.' });
+    }
+
+    if (loadingEpisodeId) {
+      return sendError(state, { title: 'Wow, espera!', message: 'Ya estamos cargando un episodio.', type: 'alert' });
+    }
+
+    setLoadingEpisodeId(infoHash);
+    TorrentPlayer.playTorrent(anime, state, setLoadingEpisodeId);
+  };
+
   return (
     <div className="relative flex flex-col py-8 px-6 justify-center items-center bg-black">
       <div
@@ -29,19 +49,20 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
           WebkitMaskImage: 'linear-gradient(to top, black 70%, transparent)'
         }}
       />
-      <h2 className="relative text-2xl font-bold mb-4 px-8">
-        {sectionTitle}
-      </h2>
+      <h2 className="relative text-2xl font-bold mb-4 px-8">{sectionTitle}</h2>
       <div className="grid grid-cols-4 auto-cols-max gap-4 justify-center items-center min-h-[700px]">
-        {!rssAnimes ?
-          Array.from({ length: 8 }).map((_, i) => (
+        {!rssAnimes
+          ? Array.from({ length: 8 }).map((_, i) => (
             <EpisodeCardSkeleton key={i} />
           ))
-          :
-          rssAnimes.map((anime, i) => (
-            <EpisodeCard anime={anime} state={state} key={i} />
-          ))
-        }
+          : rssAnimes.map((anime, i) => (
+            <EpisodeCard
+              key={i}
+              anime={anime}
+              isLoading={loadingEpisodeId === anime?.torrent?.infoHash}
+              onPlay={() => handlePlay(anime)}
+            />
+          ))}
       </div>
     </div>
   );
