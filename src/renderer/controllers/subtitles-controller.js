@@ -72,7 +72,7 @@ module.exports = class SubtitlesController {
 
     try {
       const subtitles = await this.parseSubtitles(filePath)
-      await this.convertAndAddSubtitles(subtitles)
+      await this.convertAndAddSubtitles(subtitles, torrentSummary.infoHash)
     } catch (err) {
       console.error('Error checking for subtitles: ', err)
     }
@@ -104,7 +104,7 @@ module.exports = class SubtitlesController {
     return ext === '.srt' || ext === '.vtt'
   }
 
-  async convertAndAddSubtitles(subtitles) {
+  async convertAndAddSubtitles(subtitles, infoHash) {
     const convertedTracks = []
 
     for (const [trackNumber, subtitle] of Object.entries(subtitles)) {
@@ -115,7 +115,8 @@ module.exports = class SubtitlesController {
             buffer: 'data:text/vtt;base64,' + Buffer.from(vttContent).toString('base64'),
             language: subtitle.track.language || 'Unknown',
             label: subtitle.track.name || `Track ${trackNumber}`,
-            filePath: `memory:${trackNumber}`
+            filePath: `memory:${trackNumber}`,
+            infoHash
           })
         } catch (error) {
           console.error('Error converting subtitle:', error)
@@ -129,10 +130,8 @@ module.exports = class SubtitlesController {
       selectedIndex = this.state.playing.subtitles.tracks.length
     }
 
-    const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks)
-    console.log('uniqueSubtitles', uniqueSubtitles);
+    const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks, infoHash)
     const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
-    console.log('filteredAndSortedTracks', filteredAndSortedTracks);
 
     eventBus.emit('stateUpdate', {
       playing: {
@@ -203,16 +202,19 @@ function isSystemLanguage(language) {
   return langIso === osLangISO
 }
 
-// Make sure we don't have two subtitle tracks with the same label
-// Labels each track by language, eg 'German', 'English', 'English 2', ...
-function relabelAndFilterSubtitles(subtitles) {
+// Filters and relabels subtitle tracks to ensure uniqueness and proper labeling
+// Removes duplicate and empty subtitles, filters by infoHash, and labels tracks by language
+// Example: 'English', 'English 2', 'Spanish', etc.
+function relabelAndFilterSubtitles(subtitles, infoHash) {
   const counts = {}
   const uniquePaths = new Set()
   const uniqueSubtitles = []
 
   subtitles.forEach(track => {
-    // Avoid duplicate subtitles based on filePath and remove empty subtitles
-    if (!uniquePaths.has(track.filePath) && track.buffer !== 'data:text/vtt;base64,V0VCVlRUCgo=') {
+    // Avoid duplicate subtitles based on filePath, remove empty subtitles, and filter by infoHash
+    if (!uniquePaths.has(track.filePath) && 
+        track.buffer !== 'data:text/vtt;base64,V0VCVlRUCgo=' &&
+        track.infoHash === infoHash) {
       uniquePaths.add(track.filePath)
       uniqueSubtitles.push(track)
 

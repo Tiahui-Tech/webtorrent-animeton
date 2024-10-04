@@ -49,16 +49,22 @@ function Player({ state }) {
   useEffect(() => {
     let intervalId;
 
-    const maxSubLength = state.playing.subtitles.tracks.length > 0
-      ? state.playing.subtitles.tracks.reduce((max, track) => 
-          track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
+    const subtitlesExist = state.playing.subtitles.tracks.length > 0;
+
+    const maxSubLength = subtitlesExist
+      ? state.playing.subtitles.tracks.reduce((max, track) =>
+        track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
       : null;
 
-    if (state.playing.isReady && maxSubLength !== null && maxSubLength < 300) {
+    const tracksAreFromActualTorrent = subtitlesExist
+      ? state.playing.subtitles.tracks.every(track => track.infoHash === state.playing.infoHash)
+      : false;
+
+    if (state.playing.isReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
       intervalId = setInterval(() => {
         const torrentSummary = state.getPlayingTorrentSummary();
         dispatch('checkForSubtitles', torrentSummary);
-        
+
         // If subtitles are found, clear the interval
         if (state.playing.subtitles.tracks.length > 0) {
           clearInterval(intervalId);
