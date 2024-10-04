@@ -569,7 +569,7 @@ video::-webkit-media-text-track-container {
   margin: 0;
   width: 100%;
   overflow: hidden;
-  z-index: 1;
+  z-index: 9999;
 }
 
 .error-popover.hidden {
@@ -1360,6 +1360,10 @@ video {
   bottom: 0px;
 }
 
+.bottom-4 {
+  bottom: 1rem;
+}
+
 .bottom-\[10\%\] {
   bottom: 10%;
 }
@@ -1386,6 +1390,10 @@ video {
 
 .left-3 {
   left: 0.75rem;
+}
+
+.left-4 {
+  left: 1rem;
 }
 
 .left-\[10\%\] {
@@ -1581,6 +1589,10 @@ video {
   margin-inline-start: -0.5rem;
 }
 
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
 .mb-1\.5 {
   margin-bottom: 0.375rem;
 }
@@ -1611,6 +1623,10 @@ video {
 
 .mr-2 {
   margin-right: 0.5rem;
+}
+
+.mr-3 {
+  margin-right: 0.75rem;
 }
 
 .mt-0 {
@@ -2644,6 +2660,12 @@ video {
   margin-left: calc(0.125rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1rem * var(--tw-space-y-reverse));
+}
+
 .self-center {
   align-self: center;
 }
@@ -3061,6 +3083,11 @@ video {
 .\!bg-danger-50 {
   --tw-bg-opacity: 1 !important;
   background-color: hsl(var(--nextui-danger-50) / var(--nextui-danger-50-opacity, var(--tw-bg-opacity))) !important;
+}
+
+.bg-\[\#f31260\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 18 96 / var(--tw-bg-opacity));
 }
 
 .bg-background {
@@ -3871,6 +3898,10 @@ video {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.text-white\/80 {
+  color: rgb(255 255 255 / 0.8);
 }
 
 .text-zinc-500 {

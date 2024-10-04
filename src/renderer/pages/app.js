@@ -1,8 +1,10 @@
 const React = require('react');
 const { useState, useEffect, useRef } = React;
 const { MemoryRouter, Routes, Route, useLocation, useNavigate } = require('react-router-dom');
+const { motion } = require('framer-motion');
 
 const Header = require('../components/common/header');
+const { Icon } = require('@iconify/react');
 
 // Perf optimization: Needed immediately, so do not lazy load it
 const Home = require('./Home');
@@ -58,7 +60,7 @@ function AppContent({ initialState, onUpdate }) {
 
     const stateUpdateHandler = (newPartialState) => {
       setState(prevState => {
-        const updatedState = deepMerge({...prevState}, newPartialState);
+        const updatedState = deepMerge({ ...prevState }, newPartialState);
         return updatedState;
       });
     };
@@ -95,8 +97,8 @@ function AppContent({ initialState, onUpdate }) {
       <div className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}>
         <Header state={state} />
         <ErrorPopover state={state} />
-        <div 
-          key="content" 
+        <div
+          key="content"
           className={`content ${location.pathname === '/player' ? 'mt-0' : 'mt-[38px]'}`}
         >
           <React.Suspense fallback={<div>Loading...</div>}>
@@ -123,10 +125,21 @@ function ErrorPopover({ state }) {
   if (!hasErrors) return null;
 
   return (
-    <div key="errors" className="error-popover visible">
-      <div key="title" className="title">Error</div>
+    <div key="errors" className="fixed bottom-4 left-4 flex flex-col space-y-4 z-50">
       {recentErrors.map((error, i) => (
-        <div key={i} className="error">{error.message}</div>
+        <motion.div 
+          key={i} 
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-[#f31260] text-white px-4 pr-6 py-3 rounded-xl shadow-md flex items-center"
+        >
+          <Icon icon="gravity-ui:diamond-exclamation" width="32" height="32" style={{color: 'white'}} className="mr-3" />
+          <div>
+            <h3 className="font-bold mb-1">{error.title || 'Ha ocurrido un error...'}</h3>
+            <p className="text-sm text-white/80">{error.message}</p>
+          </div>
+        </motion.div>
       ))}
     </div>
   );

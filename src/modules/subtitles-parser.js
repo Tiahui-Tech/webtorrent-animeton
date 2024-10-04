@@ -40,7 +40,12 @@ async function parseSubtitles(filePath) {
       const fileStream = file[Symbol.asyncIterator]();
       
       // Without this, the code doesn't work
-      for await (const chunk of metadata.parseStream(fileStream)) {
+      try {
+        for await (const chunk of metadata.parseStream(fileStream)) {
+        }
+      } catch (error) {
+        console.warn('Error parsing subtitle chunk:', error);
+        // Ignore the error and continue processing
       }
 
       console.log('Finished parsing subtitles');
