@@ -18,10 +18,9 @@ const eventBus = require('../lib/event-bus');
 // Controls playback of torrents and files within torrents
 // both local (<video>,<audio>,external player) and remote (cast)
 module.exports = class PlaybackController {
-  constructor(state, config, update) {
+  constructor(state, config) {
     this.state = state
     this.config = config
-    this.update = update
   }
 
   // Play a file in a torrent.
@@ -134,7 +133,13 @@ module.exports = class PlaybackController {
   play() {
     const state = this.state
     if (!state.playing.isPaused) return
-    state.playing.isPaused = false
+
+    state.playing.isPaused = false;
+    eventBus.emit('stateUpdate', {
+      playing: {
+        isPaused: false
+      }
+    });
     if (isCasting(state)) {
       Cast.play()
     }
@@ -145,7 +150,13 @@ module.exports = class PlaybackController {
   pause() {
     const state = this.state
     if (state.playing.isPaused) return
-    state.playing.isPaused = true
+
+    state.playing.isPaused = true;
+    eventBus.emit('stateUpdate', {
+      playing: {
+        isPaused: true
+      }
+    });
     if (isCasting(state)) {
       Cast.pause()
     }
@@ -165,7 +176,14 @@ module.exports = class PlaybackController {
       return console.trace()
     }
     if (isCasting(this.state)) Cast.seek(time)
-    else this.state.playing.jumpToTime = time
+    else {
+      this.state.playing.jumpToTime = time;
+      eventBus.emit('stateUpdate', {
+        playing: {
+          jumpToTime: time
+        }
+      });
+    }
   }
 
   // Show video preview
@@ -174,12 +192,12 @@ module.exports = class PlaybackController {
       console.error('Tried to preview a non-finite position ' + x)
       return console.trace()
     }
-    this.state.playing.previewXCoord = x
+    this.state.playing.previewXCoord = x;
   }
 
   // Hide video preview
   clearPreview() {
-    this.state.playing.previewXCoord = null
+    this.state.playing.previewXCoord = null;
   }
 
   // Change playback speed. 1 = faster, -1 = slower
@@ -200,10 +218,10 @@ module.exports = class PlaybackController {
     }
     state.playing.playbackRate = rate
     if (isCasting(state) && !Cast.setRate(rate)) {
-      state.playing.playbackRate = 1
+      state.playing.playbackRate = 1;
     }
     // Wait a bit before we hide the controls and header again
-    state.playing.mouseStationarySince = new Date().getTime()
+    state.playing.mouseStationarySince = new Date().getTime();
   }
 
   // Change the volume, in range [0, 1], by some amount
@@ -222,7 +240,12 @@ module.exports = class PlaybackController {
     if (isCasting(state)) {
       Cast.setVolume(volume)
     } else {
-      state.playing.setVolume = volume
+      state.playing.setVolume = volume;
+      eventBus.emit('stateUpdate', {
+        playing: {
+          setVolume: volume
+        }
+      })
     }
   }
 
@@ -236,7 +259,12 @@ module.exports = class PlaybackController {
     const hideControls = state.shouldHidePlayerControls()
 
     if (hideControls !== state.playing.hideControls) {
-      state.playing.hideControls = hideControls
+      state.playing.hideControls = hideControls;
+      eventBus.emit('stateUpdate', {
+        playing: {
+          hideControls: hideControls
+        }
+      })
       return true
     }
     return false
@@ -273,6 +301,11 @@ module.exports = class PlaybackController {
       ipcRenderer.send('wt-start-server', torrentSummary.infoHash)
       ipcRenderer.once('wt-server-running', () => {
         state.playing.isReady = true;
+        eventBus.emit('stateUpdate', {
+          playing: {
+            isReady: true
+          }
+        });
       })
     }
   }
@@ -347,8 +380,6 @@ module.exports = class PlaybackController {
   }
 
   closePlayer() {
-    console.log('closePlayer')
-
     // Quit any external players, like Chromecast/Airplay/etc or VLC
     const state = this.state
     if (isCasting(state)) {
@@ -360,6 +391,11 @@ module.exports = class PlaybackController {
 
     // Save volume (this session only, not in state.saved)
     state.previousVolume = state.playing.volume
+    eventBus.emit('stateUpdate', {
+      playing: {
+        previousVolume: state.playing.volume
+      }
+    });
 
     if (!state.playing.isReady) telemetry.logPlayAttempt('abandoned') // user gave up waiting
 

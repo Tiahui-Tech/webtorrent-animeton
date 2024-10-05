@@ -1,4 +1,4 @@
-const { useEffect, useState, useCallback, useMemo } = require('react');
+const { useEffect, useState, useCallback } = require('react');
 const { genModernBackground } = require('../../modules/canvas');
 
 const useModernBackground = ({ primaryColor, secondaryColor, disablePattern, opacity }) => {

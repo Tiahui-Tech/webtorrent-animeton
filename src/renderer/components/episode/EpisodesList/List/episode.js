@@ -56,7 +56,7 @@ const EpisodeCard = React.memo(({ episode, state }) => {
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-3xl font-medium truncate w-full max-w-[500px]">
-                  {`E${episode.episodeNumber} - ${episode.title.en}`}
+                  {`E${episode.episodeNumber || episode.episode}`}{episode.title.en && ` - ${episode.title.en}`}
                 </p>
                 <span className="text-xl text-gray-400">{episode.title.ja}</span>
               </div>
@@ -65,7 +65,7 @@ const EpisodeCard = React.memo(({ episode, state }) => {
             <div className="flex flex-col gap-6 justify-between items-end">
               <div className="flex flex-row gap-1">
                 <span className="text-base text-gray-400">
-                  {episode.rating}
+                  {episode.rating || 'N/A'}
                 </span>
                 <Icon
                   icon="gravity-ui:star"
@@ -90,7 +90,7 @@ const EpisodeCard = React.memo(({ episode, state }) => {
               </div>
               <div className="flex flex-row gap-1">
                 <span className="text-base text-gray-400">
-                  {new Date(episode.airDateUtc).toLocaleDateString()}
+                  {new Date(episode.airDateUtc || episode.airDate || episode.airdate).toLocaleDateString() || 'N/A'}
                 </span>
                 <Icon
                   icon="gravity-ui:calendar"

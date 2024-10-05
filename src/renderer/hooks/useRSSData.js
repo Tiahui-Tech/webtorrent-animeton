@@ -1,5 +1,5 @@
 const { useEffect, useState } = require('react');
-const { fetchAndParseRSS, processRssAnimes } = require('../../modules/rss');
+const { API_BASE_URL } = require('../../constants/config');
 
 const useRSSData = ({ page, perPage, displayCount, emptyState }) => {
   const [rssAnimes, setRSSAnimes] = useState(emptyState ? Array.from({ length: displayCount }) : null);
@@ -7,11 +7,11 @@ const useRSSData = ({ page, perPage, displayCount, emptyState }) => {
   useEffect(() => {
     const fetchRSSAnimes = async () => {
       try {
-        const rssData = await fetchAndParseRSS(page, perPage);
-        const resolvedRssData = await processRssAnimes(rssData);
+        const response = await fetch(`${API_BASE_URL}/anime/rss?page=${page}&perPage=${perPage}`);
+        const rssAnimesData = await response.json();
 
         // Sets the displayCount to the array
-        const slicedRssAnimes = resolvedRssData.slice(0, displayCount);
+        const slicedRssAnimes = rssAnimesData.slice(0, displayCount);
 
         setRSSAnimes(slicedRssAnimes);
       } catch (error) {

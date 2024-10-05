@@ -220,21 +220,19 @@ function toggleDevTools () {
   }
 }
 
-function toggleFullScreen (flag) {
+function toggleFullScreen () {
   if (!main.win || !main.win.isVisible()) {
     return
   }
 
-  if (flag == null) flag = !main.win.isFullScreen()
+  const newFullScreenState = !main.win.isFullScreen()
 
-  log(`toggleFullScreen ${flag}`)
-
-  if (flag) {
+  if (newFullScreenState) {
     // Fullscreen and aspect ratio do not play well together. (Mac)
     main.win.setAspectRatio(0)
   }
 
-  main.win.setFullScreen(flag)
+  main.win.setFullScreen(newFullScreenState)
 }
 
 function onWindowBlur () {

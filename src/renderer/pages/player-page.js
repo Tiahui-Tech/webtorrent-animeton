@@ -2,6 +2,8 @@
 
 const React = require('react');
 const { useEffect, useRef } = React;
+
+const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
 const prettyBytes = require('prettier-bytes');
 const { useLocation } = require('react-router-dom');
@@ -11,6 +13,9 @@ const Playlist = require('../lib/playlist');
 const { dispatch, dispatcher } = require('../lib/dispatcher');
 const config = require('../../config');
 const { calculateEta } = require('../lib/time');
+
+const Spinner = require('../components/common/spinner');
+
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
   const location = useLocation();
@@ -43,6 +48,10 @@ function Player({ state }) {
   // If the video is on Chromecast or Airplay, show a title screen instead
   const showVideo = state.playing.location === 'local';
   const showControls = state.playing.location !== 'external';
+
+  if (!state.server || !state.playing.isReady) {
+    return <Spinner />
+  }
 
   return (
     <div
@@ -173,7 +182,6 @@ function renderMedia(state) {
   const mediaTag = (
     <MediaTagName
       src={Playlist.getCurrentLocalURL(state)}
-      onDoubleClick={dispatcher('toggleFullScreen')}
       onClick={dispatcher('playPause')}
       onLoadedMetadata={onLoadedMetadata}
       onEnded={onEnded}
@@ -730,13 +738,13 @@ function renderPlayerControls(state) {
     <i
       key="fullscreen"
       className="icon fullscreen float-right"
-      onClick={dispatcher('toggleFullScreen')}
+      onClick={handleFullScreen}
       role="button"
       aria-label={
-        state.window.isFullScreen ? 'Exit full screen' : 'Enter full screen'
+        state.window.isVideoFullScreen ? 'Exit full screen' : 'Enter full screen'
       }
     >
-      {state.window.isFullScreen ? 'fullscreen_exit' : 'fullscreen'}
+      {state.window.isVideoFullScreen ? 'fullscreen_exit' : 'fullscreen'}
     </i>
   ];
 
@@ -938,6 +946,28 @@ function renderPlayerControls(state) {
 
   function handleAudioTracks() {
     dispatch('toggleAudioTracksMenu');
+  }
+
+  function handleFullScreen() {
+    const currentWindow = remote.getCurrentWindow();
+    const isCurrentlyFullScreen = currentWindow.isMaximized() || state.window.isVideoFullScreen;
+
+    if (isCurrentlyFullScreen) {
+      exitFullScreen(currentWindow);
+    } else {
+      enterFullScreen(currentWindow);
+    }
+
+    state.window.isVideoFullScreen = !isCurrentlyFullScreen;
+  }
+
+  function exitFullScreen(window) {
+    window.unmaximize();
+    window.setFullScreen(false);
+  }
+
+  function enterFullScreen(window) {
+    window.setFullScreen(true);
   }
 
   return (

@@ -1,6 +1,5 @@
 const React = require('react');
 const { Card, CardBody, Skeleton } = require('@nextui-org/react');
-const { genGlassStyle } = require('../../../../../modules/utils');
 
 const EpisodeCardSkeleton = ({ color }) => {
   return (

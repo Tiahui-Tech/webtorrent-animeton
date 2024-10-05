@@ -34,12 +34,6 @@ const DEFAULTS = {
   sources: {}
 };
 
-const ERAI_RAWS_CONFIG = {
-  FEED_URL:
-    'https://www.erai-raws.info/episodes/feed/?res=1080p&type=torrent&subs%5B0%5D=mx&d157edc6b50f28b2776442c03d067d56',
-  RSS_URL: 'https://www.erai-raws.info/rss-page/'
-};
-
 const TIME_UNITS = [
   { key: 'segundo', limit: 60, divisor: 1 },
   { key: 'minuto', limit: 3600, divisor: 60 },
@@ -47,4 +41,4 @@ const TIME_UNITS = [
   { key: 'dia', limit: 2592000, divisor: 86400 }
 ];
 
-module.exports = { API_BASE_URL, DEFAULTS, ERAI_RAWS_CONFIG, TIME_UNITS };
+module.exports = { API_BASE_URL, DEFAULTS, TIME_UNITS };

@@ -484,30 +484,38 @@ function setDimensions(dimensions) {
     width: window.outerWidth,
     height: window.outerHeight
   };
-  state.window.wasMaximized = remote.getCurrentWindow().isMaximized;
+  state.window.wasMaximized = remote.getCurrentWindow().isMaximized();
 
-  // Limit window size to screen size
-  const screenWidth = window.screen.width;
-  const screenHeight = window.screen.height;
+  // Get the work area dimensions (screen size minus taskbar)
+  const workArea = remote.screen.getPrimaryDisplay().workArea;
+  const screenWidth = workArea.width;
+  const screenHeight = workArea.height;
+
   const aspectRatio = dimensions.width / dimensions.height;
-  const scaleFactor = Math.min(
-    Math.min(screenWidth / dimensions.width, 1),
-    Math.min(screenHeight / dimensions.height, 1)
-  );
-  const width = Math.max(
-    Math.floor(dimensions.width * scaleFactor),
-    config.WINDOW_MIN_WIDTH
-  );
-  const height = Math.max(
-    Math.floor(dimensions.height * scaleFactor),
-    config.WINDOW_MIN_HEIGHT
-  );
+  
+  // Calculate the maximum size that fits in the work area while maintaining aspect ratio
+  let width = Math.min(dimensions.width, screenWidth);
+  let height = Math.round(width / aspectRatio);
+  
+  if (height > screenHeight) {
+    height = screenHeight;
+    width = Math.round(height * aspectRatio);
+  }
+
+  // Ensure the window size is not smaller than the minimum allowed
+  width = Math.max(width, config.WINDOW_MIN_WIDTH);
+  height = Math.max(height, config.WINDOW_MIN_HEIGHT);
+
+  console.log('setDimensions', aspectRatio, width, height);
+  
+  // Center the window in the work area
+  const x = Math.round(workArea.x + (screenWidth - width) / 2);
+  const y = Math.round(workArea.y + (screenHeight - height) / 2);
 
   ipcRenderer.send('setAspectRatio', aspectRatio);
   ipcRenderer.send('setBounds', {
-    contentBounds: true,
-    x: null,
-    y: null,
+    x,
+    y,
     width,
     height
   });
@@ -618,14 +626,25 @@ function onVisibilityChange() {
   state.window.isVisible = !document.hidden;
 }
 
-function onFullscreenChanged(e, isFullScreen) {
-  state.window.isFullScreen = isFullScreen;
-  if (!isFullScreen) {
+function onFullscreenChanged() {
+  
+  // Use remote to get the current window and check its fullscreen state
+  const currentWindow = remote.getCurrentWindow();
+  const actualFullScreenState = currentWindow.isFullScreen();
+  
+  // Update the state with the actual fullscreen state
+  state.window.isFullScreen = actualFullScreenState;
+  
+  if (!actualFullScreenState) {
     // Aspect ratio gets reset in fullscreen mode, so restore it (Mac)
     ipcRenderer.send('setAspectRatio', state.playing.aspectRatio);
   }
 
-  update();
+  eventBus.emit('stateUpdate', {
+    window: {
+      isFullScreen: actualFullScreenState
+    }
+  })
 }
 
 function onWindowBoundsChanged(e, newBounds) {
