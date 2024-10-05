@@ -1,7 +1,7 @@
 /* globals MediaMetadata */
 
 const React = require('react');
-const { useEffect, useRef } = React;
+const { useEffect, useState, useRef } = React;
 
 const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
@@ -21,9 +21,24 @@ const { sendError } = require('../lib/errors');
 function Player({ state }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isMouseMoving, setIsMouseMoving] = useState(true);
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
+  const mouseTimerRef = useRef(null);
 
+  const handleMouseMove = () => {
+    setIsMouseMoving(true);
+    clearTimeout(mouseTimerRef.current);
+    mouseTimerRef.current = setTimeout(() => {
+      setIsMouseMoving(false);
+    }, 3000); // Set to 0 after 3 seconds of inactivity
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(mouseTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (setup) {
@@ -89,17 +104,10 @@ function Player({ state }) {
     };
   }, [isTorrentReady, destroy]);
 
-  // New useEffect hook for checking subtitles
   useEffect(() => {
     let intervalId;
 
-    console.log('state.server', state.server);
-    console.log('state.playing', state.playing);
-    console.log('subtitlesExist', subtitlesExist);
-    console.log('maxSubLength', maxSubLength);
-    console.log('tracksAreFromActualTorrent', tracksAreFromActualTorrent);
-    console.log('actualTracksHash', actualTracksHash);
-
+    // Subtitles may be incorrectly parsed, indicated by an unusually short or null maxSubLength
     if (isTorrentReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
       intervalId = setInterval(() => {
         const torrentSummary = state.getPlayingTorrentSummary();
@@ -133,11 +141,22 @@ function Player({ state }) {
     <div
       className="player"
       onWheel={handleVolumeWheel}
-      onMouseMove={dispatcher('mediaMouseMoved')}
       ref={playerRef}
     >
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1000,
+          cursor: isMouseMoving ? 'auto' : 'none'
+        }}
+        onMouseMove={handleMouseMove}
+      />
       {showVideo ? renderMedia(state) : renderCastScreen(state)}
-      {showControls ? renderPlayerControls(state) : null}
+      {showControls && renderPlayerControls(state, isMouseMoving, handleMouseMove)}
     </div>
   );
 }
@@ -744,7 +763,13 @@ function renderAudioTrackOptions(state) {
   );
 }
 
-function renderPlayerControls(state) {
+function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
+  const controlsStyle = {
+    zIndex: 9999,
+    opacity: isMouseMoving ? 1 : 0,
+    transition: 'opacity 0.3s ease-in-out',
+    pointerEvents: isMouseMoving ? 'auto' : 'none',
+  };
   const positionPercent =
     (100 * state.playing.currentTime) / state.playing.duration;
   const playbackCursorStyle = { left: 'calc(' + positionPercent + '% - 3px)' };
@@ -1050,8 +1075,8 @@ function renderPlayerControls(state) {
     <div
       key="controls"
       className="controls"
-      onMouseEnter={dispatcher('mediaControlsMouseEnter')}
-      onMouseLeave={dispatcher('mediaControlsMouseLeave')}
+      style={controlsStyle}
+      onMouseMove={handleMouseMove}
     >
       {elements}
       {renderCastOptions(state)}

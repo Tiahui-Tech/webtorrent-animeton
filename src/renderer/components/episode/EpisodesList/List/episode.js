@@ -6,7 +6,8 @@ const { Card, CardBody, Image } = require('@nextui-org/react');
 const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
   const episodeHasTorrent = episode?.torrent ? true : false;
 
-  const handlePlay = () => {
+  const handlePlay = (e) => {
+    e.preventDefault();
     onPlay(episode);
   };
 

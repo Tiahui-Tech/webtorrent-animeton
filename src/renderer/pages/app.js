@@ -1,6 +1,12 @@
 const React = require('react');
 const { useState, useEffect, useRef } = React;
-const { MemoryRouter, Routes, Route, useLocation, useNavigate } = require('react-router-dom');
+const {
+  MemoryRouter,
+  Routes,
+  Route,
+  useLocation,
+  useNavigate
+} = require('react-router-dom');
 const { motion } = require('framer-motion');
 
 const Header = require('../components/common/header');
@@ -10,7 +16,7 @@ const { Icon } = require('@iconify/react');
 const Home = require('./Home');
 const AnimeDetails = require('./AnimeDetails');
 
-const Player = require('./player-page')
+const Player = require('./player-page');
 const CreateTorrent = React.lazy(() => require('./create-torrent-page'));
 const Preferences = require('./preferences-page');
 
@@ -59,7 +65,7 @@ function AppContent({ initialState, onUpdate }) {
     currentPath = location.pathname;
 
     const stateUpdateHandler = (newPartialState) => {
-      setState(prevState => {
+      setState((prevState) => {
         const updatedState = deepMerge({ ...prevState }, newPartialState);
         return updatedState;
       });
@@ -92,22 +98,39 @@ function AppContent({ initialState, onUpdate }) {
   if (state.window.isFocused) cls.push('is-focused');
   if (hideControls) cls.push('hide-video-controls');
 
+  const isPlayerPage = location.pathname === '/player';
+
   return (
     <main className={`app`}>
-      <div className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}>
+      <div
+        className={`dark text-foreground bg-background min-h-screen overflow-y-auto ${cls.join(' ')}`}
+      >
         <Header state={state} />
         <ErrorPopover state={state} />
         <div
           key="content"
-          className={`content ${location.pathname === '/player' ? 'mt-0' : 'mt-[38px]'}`}
+          className="content"
+          style={{
+            minHeight: isPlayerPage ? '100vh' : 'calc(100vh - 38px)',
+            marginTop: isPlayerPage ? '0' : '38px'
+          }}
         >
           <React.Suspense fallback={<div>Loading...</div>}>
             <Routes>
               <Route path="/" element={<Home state={state} />} />
-              <Route path="/anime/:idAnilist" element={<AnimeDetails state={state} />} />
+              <Route
+                path="/anime/:idAnilist"
+                element={<AnimeDetails state={state} />}
+              />
               <Route path="/player" element={<Player state={state} />} />
-              <Route path="/create-torrent" element={<CreateTorrent state={state} />} />
-              <Route path="/preferences" element={<Preferences state={state} />} />
+              <Route
+                path="/create-torrent"
+                element={<CreateTorrent state={state} />}
+              />
+              <Route
+                path="/preferences"
+                element={<Preferences state={state} />}
+              />
             </Routes>
           </React.Suspense>
         </div>
@@ -127,22 +150,36 @@ function ErrorPopover({ state }) {
   const errorColors = {
     error: '#f31260',
     alert: '#ff961f'
-  }
+  };
 
   return (
-    <div key="errors" className="fixed bottom-4 left-4 flex flex-col space-y-4" style={{ zIndex: 9999 }}>
+    <div
+      key="errors"
+      className="fixed bottom-4 left-4 flex flex-col space-y-4"
+      style={{ zIndex: 9999 }}
+    >
       {recentErrors.map((error, i) => (
-        <motion.div 
-          key={i} 
+        <motion.div
+          key={i}
           initial={{ opacity: 0, x: -100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3 }}
           className={`text-white px-4 pr-6 py-3 rounded-xl shadow-md flex items-center`}
-          style={{ backgroundColor: errorColors[error.type] || errorColors.error }}
+          style={{
+            backgroundColor: errorColors[error.type] || errorColors.error
+          }}
         >
-          <Icon icon="gravity-ui:diamond-exclamation" width="32" height="32" style={{color: 'white'}} className="mr-3" />
+          <Icon
+            icon="gravity-ui:diamond-exclamation"
+            width="32"
+            height="32"
+            style={{ color: 'white' }}
+            className="mr-3"
+          />
           <div>
-            <h3 className="font-bold mb-1">{error.title || 'Ha ocurrido un error...'}</h3>
+            <h3 className="font-bold mb-1">
+              {error.title || 'Ha ocurrido un error...'}
+            </h3>
             <p className="text-sm text-white/80">{error.message}</p>
           </div>
         </motion.div>

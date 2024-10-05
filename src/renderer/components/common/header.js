@@ -15,11 +15,13 @@ const Header = ({ state }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigationType = useNavigationType();
+  const onPlayerPage = location.pathname.includes('player');
 
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
   const [isHome, setIsHome] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [opacity, setOpacity] = useState(1);
 
   useEffect(() => {
     // Updates the navigation state every time the location or navigation type changes
@@ -41,6 +43,27 @@ const Header = ({ state }) => {
       window.removeEventListener('resize', updateMaximizedState);
     };
   }, []);
+
+  useEffect(() => {
+    if (onPlayerPage) {
+      let timeoutId;
+      const handleMouseMove = () => {
+        setOpacity(1);
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => setOpacity(0), 3000);
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+      timeoutId = setTimeout(() => setOpacity(0), 3000);
+
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        clearTimeout(timeoutId);
+      };
+    } else {
+      setOpacity(1);
+    }
+  }, [onPlayerPage]);
 
   const handleBack = (e) => {
     e.preventDefault();
@@ -87,115 +110,69 @@ const Header = ({ state }) => {
     remote.BrowserWindow.getFocusedWindow().minimize();
   };
 
-  const onPlayerPage = location.pathname.includes('player');
-
   return (
     <div
       onMouseDown={startDrag}
-      className={`header ${onPlayerPage ? 'bg-transparent' : ''}`}
-      style={{ WebkitAppRegion: 'drag' }}
+      className="header"
+      style={{
+        WebkitAppRegion: 'drag',
+        opacity: opacity,
+        transition: 'opacity 0.3s ease-in-out'
+      }}
     >
-      {!onPlayerPage ? (
+      <div
+        className="fixed w-full bg-zinc-950 overflow-hidden flex top-0 left-0 right-0 py-2 px-8"
+      >
         <div
-          className="fixed w-full bg-zinc-950 overflow-hidden flex top-0 left-0 right-0 py-2 px-8"
+          className="flex flex-row w-full h-full justify-between items-center"
+          style={{ zIndex: 9000 }}
         >
-          <div
-            className="flex flex-row w-full h-full justify-between items-center"
-            style={{ zIndex: 9000 }}
-          >
-            <div className="flex flex-row items-center gap-2">
-              <button
-                onClick={handleBack}
-                disabled={!canGoBack}
-                className={`focus:outline-none ${canGoBack ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-                style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-              >
-                <Icon
-                  icon="gravity-ui:chevron-left"
-                  width="28"
-                  height="28"
-                  className={canGoBack ? 'text-white' : 'text-gray-500'}
-                />
-              </button>
-              <button
-                onClick={handleForward}
-                disabled={!canGoForward}
-                className={`focus:outline-none ${canGoForward ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-                style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-              >
-                <Icon
-                  icon="gravity-ui:chevron-right"
-                  width="28"
-                  height="28"
-                  className={canGoForward ? 'text-white' : 'text-gray-500'}
-                />
-              </button>
-            </div>
-            <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-              <p
-                className="text-white font-bold text-xl"
-              >Animeton</p>
+          <div className="flex flex-row items-center gap-2">
+            <button
+              onClick={handleBack}
+              disabled={!canGoBack}
+              className={`focus:outline-none ${canGoBack ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+            >
+              <Icon
+                icon="gravity-ui:chevron-left"
+                width="28"
+                height="28"
+                className={canGoBack ? 'text-white' : 'text-gray-500'}
+              />
             </button>
-            <div className="flex flex-row items-center gap-2">
-              <button onClick={handleMinimize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-                <Icon icon="gravity-ui:minus" width="26" height="26" />
-              </button>
-              <button onClick={handleMaximize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-                <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
-              </button>
-              <button onClick={handleClose} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-                <Icon icon="gravity-ui:xmark" width="26" height="26" />
-              </button>
-            </div>
+            <button
+              onClick={handleForward}
+              disabled={!canGoForward}
+              className={`focus:outline-none ${canGoForward ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+            >
+              <Icon
+                icon="gravity-ui:chevron-right"
+                width="28"
+                height="28"
+                className={canGoForward ? 'text-white' : 'text-gray-500'}
+              />
+            </button>
+          </div>
+          <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+            <p
+              className="text-white font-bold text-xl"
+            >Animeton</p>
+          </button>
+          <div className="flex flex-row items-center gap-2">
+            <button onClick={handleMinimize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+              <Icon icon="gravity-ui:minus" width="26" height="26" />
+            </button>
+            <button onClick={handleMaximize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+              <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
+            </button>
+            <button onClick={handleClose} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+              <Icon icon="gravity-ui:xmark" width="26" height="26" />
+            </button>
           </div>
         </div>
-      ) : (
-        <div className="fixed w-full overflow-hidden flex top-0 left-0 right-0 py-2 px-8">
-          <div className="flex flex-row w-full h-full justify-between items-center" style={{ zIndex: 9000 }}>
-            <div className="flex flex-row items-center gap-2">
-              <button
-                onClick={handleBack}
-                disabled={!canGoBack}
-                className={`focus:outline-none ${canGoBack ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-                style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-              >
-                <div className={onPlayerPage ? 'filter drop-shadow-md' : ''}>
-                  <Icon
-                    icon="gravity-ui:chevron-left"
-                    width="28"
-                    height="28"
-                    className={canGoBack ? 'text-white' : 'text-gray-500'}
-                  />
-                </div>
-              </button>
-            </div>
-            <div className="flex-grow"></div>
-            <div className="flex flex-row items-center gap-2">
-              {['minimize', 'maximize', 'close'].map((action) => (
-                <button
-                  key={action}
-                  onClick={action === 'minimize' ? handleMinimize : action === 'maximize' ? handleMaximize : handleClose}
-                  style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-                >
-                  <div className={onPlayerPage ? 'filter drop-shadow-md' : ''}>
-                    <Icon
-                      icon={
-                        action === 'minimize'
-                          ? "gravity-ui:minus"
-                          : action === 'maximize'
-                            ? isMaximized ? "gravity-ui:copy" : "gravity-ui:square"
-                            : "gravity-ui:xmark"
-                      }
-                      width="26"
-                      height="26"
-                    />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -65,7 +65,7 @@ function playTorrent(anime, state, setIsLoading) {
     const torrentUrl = torrentData?.torrentUrl || torrentData?.magnetUrl || torrentData?.link;
 
     if (!torrentUrl || !hash) {
-      throw new Error('Episodio no disponible');
+      throw new Error('Episodio no disponible.');
     }
 
     if (!torrent) {
