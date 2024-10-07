@@ -4,7 +4,7 @@ const useRSSData = require('../../../hooks/useRSSData');
 const useModernBackground = require('../../../hooks/useModernBackground');
 
 const TorrentPlayer = require('../../../lib/torrent-player');
-const { sendError } = require('../../../lib/errors');
+const { sendNotification } = require('../../../lib/errors');
 
 const EpisodeCard = require('./episode');
 const EpisodeCardSkeleton = require('./skeleton');
@@ -12,7 +12,7 @@ const EpisodeCardSkeleton = require('./skeleton');
 const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
   const [loadingEpisodeId, setLoadingEpisodeId] = useState(null);
 
-  const rssAnimes = useRSSData({
+  const { rssAnimes, isLoading } = useRSSData({
     page: 1,
     perPage: 10,
     displayCount: 8,
@@ -28,11 +28,11 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
   const handlePlay = (anime) => {
     const infoHash = anime?.torrent?.infoHash;
     if (!infoHash) {
-      return sendError(state, { message: 'Episodio no disponible.' });
+      return sendNotification(state, { message: 'Episodio no disponible.' });
     }
 
     if (loadingEpisodeId) {
-      return sendError(state, { title: 'Wow, espera!', message: 'Ya estamos cargando un episodio.', type: 'alert' });
+      return sendNotification(state, { title: 'Wow, espera!', message: 'Ya estamos cargando un episodio.', type: 'alert' });
     }
 
     setLoadingEpisodeId(infoHash);
@@ -51,7 +51,7 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
       />
       <h2 className="relative text-2xl font-bold mb-4 px-8">{sectionTitle}</h2>
       <div className="grid grid-cols-4 auto-cols-max gap-4 justify-center items-center min-h-[700px]">
-        {!rssAnimes
+        {isLoading
           ? Array.from({ length: 8 }).map((_, i) => (
             <EpisodeCardSkeleton key={i} />
           ))

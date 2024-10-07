@@ -11,7 +11,7 @@ module.exports = {
 const path = require('path')
 const { dispatch } = require('./dispatcher');
 const mediaExtensions = require('./media-extensions')
-const { sendError } = require('./errors')
+const { sendNotification } = require('./errors')
 
 // Checks whether a fileSummary or file path is audio/video that we can play,
 // based on the file extension
@@ -58,7 +58,7 @@ function playTorrent(anime, state, setIsLoading) {
   const torrentData = anime?.torrent;
 
   try {
-    const hash = torrentData?.infoHash ||torrentData?.infohash || torrentData?.hash;
+    const hash = torrentData?.infoHash || torrentData?.infohash || torrentData?.hash;
     const torrent = state.saved.torrents.find(
       (torrent) => torrent.infoHash === hash
     );
@@ -111,7 +111,7 @@ function playTorrent(anime, state, setIsLoading) {
     }
 
   } catch (error) {
-    sendError(state, { message: error.message, title: 'Error al reproducir' });
+    sendNotification(state, { message: error.message, title: 'Error al reproducir' });
     setIsLoading(null);
   }
 };

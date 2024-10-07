@@ -30,6 +30,11 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
     onPlay(episode);
   }
 
+  const handleIconClick = (e) => {
+    e.stopPropagation();
+    handlePlay(e);
+  }
+
   const { animeColors } = useExtractColor(episodeImage);
 
   if (!animeColors) return null;
@@ -48,7 +53,7 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
             </span>
           </CardHeader>
           <CardBody
-            className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer z-50"
+            className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
             onClick={handlePlay}
           >
             <img
@@ -61,7 +66,7 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
               {getAnimeFlags(anime?.torrent?.title)}
             </div>
             {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center opacity-100 z-50">
+              <div className="absolute inset-0 flex items-center justify-center opacity-100 z-30">
                 <Icon
                   icon="fluent:spinner-ios-16-filled"
                   width="64"
@@ -71,7 +76,10 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
                 />
               </div>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-50">
+              <div 
+                className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-30"
+                onClick={handleIconClick}
+              >
                 <Icon
                   icon="gravity-ui:play-fill"
                   width="64"

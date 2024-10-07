@@ -2,7 +2,7 @@ const React = require('react');
 const { useState } = React;
 
 const TorrentPlayer = require('../../../../lib/torrent-player');
-const { sendError } = require('../../../../lib/errors');
+const { sendNotification } = require('../../../../lib/errors');
 
 const EpisodeCard = require('./episode');
 const EpisodeCardSkeleton = require('./skeleton');
@@ -13,11 +13,11 @@ const EpisodesList = React.memo(({ episodesData, isLoading, animeColors }) => {
   const handlePlay = (episode) => {
     const infoHash = episode?.torrent?.hash;
     if (!infoHash) {
-      return sendError(state, { message: 'Episodio no disponible.' });
+      return sendNotification(state, { message: 'Episodio no disponible.' });
     }
 
     if (loadingEpisodeId) {
-      return sendError(state, { title: 'Wow, espera!', message: 'Ya estamos cargando un episodio.', type: 'alert' });
+      return sendNotification(state, { title: 'Wow, espera!', message: 'Ya estamos cargando un episodio.', type: 'alert' });
     }
 
     setLoadingEpisodeId(infoHash);

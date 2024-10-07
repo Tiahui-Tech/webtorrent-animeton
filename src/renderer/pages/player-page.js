@@ -15,7 +15,7 @@ const config = require('../../config');
 const { calculateEta } = require('../lib/time');
 
 const Spinner = require('../components/common/spinner');
-const { sendError } = require('../lib/errors');
+const { sendNotification } = require('../lib/errors');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
@@ -64,6 +64,8 @@ function Player({ state }) {
 
   const subtitlesExist = state.playing.subtitles.tracks.length > 0;
 
+  // Calculate the maximum length of subtitle buffers if subtitles exist
+  // This is used to check if subtitles are parsed correctly
   const maxSubLength = subtitlesExist
     ? state.playing.subtitles.tracks.reduce((max, track) =>
       track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
@@ -90,7 +92,7 @@ function Player({ state }) {
           // Navigate back to the previous page or a default page
           navigate('/');
 
-          sendError(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' })
+          sendNotification(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' })
         } else {
           clearInterval(intervalId);
         }
@@ -107,26 +109,41 @@ function Player({ state }) {
   useEffect(() => {
     let intervalId;
 
-    // Subtitles may be incorrectly parsed, indicated by an unusually short or null maxSubLength
-    if (isTorrentReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
+    const startInterval = () => {
+      // Clear any existing interval
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+
+      // Start a new interval
       intervalId = setInterval(() => {
         const torrentSummary = state.getPlayingTorrentSummary();
         dispatch('checkForSubtitles', torrentSummary);
 
         // If subtitles are found, clear the interval
-        if (state.playing.subtitles.tracks.length > 0) {
+        if (subtitlesExist) {
           clearInterval(intervalId);
         }
       }, 3000); // 3 seconds
+    };
+
+    // Check if subtitles need to be re-fetched
+    if (isTorrentReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
+      startInterval();
+    } else {
+      // If conditions are not met, clear any existing interval
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     }
 
-    // Clean up the interval on component unmount or when subtitles are found
+    // Clean up the interval on component unmount
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
       }
     };
-  }, [isTorrentReady, state.playing.subtitles.tracks.length, actualTracksHash]);
+  }, [isTorrentReady, maxSubLength, tracksAreFromActualTorrent, state.playing.subtitles.tracks.length, actualTracksHash]);
 
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
@@ -765,7 +782,7 @@ function renderAudioTrackOptions(state) {
 
 function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
   const controlsStyle = {
-    zIndex: 9999,
+    zIndex: 9000,
     opacity: isMouseMoving ? 1 : 0,
     transition: 'opacity 0.3s ease-in-out',
     pointerEvents: isMouseMoving ? 'auto' : 'none',

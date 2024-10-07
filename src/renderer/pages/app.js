@@ -149,7 +149,8 @@ function ErrorPopover({ state }) {
 
   const errorColors = {
     error: '#f31260',
-    alert: '#ff961f'
+    alert: '#ff961f',
+    debug: '#336ecc'
   };
 
   return (
@@ -170,7 +171,7 @@ function ErrorPopover({ state }) {
           }}
         >
           <Icon
-            icon="gravity-ui:diamond-exclamation"
+            icon={error.type === "debug" ? "gravity-ui:wrench" : "gravity-ui:diamond-exclamation"}
             width="32"
             height="32"
             style={{ color: 'white' }}

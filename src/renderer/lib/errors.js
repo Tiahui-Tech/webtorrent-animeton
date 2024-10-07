@@ -31,7 +31,7 @@ class TorrentKeyNotFoundError extends TorrentError {
 
 /* Global */
 
-const sendError = (state, { message, title = 'Ha ocurrido un error...', type = 'error' }) => {
+const sendNotification = (state, { message, title = 'Ha ocurrido un error...', type = 'error' }) => {
   state.errors.push({
     time: new Date().getTime(),
     message,
@@ -49,5 +49,5 @@ module.exports = {
   UnplayableFileError,
   InvalidSoundNameError,
   TorrentKeyNotFoundError,
-  sendError
+  sendNotification
 }
