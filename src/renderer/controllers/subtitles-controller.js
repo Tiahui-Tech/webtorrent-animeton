@@ -97,10 +97,6 @@ module.exports = class SubtitlesController {
         console.log(`Worker stdout: ${data}`);
       });
 
-      child.stderr.on('data', (data) => {
-        console.error(`Worker stderr: ${data}`);
-      });
-
       child.on('message', (result) => {
         console.log('Received message from worker:', result);
         if (result.success) {

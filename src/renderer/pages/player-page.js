@@ -257,7 +257,7 @@ function renderMedia(state) {
     // Save selected subtitle
     if (state.playing.subtitles.selectedIndex !== -1) {
       const index = state.playing.subtitles.selectedIndex;
-      file.selectedSubtitle = state.playing.subtitles.tracks[index].filePath;
+      file.selectedSubtitle = state.playing.subtitles.tracks[index]?.filePath;
     } else if (file.selectedSubtitle != null) {
       delete file.selectedSubtitle;
     }
