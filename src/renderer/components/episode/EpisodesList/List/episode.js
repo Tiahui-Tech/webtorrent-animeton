@@ -1,18 +1,14 @@
 const React = require('react');
-const { useState } = React;
-const TorrentPlayer = require('../../../../lib/torrent-player');
-
 
 const { Icon } = require('@iconify/react');
 const { Card, CardBody, Image } = require('@nextui-org/react');
 
-const EpisodeCard = React.memo(({ episode, state }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
+const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
   const episodeHasTorrent = episode?.torrent ? true : false;
 
-  const handlePlay = () => {
-    TorrentPlayer.playTorrent(episode, state, setIsLoading);
+  const handlePlay = (e) => {
+    e.preventDefault();
+    onPlay(episode);
   };
 
   return (
@@ -34,7 +30,7 @@ const EpisodeCard = React.memo(({ episode, state }) => {
                   className="absolute inset-0 bg-white rounded-2xl z-10"
                 />}
                 <div
-                  className="absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-300 ease-in-out group-hover/card:opacity-70 z-30"
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-in-out z-30 ${isLoading ? 'opacity-70' : 'opacity-0 group-hover/card:opacity-70'}`}
                   style={{
                     zIndex: 9999
                   }}

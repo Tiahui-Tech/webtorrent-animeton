@@ -1,12 +1,12 @@
 /* globals MediaMetadata */
 
 const React = require('react');
-const { useEffect, useRef } = React;
+const { useEffect, useState, useRef } = React;
 
 const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
 const prettyBytes = require('prettier-bytes');
-const { useLocation } = require('react-router-dom');
+const { useLocation, useNavigate } = require('react-router-dom');
 
 const TorrentSummary = require('../lib/torrent-summary');
 const Playlist = require('../lib/playlist');
@@ -15,12 +15,30 @@ const config = require('../../config');
 const { calculateEta } = require('../lib/time');
 
 const Spinner = require('../components/common/spinner');
+const { sendNotification } = require('../lib/errors');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isMouseMoving, setIsMouseMoving] = useState(true);
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
+  const mouseTimerRef = useRef(null);
+
+  const handleMouseMove = () => {
+    setIsMouseMoving(true);
+    clearTimeout(mouseTimerRef.current);
+    mouseTimerRef.current = setTimeout(() => {
+      setIsMouseMoving(false);
+    }, 3000); // Set to 0 after 3 seconds of inactivity
+  };
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(mouseTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (setup) {
@@ -44,12 +62,95 @@ function Player({ state }) {
     };
   }, [setup, destroy]);
 
+  const subtitlesExist = state.playing.subtitles.tracks.length > 0;
+
+  // Calculate the maximum length of subtitle buffers if subtitles exist
+  // This is used to check if subtitles are parsed correctly
+  const maxSubLength = subtitlesExist
+    ? state.playing.subtitles.tracks.reduce((max, track) =>
+      track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
+    : null;
+
+  const tracksAreFromActualTorrent = subtitlesExist
+    ? state.playing.subtitles.tracks.every(track => track.infoHash === state.playing.infoHash)
+    : false;
+
+  const actualTracksHash = state.playing.subtitles.tracks.map(track => track.infoHash);
+
+  const isTorrentReady = state.server && state.playing.isReady;
+
+  useEffect(() => {
+    let intervalId;
+
+    if (!isTorrentReady) {
+      intervalId = setInterval(() => {
+        if (!state.server || !state.playing.isReady) {
+          console.log('Torrent not ready after 10 seconds, destroying player');
+          if (destroy) {
+            destroy();
+          }
+          // Navigate back to the previous page or a default page
+          navigate('/');
+
+          sendNotification(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' })
+        } else {
+          clearInterval(intervalId);
+        }
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isTorrentReady, destroy]);
+
+  useEffect(() => {
+    let intervalId;
+
+    const startInterval = () => {
+      // Clear any existing interval
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+
+      // Start a new interval
+      intervalId = setInterval(() => {
+        const torrentSummary = state.getPlayingTorrentSummary();
+        dispatch('checkForSubtitles', torrentSummary);
+
+        // If subtitles are found, clear the interval
+        if (subtitlesExist) {
+          clearInterval(intervalId);
+        }
+      }, 3000); // 3 seconds
+    };
+
+    // Check if subtitles need to be re-fetched
+    if (isTorrentReady && (maxSubLength < 300 || maxSubLength === null) && !tracksAreFromActualTorrent) {
+      startInterval();
+    } else {
+      // If conditions are not met, clear any existing interval
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    }
+
+    // Clean up the interval on component unmount
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isTorrentReady, maxSubLength, tracksAreFromActualTorrent, state.playing.subtitles.tracks.length, actualTracksHash]);
+
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
   const showVideo = state.playing.location === 'local';
   const showControls = state.playing.location !== 'external';
 
-  if (!state.server || !state.playing.isReady) {
+  if (!isTorrentReady) {
     return <Spinner />
   }
 
@@ -57,11 +158,22 @@ function Player({ state }) {
     <div
       className="player"
       onWheel={handleVolumeWheel}
-      onMouseMove={dispatcher('mediaMouseMoved')}
       ref={playerRef}
     >
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1000,
+          cursor: isMouseMoving ? 'auto' : 'none'
+        }}
+        onMouseMove={handleMouseMove}
+      />
       {showVideo ? renderMedia(state) : renderCastScreen(state)}
-      {showControls ? renderPlayerControls(state) : null}
+      {showControls && renderPlayerControls(state, isMouseMoving, handleMouseMove)}
     </div>
   );
 }
@@ -145,7 +257,7 @@ function renderMedia(state) {
     // Save selected subtitle
     if (state.playing.subtitles.selectedIndex !== -1) {
       const index = state.playing.subtitles.selectedIndex;
-      file.selectedSubtitle = state.playing.subtitles.tracks[index].filePath;
+      file.selectedSubtitle = state.playing.subtitles.tracks[index]?.filePath;
     } else if (file.selectedSubtitle != null) {
       delete file.selectedSubtitle;
     }
@@ -668,7 +780,13 @@ function renderAudioTrackOptions(state) {
   );
 }
 
-function renderPlayerControls(state) {
+function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
+  const controlsStyle = {
+    zIndex: 9000,
+    opacity: isMouseMoving ? 1 : 0,
+    transition: 'opacity 0.3s ease-in-out',
+    pointerEvents: isMouseMoving ? 'auto' : 'none',
+  };
   const positionPercent =
     (100 * state.playing.currentTime) / state.playing.duration;
   const playbackCursorStyle = { left: 'calc(' + positionPercent + '% - 3px)' };
@@ -938,7 +1056,7 @@ function renderPlayerControls(state) {
   function handleSubtitles(e) {
     if (!state.playing.subtitles.tracks.length || e.ctrlKey || e.metaKey) {
       // if no subtitles available select it
-      dispatch('openSubtitles');
+      // dispatch('openSubtitles');
     } else {
       dispatch('toggleSubtitlesMenu');
     }
@@ -974,8 +1092,8 @@ function renderPlayerControls(state) {
     <div
       key="controls"
       className="controls"
-      onMouseEnter={dispatcher('mediaControlsMouseEnter')}
-      onMouseLeave={dispatcher('mediaControlsMouseLeave')}
+      style={controlsStyle}
+      onMouseMove={handleMouseMove}
     >
       {elements}
       {renderCastOptions(state)}

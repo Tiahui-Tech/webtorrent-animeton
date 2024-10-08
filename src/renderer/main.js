@@ -61,7 +61,8 @@ let Cast = null;
 let state;
 
 function handleUpdate(newState) {
-  state = window.state = newState;
+  state = newState;
+  window.state = newState;
   eventBus.emit('stateUpdate', newState);
 }
 // Called once when the application loads. (Not once per window.)
@@ -299,7 +300,7 @@ const dispatchHandlers = {
   openSubtitles: () => controllers.subtitles().openSubtitles(),
   selectSubtitle: (index) => controllers.subtitles().selectSubtitle(index),
   toggleSubtitlesMenu: () => controllers.subtitles().toggleSubtitlesMenu(),
-  checkForSubtitles: () => controllers.subtitles().checkForSubtitles().then(sub => sub),
+  checkForSubtitles: (torrentSummary) => controllers.subtitles().checkForSubtitles(torrentSummary).then(sub => sub),
   addSubtitles: (files, autoSelect) =>
     controllers.subtitles().addSubtitles(files, autoSelect),
 

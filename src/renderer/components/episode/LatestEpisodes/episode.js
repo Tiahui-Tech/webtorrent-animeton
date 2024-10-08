@@ -1,35 +1,39 @@
 const React = require('react');
-const { useState, memo } = React;
+const { memo } = React;
 const {
   getAnimeFlags,
   timeAgo,
   getNeonColor
 } = require('../../../../modules/utils');
-const TorrentPlayer = require('../../../lib/torrent-player');
 
 const {
   Card,
   CardHeader,
   CardBody,
   CardFooter,
-  Image
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
-const ShineBorder = require('../../ui/MagicUI/Effects/ShineBorder');
 
 const useExtractColor = require('../../../hooks/useExtractColor');
 
-const EpisodeCard = memo(({ anime, state }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handlePlay = () => {
-    TorrentPlayer.playTorrent(anime, state, setIsLoading);
-  }
+const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
 
   const episodeImage =
     anime?.episode?.image ||
     anime?.bannerImage ||
     anime?.coverImage?.extraLarge;
+
+  const episode = anime?.episode;
+
+  const handlePlay = (e) => {
+    e.preventDefault();
+    onPlay(episode);
+  }
+
+  const handleIconClick = (e) => {
+    e.stopPropagation();
+    handlePlay(e);
+  }
 
   const { animeColors } = useExtractColor(episodeImage);
 
@@ -39,7 +43,6 @@ const EpisodeCard = memo(({ anime, state }) => {
 
   return (
     <div className="max-w-[400px] px-4">
-      <ShineBorder borderRadius={16} borderWidth={2} color={cardColor}>
         <Card className="flex flex-col relative overflow-visible">
           <CardHeader className="flex flex-col truncate items-start justify-start">
             <p className="text-base font-medium truncate w-full">
@@ -53,20 +56,17 @@ const EpisodeCard = memo(({ anime, state }) => {
             className="w-full h-full p-0 relative transition duration-300 ease-in-out hover:scale-105 cursor-pointer"
             onClick={handlePlay}
           >
-            <Image
+            <img
               component="img"
               src={episodeImage}
               alt={anime?.title?.romaji}
-              className={`w-full h-full object-cover ${isLoading && 'grayscale'}`}
-              classNames={{
-                img: 'aspect-[16/9] rounded-t-lg'
-              }}
+              className={`aspect-[16/9] rounded-t-lg w-full h-full object-cover ${isLoading && 'grayscale'}`}
             />
             <div className="flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2 z-10">
               {getAnimeFlags(anime?.torrent?.title)}
             </div>
             {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center opacity-100 z-50">
+              <div className="absolute inset-0 flex items-center justify-center opacity-100 z-30">
                 <Icon
                   icon="fluent:spinner-ios-16-filled"
                   width="64"
@@ -76,7 +76,10 @@ const EpisodeCard = memo(({ anime, state }) => {
                 />
               </div>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-50">
+              <div 
+                className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out hover:opacity-70 z-30"
+                onClick={handleIconClick}
+              >
                 <Icon
                   icon="gravity-ui:play-fill"
                   width="64"
@@ -103,7 +106,6 @@ const EpisodeCard = memo(({ anime, state }) => {
             </div>
           </CardFooter>
         </Card>
-      </ShineBorder>
     </div>
   );
 });

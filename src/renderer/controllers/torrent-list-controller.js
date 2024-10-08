@@ -19,7 +19,7 @@ module.exports = class TorrentListController {
   // Adds a torrent to the list, starts downloading/seeding.
   // TorrentID can be a magnet URI, infohash, or torrent file: https://git.io/vik9M
   addTorrent (torrentId) {
-    if (torrentId.path) {
+    if (torrentId?.path) {
       // Use path string instead of W3C File object
       torrentId = torrentId.path
     }

@@ -58,7 +58,9 @@ module.exports = class PlaybackController {
               cb(err)
             })
           },
-          destroy: () => this.closePlayer()
+          destroy: () => {
+            this.closePlayer();
+          }
         }
       });
     }
@@ -100,7 +102,7 @@ module.exports = class PlaybackController {
 
     // Do not pause active torrents if playing a fully downloaded torrent.
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
-    if (torrentSummary.status === 'seeding') return
+    if (torrentSummary?.status === 'seeding') return
 
     dispatch('prioritizeTorrent', infoHash)
   }
@@ -289,7 +291,7 @@ module.exports = class PlaybackController {
   // Starts WebTorrent server for media streaming
   startServer(torrentSummary) {
     const state = this.state;
-    if (torrentSummary.status === 'paused') {
+    if (torrentSummary?.status === 'paused') {
       dispatch('startTorrentingSummary', torrentSummary.torrentKey)
       ipcRenderer.once('wt-ready-' + torrentSummary.infoHash,
         () => onTorrentReady())
@@ -333,6 +335,19 @@ module.exports = class PlaybackController {
       : TorrentPlayer.isAudio(fileSummary)
         ? 'audio'
         : 'other'
+    
+    // eventBus.emit('stateUpdate', {
+    //   playing: {
+    //     infoHash: infoHash,
+    //     fileIndex: index,
+    //     fileName: fileSummary.name,
+    //     type: TorrentPlayer.isVideo(fileSummary)
+    //       ? 'video'
+    //       : TorrentPlayer.isAudio(fileSummary)
+    //         ? 'audio'
+    //         : 'other'
+    //   }
+    // });
 
     // pick up where we left off
     let jumpToTime = 0
@@ -346,7 +361,7 @@ module.exports = class PlaybackController {
     state.playing.jumpToTime = jumpToTime
 
     // if it's audio, parse out the metadata (artist, title, etc)
-    if (torrentSummary.status === 'paused') {
+    if (torrentSummary?.status === 'paused') {
       ipcRenderer.once('wt-ready-' + torrentSummary.infoHash, getAudioMetadata)
     } else {
       getAudioMetadata()
@@ -359,7 +374,7 @@ module.exports = class PlaybackController {
     }
 
     // if it's video, check for subtitles files that are done downloading
-    dispatch('checkForSubtitles')
+    dispatch('checkForSubtitles', torrentSummary)
 
     // enable previously selected subtitle track
     if (fileSummary.selectedSubtitle) {
@@ -380,6 +395,7 @@ module.exports = class PlaybackController {
   }
 
   closePlayer() {
+    console.log('closePlayer');
     // Quit any external players, like Chromecast/Airplay/etc or VLC
     const state = this.state
     if (isCasting(state)) {

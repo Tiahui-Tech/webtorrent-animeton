@@ -1,15 +1,21 @@
 const React = require('react');
-const { useState, memo } = React;
+const {  memo } = React;
 const { Icon } = require('@iconify/react');
 const { Image } = require('@nextui-org/react');
 
-const TorrentPlayer = require('../../../lib/torrent-player');
 
-const Episode = memo(({ anime, state }) => {
-  const [isLoading, setIsLoading] = useState(false);
+const Episode = memo(({ anime, isLoading, onPlay }) => {
 
-  const handlePlay = () => {
-    TorrentPlayer.playTorrent(anime, state, setIsLoading);
+  const episodeImage =
+    anime?.episode?.image ||
+    anime?.bannerImage ||
+    anime?.coverImage?.extraLarge;
+
+  const episode = anime?.episode;
+
+  const handlePlay = (e) => {
+    e.preventDefault();
+    onPlay(episode);
   }
 
   return (
@@ -21,11 +27,7 @@ const Episode = memo(({ anime, state }) => {
         <div className="relative cursor-pointer transition-all duration-300">
           <Image
             alt="episode-image"
-            src={
-              anime?.episode?.image ||
-              anime?.bannerImage ||
-              anime?.coverImage?.extraLarge
-            }
+            src={episodeImage}
             className={`aspect-video object-cover w-auto h-32 ${isLoading && 'grayscale'}`}
           />
           <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50 z-10">

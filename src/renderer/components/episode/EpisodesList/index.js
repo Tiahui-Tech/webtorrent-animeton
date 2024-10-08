@@ -84,7 +84,6 @@ const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
 
       <Divider orientation="horizontal" />
       <EpisodesList
-        state={state}
         episodesData={filteredAndSortedEpisodes}
         isLoading={isLoading}
         animeColors={animeColors}

@@ -6,6 +6,7 @@ const { fork } = require('child_process')
 const { convertAssTextToVtt, formatVttTime } = require('../../modules/subtitles-parser')
 const eventBus = require('../lib/event-bus')
 const { dispatch } = require('../lib/dispatcher')
+const { sendNotification } = require('../lib/errors')
 
 module.exports = class SubtitlesController {
   constructor(state) {
@@ -63,35 +64,59 @@ module.exports = class SubtitlesController {
     })
   }
 
-  async checkForSubtitles() {
+  async checkForSubtitles(torrentSummary) {
     if (this.state.playing.type !== 'video') return
-    const torrentSummary = this.state.getPlayingTorrentSummary()
+    console.log('checkForSubtitles torrentSummary', torrentSummary);
     if (!torrentSummary || !torrentSummary.progress) return
 
     const filePath = path.join(torrentSummary.path, torrentSummary.name)
 
     try {
+      console.log('Attempting to parse subtitles...');
       const subtitles = await this.parseSubtitles(filePath)
-      await this.convertAndAddSubtitles(subtitles)
+      console.log('Subtitles parsed successfully');
+      await this.convertAndAddSubtitles(subtitles, torrentSummary.infoHash)
+      console.log('Subtitles converted and added');
     } catch (err) {
       console.error('Error checking for subtitles: ', err)
     }
   }
 
   parseSubtitles(filePath) {
+    console.log('parseSubtitles filePath', filePath);
     return new Promise((resolve, reject) => {
-      const child = fork('./src/modules/subtitles-worker.js')
+      const workerPath = path.join(__dirname, '..', '..', 'modules', 'subtitles-worker.js');
+      console.log('Worker path:', workerPath);
+      
+      const child = fork(workerPath, [], { 
+        stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+        env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }
+      });
+
+      child.stdout.on('data', (data) => {
+        console.log(`Worker stdout: ${data}`);
+      });
 
       child.on('message', (result) => {
+        console.log('Received message from worker:', result);
         if (result.success) {
           resolve(result.subtitles)
         } else {
           reject(new Error(result.error))
         }
+        child.kill()
       })
 
-      child.on('error', reject)
+      child.on('error', (err) => {
+        console.error('Worker error:', err);
+        reject(err);
+      });
 
+      child.on('exit', (code, signal) => {
+        console.log(`Worker process exited with code ${code} and signal ${signal}`);
+      });
+
+      console.log('Sending file path to worker');
       child.send(filePath)
     })
   }
@@ -102,7 +127,7 @@ module.exports = class SubtitlesController {
     return ext === '.srt' || ext === '.vtt'
   }
 
-  async convertAndAddSubtitles(subtitles) {
+  async convertAndAddSubtitles(subtitles, infoHash) {
     const convertedTracks = []
 
     for (const [trackNumber, subtitle] of Object.entries(subtitles)) {
@@ -113,7 +138,8 @@ module.exports = class SubtitlesController {
             buffer: 'data:text/vtt;base64,' + Buffer.from(vttContent).toString('base64'),
             language: subtitle.track.language || 'Unknown',
             label: subtitle.track.name || `Track ${trackNumber}`,
-            filePath: `memory:${trackNumber}`
+            filePath: `memory:${trackNumber}`,
+            infoHash
           })
         } catch (error) {
           console.error('Error converting subtitle:', error)
@@ -121,14 +147,16 @@ module.exports = class SubtitlesController {
       }
     }
 
-    const updatedTracks = [...this.state.playing.subtitles.tracks, ...convertedTracks]
+    const updatedTracks = [...convertedTracks]
     let selectedIndex = this.state.playing.subtitles.selectedIndex
     if (selectedIndex === -1 && convertedTracks.length > 0) {
       selectedIndex = this.state.playing.subtitles.tracks.length
     }
 
-    const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks)
+    const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks, infoHash)
     const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
+
+    sendNotification(this.state, { title: 'DEBUG', message: 'Subtitulos cargados correctamente', type: 'debug' })
 
     eventBus.emit('stateUpdate', {
       playing: {
@@ -138,6 +166,9 @@ module.exports = class SubtitlesController {
         }
       }
     })
+
+    this.state.playing.subtitles.tracks = filteredAndSortedTracks
+    this.state.playing.subtitles.selectedIndex = selectedIndex
   }
 
   convertAssToVtt(subtitle) {
@@ -199,16 +230,19 @@ function isSystemLanguage(language) {
   return langIso === osLangISO
 }
 
-// Make sure we don't have two subtitle tracks with the same label
-// Labels each track by language, eg 'German', 'English', 'English 2', ...
-function relabelAndFilterSubtitles(subtitles) {
+// Filters and relabels subtitle tracks to ensure uniqueness and proper labeling
+// Removes duplicate and empty subtitles, filters by infoHash, and labels tracks by language
+// Example: 'English', 'English 2', 'Spanish', etc.
+function relabelAndFilterSubtitles(subtitles, infoHash) {
   const counts = {}
   const uniquePaths = new Set()
   const uniqueSubtitles = []
 
   subtitles.forEach(track => {
-    // Avoid duplicate subtitles based on filePath
-    if (!uniquePaths.has(track.filePath)) {
+    // Avoid duplicate subtitles based on filePath, remove empty subtitles, and filter by infoHash
+    if (!uniquePaths.has(track.filePath) &&
+      track.buffer !== 'data:text/vtt;base64,V0VCVlRUCgo=' &&
+      track.infoHash === infoHash) {
       uniquePaths.add(track.filePath)
       uniqueSubtitles.push(track)
 
