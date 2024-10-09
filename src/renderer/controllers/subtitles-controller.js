@@ -93,9 +93,9 @@ module.exports = class SubtitlesController {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }
       });
 
-      child.stdout.on('data', (data) => {
-        console.log(`Worker stdout: ${data}`);
-      });
+      // child.stdout.on('data', (data) => {
+      //   console.log(`Worker stdout: ${data}`);
+      // });
 
       child.on('message', (result) => {
         console.log('Received message from worker:', result);
@@ -155,17 +155,6 @@ module.exports = class SubtitlesController {
 
     const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks, infoHash)
     const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
-
-    sendNotification(this.state, { title: 'DEBUG', message: 'Subtitulos cargados correctamente', type: 'debug' })
-
-    eventBus.emit('stateUpdate', {
-      playing: {
-        subtitles: {
-          tracks: filteredAndSortedTracks,
-          selectedIndex: selectedIndex
-        }
-      }
-    })
 
     this.state.playing.subtitles.tracks = filteredAndSortedTracks
     this.state.playing.subtitles.selectedIndex = selectedIndex
