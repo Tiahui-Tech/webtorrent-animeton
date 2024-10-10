@@ -107,6 +107,8 @@ const Header = ({ state }) => {
   const handleHome = () => {
     if (!isHome) {
       navigate('/');
+      setDebouncedSearchTerm('')
+      setSearchTerm('')
     }
   };
 
