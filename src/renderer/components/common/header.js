@@ -145,7 +145,7 @@ const Header = ({ state }) => {
       }}
     >
       <div
-        className="fixed w-full bg-zinc-950 overflow-hidden flex top-0 left-0 right-0 py-2 px-8"
+        className="fixed w-full bg-zinc-950 overflow-hidden flex top-0 left-0 right-0 py-2 px-8 h-14"
       >
         <div
           className="flex flex-row w-full h-full items-center"
@@ -192,11 +192,12 @@ const Header = ({ state }) => {
           </div>
 
           {/* Animeton Logo */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex-1 flex justify-center items-center">
             <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-              <p
-                className="text-white font-bold text-2xl leading-none"
-              >Animeton</p>
+              <div className="flex items-center">
+                <p className="text-white font-bold text-2xl leading-none">Animeton</p>
+                <span className="text-zinc-400 text-sm ml-1 mt-2 leading-none">Alpha</span>
+              </div>
             </button>
           </div>
 

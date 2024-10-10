@@ -83,7 +83,7 @@ table {
 .header {
   -webkit-app-region: drag;
   width: 100%;
-  height: 56px;
+  min-height: 56px;
   /* vertically center OS menu buttons (OS X) */
   padding-top: 7px;
   overflow: hidden;

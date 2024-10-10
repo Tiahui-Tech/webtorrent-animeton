@@ -83,7 +83,7 @@ table {
 .header {
   -webkit-app-region: drag;
   width: 100%;
-  height: 56px;
+  min-height: 56px;
   /* vertically center OS menu buttons (OS X) */
   padding-top: 7px;
   overflow: hidden;
@@ -3906,6 +3906,11 @@ video {
 
 .text-white\/80 {
   color: rgb(255 255 255 / 0.8);
+}
+
+.text-zinc-400 {
+  --tw-text-opacity: 1;
+  color: rgb(161 161 170 / var(--tw-text-opacity));
 }
 
 .text-zinc-500 {
