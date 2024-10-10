@@ -3,8 +3,8 @@ const { extractColors } = require('extract-colors');
 const { getContrastColor, sortColorsByBrightness } = require('../../modules/utils');
 
 const useExtractColor = (image) => {
-  const [animeColors, setAnimeColors] = useState(null);
-  const [textColor, setTextColor] = useState(null);
+  const [animeColors, setAnimeColors] = useState('#000');
+  const [textColor, setTextColor] = useState('#fff');
 
   const getAnimeColor = useCallback(async () => {
     if (!image) return;

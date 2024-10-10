@@ -12,7 +12,7 @@ const AnimeOverview = ({ anime, animeColors, textColor, background }) => {
       />
       <div
         className="fixed inset-0 bg-cover bg-center z-20"
-        style={{ backgroundImage: `url(${background})` }}
+        style={background ? { backgroundImage: `url(${background})` } : {}}
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-[#000000] to-black/30 z-10" />
