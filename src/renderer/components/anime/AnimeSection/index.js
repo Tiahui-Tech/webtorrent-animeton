@@ -33,8 +33,10 @@ const AnimeSection = ({ state, sectionTitle, searchTerm, fullScreen }) => {
     fetchAnimes();
   }, [searchTerm, animes, searchAnimes]);
 
+  const isEmpty = !filteredAnimes.length;
+
   return (
-    <div className={`flex flex-col p-8 justify-start items-center bg-zinc-960 ${fullScreen ? 'min-h-screen' : ''}`}>
+    <div className={`flex flex-col p-8 ${isEmpty ? 'justify-center' : 'justify-start'} items-center bg-zinc-960 ${fullScreen ? 'min-h-[calc(100vh-56px)]' : ''}`}>
       {sectionTitle && (
         <div className="relative flex flex-row justify-center items-center w-full mb-4">
           <h2 className="relative text-2xl font-bold z-10">
@@ -48,7 +50,7 @@ const AnimeSection = ({ state, sectionTitle, searchTerm, fullScreen }) => {
             <AnimeCardSkeleton key={`skeleton-${index}`} />
           ))}
         </div>
-      ) : filteredAnimes.length === 0 ? (
+      ) : isEmpty ? (
         <div className="flex flex-col justify-center items-center w-full min-h-[400px]">
           <Icon icon="gravity-ui:circle-xmark" width="128" height="128" style={{ color: '#71717a' }} />
           <p className="text-2xl font-bold text-zinc-500">No se encontraron animes</p>
