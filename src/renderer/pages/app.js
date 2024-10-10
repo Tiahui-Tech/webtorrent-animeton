@@ -111,8 +111,8 @@ function AppContent({ initialState, onUpdate }) {
           key="content"
           className="content"
           style={{
-            minHeight: isPlayerPage ? '100vh' : 'calc(100vh - 38px)',
-            marginTop: isPlayerPage ? '0' : '38px'
+            minHeight: isPlayerPage ? '100vh' : 'calc(100vh - 56px)',
+            marginTop: isPlayerPage ? '0' : '56px'
           }}
         >
           <React.Suspense fallback={<div>Loading...</div>}>
