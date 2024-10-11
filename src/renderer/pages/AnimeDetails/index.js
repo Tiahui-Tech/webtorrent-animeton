@@ -44,9 +44,6 @@ const AnimeDetails = ({ state }) => {
   const background = useModernBackground(backgroundConfig);
 
   useEffect(() => {
-    console.log('anime', anime);
-    console.log('animeColors', animeColors);
-    console.log('bannerColors', bannerColors);
     if (anime && animeColors && bannerColors) {
       setIsLoading(false);
     }
