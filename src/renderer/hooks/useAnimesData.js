@@ -9,6 +9,10 @@ const useAnimesData = ({ page = 1, perPage = 24, displayCount } = {}) => {
       try {
         const response = await fetch(`${API_BASE_URL}/anime/list`);
         const data = await response.json();
+
+        if (!data) {
+          return;
+        }
         
         // Apply pagination
         const startIndex = (page - 1) * perPage;

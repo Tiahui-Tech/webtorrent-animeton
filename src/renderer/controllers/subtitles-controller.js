@@ -93,32 +93,52 @@ module.exports = class SubtitlesController {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }
       });
 
-      // child.stdout.on('data', (data) => {
-      //   console.log(`Worker stdout: ${data}`);
-      // });
+      let timeoutId;
+
+      child.stdout.on('data', (data) => {
+        console.log(`Worker stdout: ${data}`);
+      });
+
+      child.stderr.on('data', (data) => {
+        console.error(`Worker stderr: ${data}`);
+      });
 
       child.on('message', (result) => {
         console.log('Received message from worker:', result);
+        clearTimeout(timeoutId);
         if (result.success) {
-          resolve(result.subtitles)
+          resolve(result.subtitles);
         } else {
-          reject(new Error(result.error))
+          reject(new Error(result.error));
         }
-        child.kill()
-      })
+        child.kill();
+      });
 
       child.on('error', (err) => {
         console.error('Worker error:', err);
+        clearTimeout(timeoutId);
         reject(err);
+        child.kill();
       });
 
       child.on('exit', (code, signal) => {
         console.log(`Worker process exited with code ${code} and signal ${signal}`);
+        clearTimeout(timeoutId);
+        if (code !== 0) {
+          reject(new Error(`Worker exited with code ${code}`));
+        }
       });
 
-      console.log('Sending file path to worker');
-      child.send(filePath)
-    })
+      console.log('Sending file path to worker', filePath);
+      child.send(filePath);
+
+      // Set a timeout to kill the worker if it doesn't respond
+      timeoutId = setTimeout(() => {
+        console.error('Worker timed out');
+        child.kill();
+        reject(new Error('Subtitle parsing timed out'));
+      }, 30000); // 30 seconds timeout
+    });
   }
 
   isSubtitle(file) {
@@ -153,11 +173,19 @@ module.exports = class SubtitlesController {
       selectedIndex = this.state.playing.subtitles.tracks.length
     }
 
+    console.log('1- filtering subtitles');
     const uniqueSubtitles = relabelAndFilterSubtitles(updatedTracks, infoHash)
+    console.log('2- sorting subtitles');
     const filteredAndSortedTracks = filterRenameAndSortSubtitles(uniqueSubtitles)
+    console.log('3- parsed subtitles');
 
-    this.state.playing.subtitles.tracks = filteredAndSortedTracks
     this.state.playing.subtitles.selectedIndex = selectedIndex
+
+    console.log('emit subtitlesUpdate', infoHash);
+    eventBus.emit('subtitlesUpdate', {
+      infoHash,
+      tracks: filteredAndSortedTracks
+    })
   }
 
   convertAssToVtt(subtitle) {

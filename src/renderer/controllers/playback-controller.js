@@ -32,6 +32,9 @@ module.exports = class PlaybackController {
 
     const currentPath = getCurrentPath();
 
+    const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
+    eventBus.emit('torrentUpdate', torrentSummary)
+
     if (currentPath === '/player') {
       this.updatePlayer(infoHash, index, false, (err) => {
         if (err) dispatch('error', err)
@@ -45,13 +48,14 @@ module.exports = class PlaybackController {
           infoHash,
           index,
           setup: (cb) => {
-            const torrentSummary = TorrentSummary.getByKey(this.state, infoHash)
 
             if (index === undefined || initialized) index = torrentSummary.mostRecentFileIndex
             if (index === undefined) index = torrentSummary.files.findIndex(TorrentPlayer.isPlayable)
             if (index === undefined) return cb(new UnplayableTorrentError())
 
             initialized = true
+
+            console.log('playFile', infoHash, index);
 
             this.openPlayer(infoHash, index, (err) => {
               if (!err) this.play()
@@ -285,7 +289,8 @@ module.exports = class PlaybackController {
 
     this.startServer(torrentSummary)
     ipcRenderer.send('onPlayerOpen')
-    this.updatePlayer(infoHash, index, true, cb)
+    console.log('updatePlayer on openPlayer', infoHash, index);
+    this.updatePlayer(infoHash, index, false, cb)
   }
 
   // Starts WebTorrent server for media streaming
@@ -314,6 +319,7 @@ module.exports = class PlaybackController {
 
   // Called each time the current file changes
   updatePlayer(infoHash, index, resume, cb) {
+    console.log('updatePlayer', infoHash);
     const state = this.state
 
     const torrentSummary = TorrentSummary.getByKey(state, infoHash)
@@ -359,6 +365,8 @@ module.exports = class PlaybackController {
         ipcRenderer.send('wt-get-audio-metadata', torrentSummary.infoHash, index)
       }
     }
+
+    dispatch('checkForSubtitles', torrentSummary);
 
     // enable previously selected subtitle track
     if (fileSummary.selectedSubtitle) {

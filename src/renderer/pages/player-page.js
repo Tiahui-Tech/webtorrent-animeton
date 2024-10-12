@@ -1,7 +1,7 @@
 /* globals MediaMetadata */
 
 const React = require('react');
-const { useEffect, useState, useRef } = React;
+const { useEffect, useState, useRef, useCallback } = React;
 
 const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
@@ -13,27 +13,31 @@ const Playlist = require('../lib/playlist');
 const { dispatch, dispatcher } = require('../lib/dispatcher');
 const config = require('../../config');
 const { calculateEta } = require('../lib/time');
+const eventBus = require('../lib/event-bus');
 
 const Spinner = require('../components/common/spinner');
 const { sendNotification } = require('../lib/errors');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
-function Player({ state }) {
+function Player({ state, currentTorrent, currentSubtitles }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMouseMoving, setIsMouseMoving] = useState(true);
+  const [localSubtitles, setLocalSubtitles] = useState({ infoHash: null, tracks: [] });
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
   const mouseTimerRef = useRef(null);
-  const isReadyIntervalIdRef = useRef(null);
-  const isTorrentReady = state.playing.isReady;
-  const isServerReady = state.server !== null;
-  const isPlayerReady = isTorrentReady && isServerReady;
-  if (!isTorrentReady && !isServerReady) {
-    console.log('isTorrentReady', isTorrentReady);
-    console.log('isServerReady', isServerReady);
-    console.log('isPlayerReady', isPlayerReady);
-  }
+
+  const isTorrentReady = state.server && state.playing.isReady;
+
+  const subtitlesExist = localSubtitles.tracks.length;
+  const maxSubLength = subtitlesExist
+    ? localSubtitles.tracks.reduce((max, track) =>
+      track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
+    : null;
+  const tracksAreFromActualTorrent = subtitlesExist
+    ? localSubtitles.tracks.every(track => track.infoHash === currentTorrent.infoHash)
+    : false;
 
   const handleMouseMove = () => {
     setIsMouseMoving(true);
@@ -72,43 +76,86 @@ function Player({ state }) {
   }, [setup, destroy]);
 
   useEffect(() => {
-    const checkTorrentReady = () => {
-      if (!isPlayerReady) {
-        console.log('Torrent not ready after 10 seconds, destroying player');
-        if (destroy) {
-          destroy();
+    let isReadyIntervalId;
+
+    if (!isTorrentReady) {
+      isReadyIntervalId = setInterval(() => {
+        if (!state.server || !state.playing.isReady) {
+          console.log('Torrent not ready after 10 seconds, destroying player');
+          if (destroy) {
+            destroy();
+          }
+          // Navigate back to the previous page or a default page
+          navigate('/');
+
+          sendNotification(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' })
+        } else {
+          clearInterval(isReadyIntervalId);
         }
-        // Navigate back to the previous page or a default page
-        navigate(-1);
-
-        sendNotification(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' });
-      } else {
-        // If torrent is ready, clear the interval
-        clearInterval(isReadyIntervalIdRef.current);
-        isReadyIntervalIdRef.current = null;
-      }
-    };
-
-    // Only set up the interval if it doesn't exist and the torrent isn't ready
-    if (!isPlayerReady && !isReadyIntervalIdRef.current) {
-      isReadyIntervalIdRef.current = setInterval(checkTorrentReady, 10000); // 10 seconds
+      }, 10000); // 10 seconds
     }
 
-    // Clean up function
     return () => {
-      if (isReadyIntervalIdRef.current) {
-        clearInterval(isReadyIntervalIdRef.current);
-        isReadyIntervalIdRef.current = null;
+      if (isReadyIntervalId) {
+        clearInterval(isReadyIntervalId);
       }
     };
-  }, [isPlayerReady, destroy, navigate, state]);
+  }, [isTorrentReady, destroy]);
+
+  const subtitlesRef = useRef({ subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent });
+  const hasCheckedSubtitles = useRef(false);
+
+  useEffect(() => {
+    subtitlesRef.current = { subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent };
+    if (!tracksAreFromActualTorrent || !subtitlesExist) {
+      setLocalSubtitles({ infoHash: currentTorrent.infoHash, tracks: [] })
+    } 
+
+    const subtitlesUpdateHandler = ({ infoHash, tracks }) => {
+      console.log('on subtitlesUpdate', infoHash);
+      setLocalSubtitles({ infoHash, tracks });
+    };
+    eventBus.on('subtitlesUpdate', subtitlesUpdateHandler);
+  }, [location, navigate, subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent]);
+
+  const checkForSubtitles = useCallback(() => {
+    console.log('subtitlesExist checkForSubtitles', subtitlesRef.current.subtitlesExist);
+    console.log('maxSubLength checkForSubtitles', subtitlesRef.current.maxSubLength);
+    console.log('tracksAreFromActualTorrent checkForSubtitles', subtitlesRef.current.tracksAreFromActualTorrent);
+
+    console.log('torrentSummary', subtitlesRef.current.currentTorrent);
+
+    if (subtitlesRef.current.currentTorrent) {
+      console.log('torrent found, checking for subtitles');
+      dispatch('checkForSubtitles', subtitlesRef.current.currentTorrent);
+    }
+
+    if (!subtitlesRef.current.subtitlesExist || subtitlesRef.current.maxSubLength < 300 || !subtitlesRef.current.tracksAreFromActualTorrent) {
+      // Schedule next check in 10 seconds
+      setTimeout(checkForSubtitles, 10000);
+    } else {
+      console.log('Valid subtitles found, stopping checks');
+    }
+  }, [state, dispatch]);
+
+  useEffect(() => {
+    if (!hasCheckedSubtitles.current) {
+      console.log('Initial subtitles check');
+      console.log('subtitlesExist', subtitlesExist);
+      console.log('maxSubLength', maxSubLength);
+      console.log('tracksAreFromActualTorrent', tracksAreFromActualTorrent);
+
+      checkForSubtitles();
+      hasCheckedSubtitles.current = true;
+    }
+  }, []);
 
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
   const showVideo = state.playing.location === 'local';
   const showControls = state.playing.location !== 'external';
 
-  if (!isPlayerReady) {
+  if (!isTorrentReady) {
     return <Spinner />
   }
 
@@ -130,8 +177,8 @@ function Player({ state }) {
         }}
         onMouseMove={handleMouseMove}
       />
-      {showVideo ? renderMedia(state, isPlayerReady) : renderCastScreen(state)}
-      {showControls && renderPlayerControls(state, isMouseMoving, handleMouseMove)}
+      {showVideo ? renderMedia(state, localSubtitles) : renderCastScreen(state)}
+      {showControls && renderPlayerControls(state, isMouseMoving, handleMouseMove, localSubtitles)}
     </div>
   );
 }
@@ -142,8 +189,8 @@ function handleVolumeWheel(e) {
   dispatch('changeVolume', (-e.deltaY | e.deltaX) / 500);
 }
 
-function renderMedia(state, isPlayerReady) {
-  if (!isPlayerReady) return;
+function renderMedia(state, currentSubtitles) {
+  if (!state.server) return;
 
   // Unfortunately, play/pause can't be done just by modifying HTML.
   // Instead, grab the DOM node and play/pause it if necessary
@@ -215,7 +262,7 @@ function renderMedia(state, isPlayerReady) {
     // Save selected subtitle
     if (state.playing.subtitles.selectedIndex !== -1) {
       const index = state.playing.subtitles.selectedIndex;
-      file.selectedSubtitle = state.playing.subtitles.tracks[index]?.filePath;
+      file.selectedSubtitle = currentSubtitles.tracks[index]?.filePath;
     } else if (file.selectedSubtitle != null) {
       delete file.selectedSubtitle;
     }
@@ -233,7 +280,7 @@ function renderMedia(state, isPlayerReady) {
   // Add subtitles to the <video> tag
   const trackTags = [];
   if (state.playing.subtitles.selectedIndex >= 0) {
-    state.playing.subtitles.tracks.forEach((track, i) => {
+    currentSubtitles.tracks.forEach((track, i) => {
       const isSelected = state.playing.subtitles.selectedIndex === i;
       trackTags.push(
         <track
@@ -281,6 +328,8 @@ function renderMedia(state, isPlayerReady) {
 
     // check if we can decode video and audio track
     console.log('onLoadedMetadata state.playing', state.playing);
+    console.log('onLoadedMetadata currentSubtitles', currentSubtitles);
+
     console.log('state.server', state.server);
     if (state.playing.type === 'video') {
       if (mediaElement.videoTracks.length === 0) {
@@ -312,43 +361,6 @@ function renderMedia(state, isPlayerReady) {
 
       state.playing.audioTracks.tracks = tracks;
       state.playing.audioTracks.selectedIndex = 0;
-
-      // Subtitle check logic
-      const checkForSubtitles = () => {
-        console.log('Checking for subtitles');
-        const subtitlesExist = state.playing.subtitles.tracks.length > 0;
-        const maxSubLength = subtitlesExist
-          ? state.playing.subtitles.tracks.reduce((max, track) =>
-            track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
-          : null;
-        const tracksAreFromActualTorrent = subtitlesExist
-          ? state.playing.subtitles.tracks.every(track => track.infoHash === state.playing.infoHash)
-          : false;
-        const actualTracksHash = state.playing.subtitles.tracks.map(track => track.infoHash);
-
-        console.log('subtitlesExist', subtitlesExist);
-        console.log('maxSubLength', maxSubLength);
-        console.log('tracksAreFromActualTorrent', tracksAreFromActualTorrent);
-        console.log('actualTracksHash', actualTracksHash);
-        console.log('state.server', state.server);
-        console.log('state.playing.isReady', state.playing.isReady);
-
-        const torrentSummary = state.getPlayingTorrentSummary();
-        console.log('torrentSummary', torrentSummary);
-        if (torrentSummary) {
-          dispatch('checkForSubtitles', torrentSummary);
-        }
-
-        // If subtitles are not found or invalid, schedule another check
-        if (!subtitlesExist || maxSubLength < 300 || !tracksAreFromActualTorrent) {
-          setTimeout(checkForSubtitles, 10000);
-        } else {
-          console.log('Valid subtitles found, stopping checks');
-        }
-      };
-
-      // Start checking for subtitles
-      // checkForSubtitles();
     }
 
     // check if we can decode audio track
@@ -725,9 +737,9 @@ function renderCastOptions(state) {
   );
 }
 
-function renderSubtitleOptions(state) {
-  const subtitles = state.playing.subtitles;
-  if (!subtitles.tracks.length || !subtitles.showMenu) return;
+function renderSubtitleOptions(state, currentSubtitles) {
+  const subtitles = currentSubtitles;
+  if (!subtitles.tracks.length) return;
 
   const items = subtitles.tracks.map((track, ix) => {
     const isSelected = state.playing.subtitles.selectedIndex === ix;
@@ -777,7 +789,7 @@ function renderAudioTrackOptions(state) {
   );
 }
 
-function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
+function renderPlayerControls(state, isMouseMoving, handleMouseMove, currentSubtitles) {
   const controlsStyle = {
     zIndex: 9000,
     opacity: isMouseMoving ? 1 : 0,
@@ -788,7 +800,7 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
     (100 * state.playing.currentTime) / state.playing.duration;
   const playbackCursorStyle = { left: 'calc(' + positionPercent + '% - 3px)' };
   const captionsClass =
-    state.playing.subtitles.tracks.length === 0
+    currentSubtitles.tracks.length === 0
       ? 'disabled'
       : state.playing.subtitles.selectedIndex >= 0
         ? 'active'
@@ -1051,7 +1063,7 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
   }
 
   function handleSubtitles(e) {
-    if (!state.playing.subtitles.tracks.length || e.ctrlKey || e.metaKey) {
+    if (!currentSubtitles.tracks.length || e.ctrlKey || e.metaKey) {
       // if no subtitles available select it
       // dispatch('openSubtitles');
     } else {
@@ -1094,7 +1106,7 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove) {
     >
       {elements}
       {renderCastOptions(state)}
-      {renderSubtitleOptions(state)}
+      {renderSubtitleOptions(state, currentSubtitles)}
       {renderAudioTrackOptions(state)}
     </div>
   );
