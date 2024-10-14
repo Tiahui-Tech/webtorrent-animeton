@@ -2,6 +2,7 @@ const React = require('react');
 
 const { Icon } = require('@iconify/react');
 const { Card, CardBody, Image } = require('@nextui-org/react');
+const { motion } = require('framer-motion');
 
 const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
   const episodeHasTorrent = episode?.torrent ? true : false;
@@ -12,7 +13,12 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
   };
 
   return (
-    <div onClick={handlePlay}>
+    <motion.div
+      onClick={handlePlay}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <Card
         className="w-full max-w-[1130px] relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
         style={{ zIndex: 9999 }}
@@ -100,7 +106,7 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
           </div>
         </CardBody>
       </Card>
-    </div>
+    </motion.div>
   );
 });
 

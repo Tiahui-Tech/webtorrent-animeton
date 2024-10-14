@@ -2,12 +2,13 @@ const React = require('react');
 const { useState, useMemo } = React;
 const { Divider, Button } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
+const { motion } = require('framer-motion');
 
 const useAnimeEpisodesData = require('../../../hooks/useAnimeEpisodesData');
 
 const EpisodesList = require('./List');
 
-const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
+const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
   const { episodes: episodesData, isLoading } = useAnimeEpisodesData(idAnilist, true);
   const [isReversed, setIsReversed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,10 +20,15 @@ const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
   const filteredAndSortedEpisodes = useMemo(() => {
     let result = [...episodesData];
 
+    console.log(episodesData);
+
     if (searchTerm) {
-      result = result.filter((episode) =>
-        episode.title.en.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      result = result.filter((episode) => {
+        const episodeTitle = episode.title.en.toLowerCase()
+        const episodeFullTitle = `${episode.episodeNumber || episode.episode} ${episodeTitle}`
+
+        return episodeFullTitle.includes(searchTerm.toLowerCase())
+      });
     }
 
     if (isReversed) {
@@ -38,17 +44,10 @@ const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
 
   const isEpisodesDataEmpty = filteredAndSortedEpisodes.length === 0;
 
-  if (isEpisodesDataEmpty && !isLoading) {
-    return <div className="flex flex-col justify-center items-center w-full min-h-[400px]">
-      <Icon icon="gravity-ui:circle-xmark" width="128" height="128" style={{ color: '#d1d5db ' }} />
-      <p className="text-2xl font-bold text-gray-300">No se encontraron episodios</p>
-    </div>
-  }
-
   return (
     <div className="flex flex-col gap-2 justify-start w-full z-30">
       <div className="flex flex-row w-full justify-between items-start">
-        <h2 className="text-2xl font-semibold">{sectionTitle}</h2>
+        <h2 className="text-2xl font-semibold mt-2">{sectionTitle}</h2>
         <div className="flex flex-row gap-2">
           <Button
             size="md"
@@ -83,11 +82,24 @@ const AnimeEpisodesList = ({ state, idAnilist, animeColors, sectionTitle }) => {
       </div>
 
       <Divider orientation="horizontal" />
-      <EpisodesList
-        episodesData={filteredAndSortedEpisodes}
-        isLoading={isLoading}
-        animeColors={animeColors}
-      />
+
+      {isEpisodesDataEmpty && !isLoading ? (
+        <motion.div
+          className="flex flex-col justify-center items-center w-full min-h-[400px]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <Icon icon="gravity-ui:circle-xmark" width="128" height="128" style={{ color: '#d1d5db ' }} />
+          <p className="text-2xl font-bold text-gray-300">No se encontraron episodios</p>
+        </motion.div>
+      ) : (
+        <EpisodesList
+          episodesData={filteredAndSortedEpisodes}
+          isLoading={isLoading}
+          animeColors={animeColors}
+        />
+      )}
     </div>
   );
 };
