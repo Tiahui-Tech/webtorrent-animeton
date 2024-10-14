@@ -56,7 +56,6 @@ function App({ initialState, onUpdate }) {
 function AppContent({ initialState, onUpdate }) {
   const [state, setState] = useState(initialState);
   const [currentTorrent, setCurrentTorrent] = useState(null);
-  const [currentSubtitles, setCurrentSubtitles] = useState({ infoHash: null, tracks: [] });
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -84,20 +83,12 @@ function AppContent({ initialState, onUpdate }) {
     };
     eventBus.on('torrentUpdate', torrentUpdateHandler);
 
-    const subtitlesUpdateHandler = ({ infoHash, tracks }) => {
-      console.log('detected subtitesUpdate, updating...', infoHash);
-      setCurrentSubtitles({ infoHash, tracks });
-      console.log(currentSubtitles);
-    };
-    eventBus.on('subtitlesUpdate', subtitlesUpdateHandler);
-
     return () => {
       eventBus.off('navigate', navigationHandler);
       eventBus.off('stateUpdate', stateUpdateHandler);
       eventBus.off('torrentUpdate', torrentUpdateHandler);
-      eventBus.off('subtitlesUpdate', subtitlesUpdateHandler);
     };
-  }, [navigate, location, currentSubtitles]);
+  }, [navigate, location]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -138,7 +129,7 @@ function AppContent({ initialState, onUpdate }) {
                 path="/anime/:idAnilist"
                 element={<AnimeDetails state={state} />}
               />
-              <Route path="/player" element={<Player state={state} currentTorrent={currentTorrent} currentSubtitles={currentSubtitles} />} />
+              <Route path="/player" element={<Player state={state} currentTorrent={currentTorrent} />} />
               <Route
                 path="/create-torrent"
                 element={<CreateTorrent state={state} />}

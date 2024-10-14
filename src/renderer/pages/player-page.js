@@ -19,7 +19,7 @@ const Spinner = require('../components/common/spinner');
 const { sendNotification } = require('../lib/errors');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
-function Player({ state, currentTorrent, currentSubtitles }) {
+function Player({ state, currentTorrent }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMouseMoving, setIsMouseMoving] = useState(true);
@@ -109,7 +109,7 @@ function Player({ state, currentTorrent, currentSubtitles }) {
     subtitlesRef.current = { subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent };
     if (!tracksAreFromActualTorrent || !subtitlesExist) {
       setLocalSubtitles({ infoHash: currentTorrent.infoHash, tracks: [] })
-    } 
+    }
 
     const subtitlesUpdateHandler = ({ infoHash, tracks }) => {
       console.log('on subtitlesUpdate', infoHash);
@@ -119,12 +119,6 @@ function Player({ state, currentTorrent, currentSubtitles }) {
   }, [location, navigate, subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent]);
 
   const checkForSubtitles = useCallback(() => {
-    console.log('subtitlesExist checkForSubtitles', subtitlesRef.current.subtitlesExist);
-    console.log('maxSubLength checkForSubtitles', subtitlesRef.current.maxSubLength);
-    console.log('tracksAreFromActualTorrent checkForSubtitles', subtitlesRef.current.tracksAreFromActualTorrent);
-
-    console.log('torrentSummary', subtitlesRef.current.currentTorrent);
-
     if (subtitlesRef.current.currentTorrent) {
       console.log('torrent found, checking for subtitles');
       dispatch('checkForSubtitles', subtitlesRef.current.currentTorrent);
@@ -141,9 +135,6 @@ function Player({ state, currentTorrent, currentSubtitles }) {
   useEffect(() => {
     if (!hasCheckedSubtitles.current) {
       console.log('Initial subtitles check');
-      console.log('subtitlesExist', subtitlesExist);
-      console.log('maxSubLength', maxSubLength);
-      console.log('tracksAreFromActualTorrent', tracksAreFromActualTorrent);
 
       checkForSubtitles();
       hasCheckedSubtitles.current = true;
@@ -175,6 +166,7 @@ function Player({ state, currentTorrent, currentSubtitles }) {
           zIndex: 1000,
           cursor: isMouseMoving ? 'auto' : 'none'
         }}
+        onClick={dispatcher('playPause')}
         onMouseMove={handleMouseMove}
       />
       {showVideo ? renderMedia(state, localSubtitles) : renderCastScreen(state)}
@@ -738,11 +730,11 @@ function renderCastOptions(state) {
 }
 
 function renderSubtitleOptions(state, currentSubtitles) {
-  const subtitles = currentSubtitles;
-  if (!subtitles.tracks.length) return;
+  const subtitlesData = state.playing.subtitles;
+  if (!currentSubtitles.tracks.length || !subtitlesData.showMenu) return;
 
-  const items = subtitles.tracks.map((track, ix) => {
-    const isSelected = state.playing.subtitles.selectedIndex === ix;
+  const items = currentSubtitles.tracks.map((track, ix) => {
+    const isSelected = subtitlesData.selectedIndex === ix;
     return (
       <li key={ix} onClick={dispatcher('selectSubtitle', ix)}>
         <i className="icon">
@@ -753,7 +745,7 @@ function renderSubtitleOptions(state, currentSubtitles) {
     );
   });
 
-  const noneSelected = state.playing.subtitles.selectedIndex === -1;
+  const noneSelected = subtitlesData.selectedIndex === -1;
   const noneClass = 'radio_button_' + (noneSelected ? 'checked' : 'unchecked');
   return (
     <ul key="subtitle-options" className="options-list">
@@ -807,8 +799,6 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove, currentSubt
         : '';
   const multiAudioClass =
     state.playing.audioTracks.tracks.length > 1 ? 'active' : 'disabled';
-  const prevClass = Playlist.hasPrevious(state) ? '' : 'disabled';
-  const nextClass = Playlist.hasNext(state) ? '' : 'disabled';
 
   const elements = [
     renderPreview(state),
@@ -833,16 +823,6 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove, currentSubt
     </div>,
 
     <i
-      key="skip-previous"
-      className={'icon skip-previous float-left ' + prevClass}
-      onClick={dispatcher('previousTrack')}
-      role="button"
-      aria-label="Previous track"
-    >
-      skip_previous
-    </i>,
-
-    <i
       key="play"
       className="icon play-pause float-left"
       onClick={() => dispatch('playPause')}
@@ -850,16 +830,6 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove, currentSubt
       aria-label={state.playing.isPaused ? 'Play' : 'Pause'}
     >
       {state.playing.isPaused ? 'play_arrow' : 'pause'}
-    </i>,
-
-    <i
-      key="skip-next"
-      className={'icon skip-next float-left ' + nextClass}
-      onClick={dispatcher('nextTrack')}
-      role="button"
-      aria-label="Next track"
-    >
-      skip_next
     </i>,
 
     <i
@@ -1107,7 +1077,7 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove, currentSubt
       {elements}
       {renderCastOptions(state)}
       {renderSubtitleOptions(state, currentSubtitles)}
-      {renderAudioTrackOptions(state)}
+      {/* {renderAudioTrackOptions(state)} */}
     </div>
   );
 }
