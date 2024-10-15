@@ -24,8 +24,8 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
 
     if (searchTerm) {
       result = result.filter((episode) => {
-        const episodeTitle = episode.title.en.toLowerCase()
-        const episodeFullTitle = `${episode.episodeNumber || episode.episode} ${episodeTitle}`
+        const episodeTitle = episode?.title?.en.toLowerCase()
+        const episodeFullTitle = `${episode?.episodeNumber || episode?.episode} ${episodeTitle}`
 
         return episodeFullTitle.includes(searchTerm.toLowerCase())
       });
