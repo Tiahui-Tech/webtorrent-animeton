@@ -77,7 +77,6 @@ const AnimeDetails = ({ state }) => {
             sectionTitle="Animes Similares"
           />
           <AnimeEpisodesList
-            state={state}
             idAnilist={idAnilist}
             animeColors={animeColors}
             sectionTitle="Episodios"

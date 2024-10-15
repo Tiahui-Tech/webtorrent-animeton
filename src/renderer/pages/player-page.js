@@ -7,6 +7,7 @@ const remote = require('@electron/remote')
 const BitField = require('bitfield').default;
 const prettyBytes = require('prettier-bytes');
 const { useLocation, useNavigate } = require('react-router-dom');
+const { AnimatePresence, motion } = require('framer-motion');
 
 const TorrentSummary = require('../lib/torrent-summary');
 const Playlist = require('../lib/playlist');
@@ -24,6 +25,7 @@ function Player({ state, currentTorrent }) {
   const navigate = useNavigate();
   const [isMouseMoving, setIsMouseMoving] = useState(true);
   const [localSubtitles, setLocalSubtitles] = useState({ infoHash: null, tracks: [] });
+  const [lastAction, setLastAction] = useState(null);
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
   const mouseTimerRef = useRef(null);
@@ -52,6 +54,10 @@ function Player({ state, currentTorrent }) {
       clearTimeout(mouseTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    setLastAction(state.playing.isPaused ? 'pause' : 'play');
+  }, [state.playing.isPaused]);
 
   useEffect(() => {
     if (setup) {
@@ -85,8 +91,8 @@ function Player({ state, currentTorrent }) {
           if (destroy) {
             destroy();
           }
-          // Navigate back to the previous page or a default page
-          navigate('/');
+          // Navigate back to the previous page
+          navigate(-1);
 
           sendNotification(state, { message: 'No se pudo cargar el video, intenta de nuevo mas tarde.' })
         } else {
@@ -152,23 +158,36 @@ function Player({ state, currentTorrent }) {
 
   return (
     <div
-      className="player"
+      className="player relative h-screen overflow-hidden"
       onWheel={handleVolumeWheel}
       ref={playerRef}
     >
       <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 1000,
-          cursor: isMouseMoving ? 'auto' : 'none'
-        }}
+        className="absolute inset-0"
+        style={{ zIndex: 1000, cursor: isMouseMoving ? 'auto' : 'none' }}
         onClick={dispatcher('playPause')}
         onMouseMove={handleMouseMove}
       />
+      <AnimatePresence>
+        {(lastAction === 'pause' && state.playing.isPaused) || (lastAction === 'play' && !state.playing.isPaused) ? (
+          <motion.div
+            key={lastAction}
+            className="absolute inset-0 flex items-center justify-center z-50"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.5, 1] }}
+            exit={{ opacity: 0, scale: 1.5 }}
+            transition={{ duration: 1, times: [0, 0.5, 1] }}
+          >
+            <div
+              className="bg-black bg-opacity-50 rounded-full p-5 w-32 h-32 flex items-center justify-center"
+            >
+              <i className="icon text-white text-8xl flex items-center justify-center w-full h-full">
+                {lastAction === 'pause' ? 'pause' : 'play_arrow'}
+              </i>
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       {showVideo ? renderMedia(state, localSubtitles) : renderCastScreen(state)}
       {showControls && renderPlayerControls(state, isMouseMoving, handleMouseMove, localSubtitles)}
     </div>
