@@ -26,12 +26,11 @@ const AnimeDetails = ({ state }) => {
 
   const anime = useAnimeDetails(idAnilist);
 
-  const { animeColors, textColor } = useExtractColor(
-    anime?.coverImage?.extraLarge || ''
-  );
-  const { animeColors: bannerColors } = useExtractColor(
-    anime?.bannerImage || ''
-  );
+  const animeImage = anime?.coverImage?.extraLarge || anime?.bannerImage;
+  const bannerImage = anime?.bannerImage || anime?.coverImage?.extraLarge;
+
+  const { animeColors, textColor } = useExtractColor(animeImage);
+  const { animeColors: bannerColors } = useExtractColor(bannerImage);
 
   const backgroundConfig = useMemo(
     () => ({
@@ -45,10 +44,10 @@ const AnimeDetails = ({ state }) => {
   const background = useModernBackground(backgroundConfig);
 
   useEffect(() => {
-    if (anime && animeColors && bannerColors && background) {
+    if (anime && animeColors && bannerColors) {
       setIsLoading(false);
     }
-  }, [anime, animeColors, bannerColors, background]);
+  }, [anime, animeColors, bannerColors]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -62,7 +61,6 @@ const AnimeDetails = ({ state }) => {
   if (isLoading) {
     return <Spinner />;
   }
-
 
   return (
     <div className="flex flex-row bg-black justify-between items-start">

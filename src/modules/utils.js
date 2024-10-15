@@ -154,6 +154,14 @@ const translateGenres = (genres) => {
   return genres.map(genre => translations[genre] || genre);
 }
 
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
+
 module.exports = {
   timeAgo,
   normalize,
@@ -163,5 +171,6 @@ module.exports = {
   getNeonColor,
   sortColorsByBrightness,
   genGlassStyle,
-  translateGenres
+  translateGenres,
+  debounce
 };
