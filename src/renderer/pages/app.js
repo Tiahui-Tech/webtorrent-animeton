@@ -55,6 +55,7 @@ function App({ initialState, onUpdate }) {
 
 function AppContent({ initialState, onUpdate }) {
   const [state, setState] = useState(initialState);
+  const [currentTorrent, setCurrentTorrent] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,9 +78,15 @@ function AppContent({ initialState, onUpdate }) {
     };
     eventBus.on('navigate', navigationHandler);
 
+    const torrentUpdateHandler = (torrentSummary) => {
+      setCurrentTorrent(torrentSummary);
+    };
+    eventBus.on('torrentUpdate', torrentUpdateHandler);
+
     return () => {
       eventBus.off('navigate', navigationHandler);
       eventBus.off('stateUpdate', stateUpdateHandler);
+      eventBus.off('torrentUpdate', torrentUpdateHandler);
     };
   }, [navigate, location]);
 
@@ -122,7 +129,7 @@ function AppContent({ initialState, onUpdate }) {
                 path="/anime/:idAnilist"
                 element={<AnimeDetails state={state} />}
               />
-              <Route path="/player" element={<Player state={state} />} />
+              <Route path="/player" element={<Player state={state} currentTorrent={currentTorrent} />} />
               <Route
                 path="/create-torrent"
                 element={<CreateTorrent state={state} />}
