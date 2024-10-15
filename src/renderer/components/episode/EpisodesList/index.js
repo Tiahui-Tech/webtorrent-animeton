@@ -20,8 +20,6 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
   const filteredAndSortedEpisodes = useMemo(() => {
     let result = [...episodesData];
 
-    console.log(episodesData);
-
     if (searchTerm) {
       result = result.filter((episode) => {
         const episodeTitle = episode?.title?.en.toLowerCase()
