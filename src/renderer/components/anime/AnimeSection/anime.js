@@ -8,7 +8,8 @@ const {
   CardHeader,
   CardBody,
   Image,
-  Chip
+  Chip,
+  Skeleton
 } = require('@nextui-org/react');
 const { Icon } = require('@iconify/react');
 
@@ -29,14 +30,25 @@ const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
       onPress={() => handleAnimeClick(anime)}
     >
       <CardBody className="p-0 relative">
-        <Image
-          src={anime.coverImage.extraLarge}
-          alt={anime.title.romaji}
-          className="w-full object-cover"
-          classNames={{
-            img: 'aspect-[9/14] rounded-t-lg'
-          }}
-        />
+        <div className="relative">
+          <Image
+            src={anime.coverImage.extraLarge}
+            alt={anime.title.romaji}
+            className="w-full object-cover"
+            classNames={{
+              img: 'aspect-[9/14] rounded-t-lg'
+            }}
+          />
+          <Skeleton
+            className="absolute top-0 left-0 w-full h-full rounded-t-lg"
+            isLoaded={!!anime.coverImage.extraLarge}
+            style={{
+              minWidth: '208px',
+              minHeight: '323.55px',
+              aspectRatio: '9/14'
+            }}
+          />
+        </div>
         <div className="flex flex-row absolute top-2 right-2 z-10">
           <Chip
             variant="shadow"
