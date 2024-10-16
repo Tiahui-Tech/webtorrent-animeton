@@ -6,7 +6,6 @@ const { fork } = require('child_process')
 const { convertAssTextToVtt, formatVttTime } = require('../../modules/subtitles-parser')
 const eventBus = require('../lib/event-bus')
 const { dispatch } = require('../lib/dispatcher')
-const { sendNotification } = require('../lib/errors')
 
 module.exports = class SubtitlesController {
   constructor(state) {
@@ -70,6 +69,13 @@ module.exports = class SubtitlesController {
     if (!torrentSummary || !torrentSummary.progress) return
 
     const filePath = path.join(torrentSummary.path, torrentSummary.name)
+
+    // Check if the file exists
+    if (!fs.existsSync(filePath)) {
+      console.log(`File does not exist: ${filePath}`);
+      eventBus.emit('subtitlesUpdate', { forceStop: true });
+      return;
+    }
 
     try {
       console.log('Attempting to parse subtitles...');

@@ -220,10 +220,6 @@ module.exports = class TorrentListController {
       // remove torrent from saved list
       this.state.saved.torrents.splice(index, 1)
       dispatch('stateSave')
-
-      // prevent user from going forward to a deleted torrent
-      this.state.location.clearForward('player')
-      sound.play('DELETE')
     } else {
       throw new TorrentKeyNotFoundError(infoHash)
     }

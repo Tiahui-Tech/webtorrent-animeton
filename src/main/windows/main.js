@@ -102,11 +102,7 @@ function init (state, options) {
 
   win.on('close', e => {
     if (process.platform !== 'darwin') {
-      const tray = require('../tray')
-      if (!tray.hasTray()) {
-        app.quit()
-        return
-      }
+      return app.quit()
     }
     if (!app.isQuitting) {
       e.preventDefault()
