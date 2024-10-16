@@ -43,8 +43,6 @@ const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
             className="absolute top-0 left-0 w-full h-full rounded-t-lg"
             isLoaded={!!anime.coverImage.extraLarge}
             style={{
-              minWidth: '208px',
-              minHeight: '323.55px',
               aspectRatio: '9/14'
             }}
           />
