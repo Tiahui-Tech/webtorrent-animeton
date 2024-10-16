@@ -117,23 +117,22 @@ const Header = ({ state }) => {
     ipcRenderer.send('dragWindow');
   };
 
-  const handleClose = () => {
-    remote.BrowserWindow.getFocusedWindow().close();
-  };
-
-  const handleMaximize = () => {
+  const handleWindowControl = (action) => (e) => {
+    e.stopPropagation();
     const focusedWindow = remote.BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
-      if (isMaximized) {
-        focusedWindow.unmaximize();
-      } else {
-        focusedWindow.maximize();
+      switch (action) {
+        case 'minimize':
+          focusedWindow.minimize();
+          break;
+        case 'maximize':
+          isMaximized ? focusedWindow.unmaximize() : focusedWindow.maximize();
+          break;
+        case 'close':
+          focusedWindow.close();
+          break;
       }
     }
-  };
-
-  const handleMinimize = () => {
-    remote.BrowserWindow.getFocusedWindow().minimize();
   };
 
   return (
@@ -204,14 +203,26 @@ const Header = ({ state }) => {
           </div>
 
           {/* Window Controls */}
-          <div className="flex flex-row items-center gap-2 flex-1 justify-end">
-            <button onClick={handleMinimize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+          <div className="flex flex-row items-center gap-1 flex-1 justify-end">
+            <button 
+              onClick={handleWindowControl('minimize')} 
+              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+              className="p-1 hover:bg-zinc-800 rounded"
+            >
               <Icon icon="gravity-ui:minus" width="26" height="26" />
             </button>
-            <button onClick={handleMaximize} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+            <button 
+              onClick={handleWindowControl('maximize')} 
+              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+              className="p-1 hover:bg-zinc-800 rounded"
+            >
               <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
             </button>
-            <button onClick={handleClose} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
+            <button 
+              onClick={handleWindowControl('close')} 
+              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+              className="p-1 hover:bg-zinc-800 rounded"
+            >
               <Icon icon="gravity-ui:xmark" width="26" height="26" />
             </button>
           </div>
