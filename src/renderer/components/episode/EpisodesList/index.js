@@ -18,7 +18,7 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
   };
 
   const filteredAndSortedEpisodes = useMemo(() => {
-    let result = [...episodesData];
+    let result = Array.isArray(episodesData) ? [...episodesData] : [];
 
     if (searchTerm) {
       result = result.filter((episode) => {
