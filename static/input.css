@@ -6,6 +6,25 @@
  * BASIC STYLES
  */
 
+/* Custom scrollbar styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ffffff #000000;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #ffffff;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: #000000;
+}
+
 *,
 *:after,
 *:before {
