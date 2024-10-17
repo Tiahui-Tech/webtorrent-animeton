@@ -18,22 +18,23 @@ const AnimeEpisodesList = ({ idAnilist, animeColors, sectionTitle }) => {
   };
 
   const filteredAndSortedEpisodes = useMemo(() => {
-    let result = Array.isArray(episodesData) ? [...episodesData] : [];
+    if (!Array.isArray(episodesData)) {
+      return [];
+    }
+
+    let result = [...episodesData];
 
     if (searchTerm) {
       result = result.filter((episode) => {
-        const episodeTitle = episode?.title?.en.toLowerCase()
-        const episodeFullTitle = `${episode?.episodeNumber || episode?.episode} ${episodeTitle}`
+        const episodeTitle = episode?.title?.en?.toLowerCase() || '';
+        const episodeNumber = episode?.episodeNumber || episode?.episode || '';
+        const episodeFullTitle = `${episodeNumber} ${episodeTitle}`.trim();
 
-        return episodeFullTitle.includes(searchTerm.toLowerCase())
+        return episodeFullTitle.includes(searchTerm.toLowerCase());
       });
     }
 
-    if (isReversed) {
-      result.reverse();
-    }
-
-    return result;
+    return isReversed ? result.reverse() : result;
   }, [episodesData, isReversed, searchTerm]);
 
   const handleSearch = (event) => {
