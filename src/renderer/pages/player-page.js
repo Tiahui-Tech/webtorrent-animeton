@@ -26,6 +26,7 @@ function Player({ state, currentTorrent }) {
   const [isMouseMoving, setIsMouseMoving] = useState(true);
   const [localSubtitles, setLocalSubtitles] = useState({ infoHash: null, tracks: [] });
   const [lastAction, setLastAction] = useState(null);
+  const [forceStopSubtitles, setForceStopSubtitles] = useState(false);
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
   const mouseTimerRef = useRef(null);
@@ -40,6 +41,7 @@ function Player({ state, currentTorrent }) {
   const tracksAreFromActualTorrent = subtitlesExist
     ? localSubtitles.tracks.every(track => track.infoHash === currentTorrent.infoHash)
     : false;
+
 
   const handleMouseMove = () => {
     setIsMouseMoving(true);
@@ -108,44 +110,117 @@ function Player({ state, currentTorrent }) {
     };
   }, [isTorrentReady, destroy]);
 
-  const subtitlesRef = useRef({ subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent });
-  const hasCheckedSubtitles = useRef(false);
+    // References for managing subtitle state
+    const subtitlesRef = useRef({
+      exist: subtitlesExist,
+      maxLength: maxSubLength,
+      matchCurrentTorrent: tracksAreFromActualTorrent,
+      currentTorrent
+    });
+    const hasCheckedSubtitles = useRef(false);
+    const subtitleCheckRef = useRef({ infoHash: null, attempts: 0, lastMaxLength: 0 });
+  
+    useEffect(() => {
+      // Update subtitles reference with current values
+      subtitlesRef.current = {
+        exist: subtitlesExist,
+        maxLength: maxSubLength,
+        matchCurrentTorrent: tracksAreFromActualTorrent,
+        currentTorrent
+      };
+  
+      // Reset local subtitles if invalid
+      if (!tracksAreFromActualTorrent || !subtitlesExist) {
+        setLocalSubtitles({ infoHash: currentTorrent.infoHash, tracks: [] });
+      }
+  
+      // Subtitle update handler
+      const handleSubtitlesUpdate = ({ infoHash, tracks, forceStop }) => {
+        
+        if (forceStop) {
+          console.log('Forced stop of subtitle checks');
+          setForceStopSubtitles(true);
+          subtitleCheckRef.current.attempts = Infinity; // Prevent further checks
+          return;
+        }
 
-  useEffect(() => {
-    subtitlesRef.current = { subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent };
-    if (!tracksAreFromActualTorrent || !subtitlesExist) {
-      setLocalSubtitles({ infoHash: currentTorrent.infoHash, tracks: [] })
-    }
+        console.log('Subtitles updated:', infoHash);
+        setLocalSubtitles({ infoHash, tracks });
+      };
+  
+      // Subscribe to subtitle update event
+      eventBus.on('subtitlesUpdate', handleSubtitlesUpdate);
+  
+      // Cleanup: unsubscribe from event
+      return () => eventBus.off('subtitlesUpdate', handleSubtitlesUpdate);
+    }, [
+      location,
+      navigate,
+      subtitlesExist,
+      maxSubLength,
+      tracksAreFromActualTorrent,
+      currentTorrent
+    ]);
+  
+    // Function to check subtitle availability
+    const checkForSubtitles = useCallback(() => {
+      if (forceStopSubtitles) {
+        console.log('Subtitle checks forcibly stopped');
+        return;
+      }
 
-    const subtitlesUpdateHandler = ({ infoHash, tracks }) => {
-      console.log('on subtitlesUpdate', infoHash);
-      setLocalSubtitles({ infoHash, tracks });
-    };
-    eventBus.on('subtitlesUpdate', subtitlesUpdateHandler);
-  }, [location, navigate, subtitlesExist, maxSubLength, tracksAreFromActualTorrent, currentTorrent]);
+      const { currentTorrent, exist, maxLength, matchCurrentTorrent } = subtitlesRef.current;
+      if (!currentTorrent) return;
+  
+      const infoHash = currentTorrent.infoHash;
+      const { attempts, lastMaxLength } = subtitleCheckRef.current;
+      
+      // Reset attempts for new torrent
+      if (subtitleCheckRef.current.infoHash !== infoHash) {
+        subtitleCheckRef.current = { infoHash, attempts: 0, lastMaxLength: 0 };
+      }
+  
+      const MAX_ATTEMPTS = 8;
+      if (attempts < MAX_ATTEMPTS) {
+        console.log(`Checking subtitles (attempt ${attempts + 1} of ${MAX_ATTEMPTS})`);
+        
+        dispatch('checkForSubtitles', currentTorrent);
+        subtitleCheckRef.current.attempts++;
 
-  const checkForSubtitles = useCallback(() => {
-    if (subtitlesRef.current.currentTorrent) {
-      console.log('torrent found, checking for subtitles');
-      dispatch('checkForSubtitles', subtitlesRef.current.currentTorrent);
-    }
+        // Check if more subtitle checks are needed based on existence, length, matching, and changes
+        const needsMoreChecks = !exist || maxLength < 300 || !matchCurrentTorrent || maxLength !== lastMaxLength;
+  
+        if (needsMoreChecks) {
+          // Schedule next check in 15 seconds
+          const timeoutId = setTimeout(checkForSubtitles, 15000);
+          // Update lastMaxLength for next comparison
+          subtitleCheckRef.current.lastMaxLength = maxLength;
+          
+          // Store the timeout ID for potential cancellation
+          subtitleCheckRef.current.timeoutId = timeoutId;
+        } else {
+          console.log('Valid subtitles found or no changes in maxLength, stopping checks');
+        }
+      } else {
+        console.log('Maximum subtitle check attempts reached for this torrent');
+      }
+    }, [dispatch, forceStopSubtitles]);
+  
+    // Effect to initiate subtitle check
+    useEffect(() => {
+      if (!hasCheckedSubtitles.current && !forceStopSubtitles) {
+        console.log('Initial subtitle check');
+        checkForSubtitles();
+        hasCheckedSubtitles.current = true;
+      }
 
-    if (!subtitlesRef.current.subtitlesExist || subtitlesRef.current.maxSubLength < 300 || !subtitlesRef.current.tracksAreFromActualTorrent) {
-      // Schedule next check in 10 seconds
-      setTimeout(checkForSubtitles, 10000);
-    } else {
-      console.log('Valid subtitles found, stopping checks');
-    }
-  }, [state, dispatch]);
-
-  useEffect(() => {
-    if (!hasCheckedSubtitles.current) {
-      console.log('Initial subtitles check');
-
-      checkForSubtitles();
-      hasCheckedSubtitles.current = true;
-    }
-  }, []);
+      // Cleanup function to cancel any pending subtitle checks
+      return () => {
+        if (subtitleCheckRef.current.timeoutId) {
+          clearTimeout(subtitleCheckRef.current.timeoutId);
+        }
+      };
+    }, [checkForSubtitles, forceStopSubtitles]);
 
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
@@ -267,14 +342,19 @@ function renderMedia(state, currentSubtitles) {
 
     // Save video position
     const file = state.getPlayingFileSummary();
-    file.currentTime = state.playing.currentTime = mediaElement.currentTime;
-    file.duration = state.playing.duration = mediaElement.duration;
+    if (file) {
+      file.currentTime = state.playing.currentTime = mediaElement.currentTime;
+      file.duration = state.playing.duration = mediaElement.duration;
+    } else {
+      state.playing.currentTime = mediaElement.currentTime;
+      state.playing.duration = mediaElement.duration;
+    }
 
     // Save selected subtitle
-    if (state.playing.subtitles.selectedIndex !== -1) {
+    if (state.playing.subtitles.selectedIndex !== -1 && file) {
       const index = state.playing.subtitles.selectedIndex;
       file.selectedSubtitle = currentSubtitles.tracks[index]?.filePath;
-    } else if (file.selectedSubtitle != null) {
+    } else if (file && file.selectedSubtitle != null) {
       delete file.selectedSubtitle;
     }
 
@@ -589,7 +669,7 @@ function renderLoadingSpinner(state) {
     new Date().getTime() - state.playing.lastTimeUpdate > 2000;
   if (!isProbablyStalled) return;
 
-  const prog = state.getPlayingTorrentSummary().progress || {};
+  const prog = state.getPlayingTorrentSummary()?.progress || {};
   let fileProgress = 0;
   if (prog.files) {
     const file = prog.files[state.playing.fileIndex];
@@ -644,7 +724,7 @@ function renderCastScreen(state) {
   else if (isCast && !isStarting) castStatus = 'Connected to ' + castName;
   else castStatus = '';
 
-  const prog = state.getPlayingTorrentSummary().progress || {};
+  const prog = state.getPlayingTorrentSummary()?.progress || {};
 
   // Show a nice title image, if possible
   const style = {
@@ -1096,7 +1176,7 @@ function renderPlayerControls(state, isMouseMoving, handleMouseMove, currentSubt
       {elements}
       {renderCastOptions(state)}
       {renderSubtitleOptions(state, currentSubtitles)}
-      {/* {renderAudioTrackOptions(state)} */}
+      {renderAudioTrackOptions(state)}
     </div>
   );
 }
@@ -1139,10 +1219,11 @@ function renderPreview(state) {
         position: 'absolute',
         bottom: 50,
         left: xPos,
+        zIndex: 9999,
         display: previewXCoord == null && 'none' // Hide preview when XCoord unset
       }}
     >
-      <div style={{ width, height, backgroundColor: 'black' }}>
+      <div style={{ width, height, backgroundColor: 'black', zIndex: 9999 }}>
         <video
           src={Playlist.getCurrentLocalURL(state)}
           id="preview"
@@ -1170,14 +1251,14 @@ function renderLoadingBar(state) {
 
   const torrentSummary = state.getPlayingTorrentSummary();
   if (!torrentSummary?.progress) {
-    return null;
+    return renderEmptyLoadingBar();
   }
 
   // Find all contiguous parts of the torrent which are loaded
   const prog = torrentSummary.progress;
   const fileProg = prog.files[state.playing.fileIndex];
 
-  if (!fileProg) return null;
+  if (!fileProg) return renderEmptyLoadingBar();
 
   const parts = [];
   let lastPiecePresent = false;
@@ -1195,7 +1276,8 @@ function renderLoadingBar(state) {
   const loadingBarElems = parts.map((part, i) => {
     const style = {
       left: (100 * part.start) / fileProg.numPieces + '%',
-      width: (100 * part.count) / fileProg.numPieces + '%'
+      width: (100 * part.count) / fileProg.numPieces + '%',
+      backgroundColor: '#dd0000'
     };
 
     return <div key={i} className="loading-bar-part" style={style} />;
@@ -1204,6 +1286,18 @@ function renderLoadingBar(state) {
   return (
     <div key="loading-bar" className="loading-bar">
       {loadingBarElems}
+    </div>
+  );
+}
+
+function renderEmptyLoadingBar() {
+  return (
+    <div key="loading-bar" className="loading-bar">
+      <div className="loading-bar-part" style={{
+        left: '0%',
+        width: '100%',
+        backgroundColor: '#dd0000'
+      }} />
     </div>
   );
 }
