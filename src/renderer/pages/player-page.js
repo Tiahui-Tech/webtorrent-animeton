@@ -27,6 +27,8 @@ function Player({ state, currentTorrent }) {
   const [localSubtitles, setLocalSubtitles] = useState({ infoHash: null, tracks: [] });
   const [lastAction, setLastAction] = useState(null);
   const [forceStopSubtitles, setForceStopSubtitles] = useState(false);
+  const [subtitlesFound, setSubtitlesFound] = useState(false);
+  const [allSubtitlesFound, setAllSubtitlesFound] = useState(false);
   const { setup, destroy } = location.state || {};
   const playerRef = useRef(null);
   const mouseTimerRef = useRef(null);
@@ -88,8 +90,8 @@ function Player({ state, currentTorrent }) {
 
     if (!isTorrentReady) {
       isReadyIntervalId = setInterval(() => {
-        if (!state.server || !state.playing.isReady) {
-          console.log('Torrent not ready after 10 seconds, destroying player');
+        if (!isTorrentReady && !subtitlesFound) {
+          console.log('Torrent not ready after 20 seconds, destroying player');
           if (destroy) {
             destroy();
           }
@@ -100,7 +102,7 @@ function Player({ state, currentTorrent }) {
         } else {
           clearInterval(isReadyIntervalId);
         }
-      }, 10000); // 10 seconds
+      }, 20000); // 20 seconds
     }
 
     return () => {
@@ -108,126 +110,144 @@ function Player({ state, currentTorrent }) {
         clearInterval(isReadyIntervalId);
       }
     };
-  }, [isTorrentReady, destroy]);
+  }, [isTorrentReady, subtitlesFound, destroy]);
 
-    // References for managing subtitle state
-    const subtitlesRef = useRef({
+  // References for managing subtitle state
+  const subtitlesRef = useRef({
+    exist: subtitlesExist,
+    maxLength: maxSubLength,
+    matchCurrentTorrent: tracksAreFromActualTorrent,
+    currentTorrent
+  });
+  const hasCheckedSubtitles = useRef(false);
+  const subtitleCheckRef = useRef({ infoHash: null, attempts: 0, lastMaxLength: 0 });
+
+  useEffect(() => {
+    // Update subtitles reference with current values
+    subtitlesRef.current = {
       exist: subtitlesExist,
       maxLength: maxSubLength,
       matchCurrentTorrent: tracksAreFromActualTorrent,
       currentTorrent
-    });
-    const hasCheckedSubtitles = useRef(false);
-    const subtitleCheckRef = useRef({ infoHash: null, attempts: 0, lastMaxLength: 0 });
-  
-    useEffect(() => {
-      // Update subtitles reference with current values
-      subtitlesRef.current = {
-        exist: subtitlesExist,
-        maxLength: maxSubLength,
-        matchCurrentTorrent: tracksAreFromActualTorrent,
-        currentTorrent
-      };
-  
-      // Reset local subtitles if invalid
-      if (!tracksAreFromActualTorrent || !subtitlesExist) {
-        setLocalSubtitles({ infoHash: currentTorrent.infoHash, tracks: [] });
-      }
-  
-      // Subtitle update handler
-      const handleSubtitlesUpdate = ({ infoHash, tracks, forceStop }) => {
-        
-        if (forceStop) {
-          console.log('Forced stop of subtitle checks');
-          setForceStopSubtitles(true);
-          subtitleCheckRef.current.attempts = Infinity; // Prevent further checks
-          return;
-        }
+    };
 
-        console.log('Subtitles updated:', infoHash);
-        setLocalSubtitles({ infoHash, tracks });
-      };
-  
-      // Subscribe to subtitle update event
-      eventBus.on('subtitlesUpdate', handleSubtitlesUpdate);
-  
-      // Cleanup: unsubscribe from event
-      return () => eventBus.off('subtitlesUpdate', handleSubtitlesUpdate);
-    }, [
-      location,
-      navigate,
-      subtitlesExist,
-      maxSubLength,
-      tracksAreFromActualTorrent,
-      currentTorrent
-    ]);
-  
-    // Function to check subtitle availability
-    const checkForSubtitles = useCallback(() => {
-      if (forceStopSubtitles) {
-        console.log('Subtitle checks forcibly stopped');
+    // Reset local subtitles if invalid
+    if (!tracksAreFromActualTorrent || !subtitlesExist) {
+      setLocalSubtitles({ infoHash: currentTorrent.infoHash, tracks: [] });
+    }
+
+    // Subtitle update handler
+    const handleSubtitlesUpdate = ({ infoHash, tracks, forceStop }) => {
+
+      if (forceStop) {
+        console.log('Forced stop of subtitle checks');
+        sendNotification(state, { title: 'Subtítulos', message: 'Se ha detenido la búsqueda.', type: 'debug' })
+        setForceStopSubtitles(true);
+        subtitleCheckRef.current.attempts = Infinity; // Prevent further checks
         return;
       }
 
-      const { currentTorrent, exist, maxLength, matchCurrentTorrent } = subtitlesRef.current;
-      if (!currentTorrent) return;
-  
-      const infoHash = currentTorrent.infoHash;
-      const { attempts, lastMaxLength } = subtitleCheckRef.current;
-      
-      // Reset attempts for new torrent
-      if (subtitleCheckRef.current.infoHash !== infoHash) {
-        subtitleCheckRef.current = { infoHash, attempts: 0, lastMaxLength: 0 };
-      }
-  
-      const MAX_ATTEMPTS = 8;
-      if (attempts < MAX_ATTEMPTS) {
-        console.log(`Checking subtitles (attempt ${attempts + 1} of ${MAX_ATTEMPTS})`);
-        
-        dispatch('checkForSubtitles', currentTorrent);
-        subtitleCheckRef.current.attempts++;
+      const subsLength = tracks.reduce((max, track) =>
+      track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
 
-        // Check if more subtitle checks are needed based on existence, length, matching, and changes
-        const needsMoreChecks = !exist || maxLength < 300 || !matchCurrentTorrent || maxLength !== lastMaxLength;
-  
-        if (needsMoreChecks) {
-          // Schedule next check in 15 seconds
-          const timeoutId = setTimeout(checkForSubtitles, 15000);
-          // Update lastMaxLength for next comparison
-          subtitleCheckRef.current.lastMaxLength = maxLength;
-          
-          // Store the timeout ID for potential cancellation
-          subtitleCheckRef.current.timeoutId = timeoutId;
-        } else {
-          console.log('Valid subtitles found or no changes in maxLength, stopping checks');
+      if (subsLength) {
+        console.log('Subtitles updated:', infoHash);
+        if (!allSubtitlesFound) {
+          sendNotification(state, { title: 'Subtítulos', message: `Se han encontrado subtítulos con un tamaño total de ${subsLength}.`, type: 'debug' })
         }
+        setSubtitlesFound(true);
+        setLocalSubtitles({ infoHash, tracks });
       } else {
-        console.log('Maximum subtitle check attempts reached for this torrent');
+        sendNotification(state, { title: 'Subtítulos', message: `No se han encontrado subtítulos.`, type: 'debug' })
       }
-    }, [dispatch, forceStopSubtitles]);
-  
-    // Effect to initiate subtitle check
-    useEffect(() => {
-      if (!hasCheckedSubtitles.current && !forceStopSubtitles) {
-        console.log('Initial subtitle check');
-        checkForSubtitles();
-        hasCheckedSubtitles.current = true;
-      }
+    };
 
-      // Cleanup function to cancel any pending subtitle checks
-      return () => {
-        if (subtitleCheckRef.current.timeoutId) {
-          clearTimeout(subtitleCheckRef.current.timeoutId);
-        }
-      };
-    }, [checkForSubtitles, forceStopSubtitles]);
+    // Subscribe to subtitle update event
+    eventBus.on('subtitlesUpdate', handleSubtitlesUpdate);
+
+    // Cleanup: unsubscribe from event
+    return () => eventBus.off('subtitlesUpdate', handleSubtitlesUpdate);
+  }, [
+    location,
+    navigate,
+    subtitlesExist,
+    maxSubLength,
+    tracksAreFromActualTorrent,
+    currentTorrent,
+    allSubtitlesFound
+  ]);
+
+  // Function to check subtitle availability
+  const checkForSubtitles = useCallback(() => {
+    if (forceStopSubtitles) {
+      console.log('Subtitle checks forcibly stopped');
+      return;
+    }
+
+    const { currentTorrent, exist, maxLength, matchCurrentTorrent } = subtitlesRef.current;
+    if (!currentTorrent) return;
+
+    const infoHash = currentTorrent.infoHash;
+    const { attempts, lastMaxLength } = subtitleCheckRef.current;
+
+    // Reset attempts for new torrent
+    if (subtitleCheckRef.current.infoHash !== infoHash) {
+      subtitleCheckRef.current = { infoHash, attempts: 0, lastMaxLength: 0 };
+    }
+
+    const MAX_ATTEMPTS = 8;
+    if (attempts < MAX_ATTEMPTS) {
+      console.log(`Checking subtitles (attempt ${attempts + 1} of ${MAX_ATTEMPTS})`);
+
+      dispatch('checkForSubtitles', currentTorrent);
+      subtitleCheckRef.current.attempts++;
+
+      // Check if more subtitle checks are needed based on existence, length, matching, and changes
+      const needsMoreChecks = !exist || maxLength < 300 || !matchCurrentTorrent || maxLength !== lastMaxLength;
+
+      sendNotification(state, { title: `Subtítulos`, message: `Buscando... Intento: ${attempts + 1}/${MAX_ATTEMPTS}`, type: 'debug' })
+
+      if (needsMoreChecks) {
+        // Schedule next check in 15 seconds
+        const timeoutId = setTimeout(checkForSubtitles, 10000);
+        // Update lastMaxLength for next comparison
+        subtitleCheckRef.current.lastMaxLength = maxLength;
+
+        // Store the timeout ID for potential cancellation
+        subtitleCheckRef.current.timeoutId = timeoutId;
+      } else {
+        setAllSubtitlesFound(true);
+        sendNotification(state, { title: 'Subtítulos', message: `Se encontraron subtítulos validos, deteniendo búsqueda...`, type: 'debug' })
+        console.log('Valid subtitles found or no changes in maxLength, stopping checks');
+      }
+    } else {
+      sendNotification(state, { title: 'Subtítulos', message: `Se han alcanzado el máximo de intentos de búsqueda para este torrent.`, type: 'debug' })
+      console.log('Maximum subtitle check attempts reached for this torrent');
+    }
+  }, [dispatch, forceStopSubtitles]);
+
+  // Effect to initiate subtitle check
+  useEffect(() => {
+    if (!hasCheckedSubtitles.current && !forceStopSubtitles) {
+      console.log('Initial subtitle check');
+      checkForSubtitles();
+      hasCheckedSubtitles.current = true;
+    }
+
+    // Cleanup function to cancel any pending subtitle checks
+    return () => {
+      if (subtitleCheckRef.current.timeoutId) {
+        clearTimeout(subtitleCheckRef.current.timeoutId);
+      }
+    };
+  }, [checkForSubtitles, forceStopSubtitles]);
 
   // Show the video as large as will fit in the window, play immediately
   // If the video is on Chromecast or Airplay, show a title screen instead
   const showVideo = state.playing.location === 'local';
   const showControls = state.playing.location !== 'external';
 
-  if (!isTorrentReady) {
+  if (!isTorrentReady || !subtitlesFound) {
     return <Spinner />
   }
 

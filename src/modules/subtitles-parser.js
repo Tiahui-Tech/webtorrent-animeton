@@ -30,7 +30,6 @@ async function parseSubtitles(filePath) {
     });
 
     metadata.on('subtitle', (subtitle, trackNumber) => {
-      console.log(`Found subtitle for track: ${trackNumber}`);
       if (subtitles[trackNumber]) {
         subtitles[trackNumber].cues.push(subtitle);
       }

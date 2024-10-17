@@ -197,7 +197,7 @@ const Header = ({ state }) => {
             <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
               <div className="flex items-center">
                 <p className="text-white font-bold text-2xl leading-none">Animeton</p>
-                <span className="text-zinc-400 text-sm ml-1 mt-2 leading-none">Alpha</span>
+                <span className="text-zinc-400 text-sm ml-1 mt-2 leading-none">Beta cerrada</span>
               </div>
             </button>
           </div>
