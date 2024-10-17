@@ -21,6 +21,7 @@ const CreateTorrent = React.lazy(() => require('./create-torrent-page'));
 const Preferences = require('./preferences-page');
 
 const eventBus = require('../lib/event-bus');
+const { dispatch } = require('../lib/dispatcher');
 
 let currentPath = '/';
 function getCurrentPath() {
@@ -61,6 +62,16 @@ function AppContent({ initialState, onUpdate }) {
 
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  // Clean all torrents on startup
+  useEffect(() => {
+    const savedTorrents = state.saved.torrents;
+
+    savedTorrents.forEach(async (torrent) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      dispatch('deleteTorrent', torrent.infoHash, true);
+    });
+  }, []);
 
   useEffect(() => {
     currentPath = location.pathname;
@@ -149,7 +160,7 @@ function AppContent({ initialState, onUpdate }) {
 
 function ErrorPopover({ state }) {
   const now = new Date().getTime();
-  const recentErrors = state.errors.filter((x) => now - x.time < 5000);
+  const recentErrors = state.errors.filter((x) => now - x.time < 8000);
   const hasErrors = recentErrors.length > 0;
 
   if (!hasErrors) return null;
@@ -163,7 +174,7 @@ function ErrorPopover({ state }) {
   return (
     <div
       key="errors"
-      className="fixed bottom-4 left-4 flex flex-col space-y-4"
+      className="fixed top-4 left-4 flex flex-col space-y-4"
       style={{ zIndex: 9999 }}
     >
       {recentErrors.map((error, i) => (

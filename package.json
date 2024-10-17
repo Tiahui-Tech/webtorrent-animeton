@@ -126,7 +126,7 @@
     "url": "git://github.com/Tiahui-Tech/webtorrent-animerso.git"
   },
   "scripts": {
-    "build": "npm run clean && babel src --out-dir build",
+    "build": "babel src --out-dir build",
     "clean": "node ./bin/clean.js",
     "gh-release": "gh-release",
     "install-system-deps": "brew install fakeroot dpkg rpm",
