@@ -11,14 +11,23 @@ const remote = require('@electron/remote')
 const eventBus = require('../../lib/event-bus');
 const { debounce } = require('../../../modules/utils');
 
+const useDiscordUser = require('../../hooks/useDiscordUser');
+
 const SearchInput = require('./search-input');
 const { Icon } = require('@iconify/react');
+const { Skeleton } = require('@nextui-org/react');
 
 const Header = ({ state }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigationType = useNavigationType();
   const onPlayerPage = location.pathname.includes('player');
+
+  const appIsActivated = state?.saved?.activation?.key
+  const appUserDiscordId = state?.saved?.activation?.discordId
+  const appIsBlocked = state?.saved?.activation?.blocked
+
+  const { data: discordUser, isLoading: isLoadingDiscordUser, error: errorDiscordUser } = useDiscordUser(appUserDiscordId);
 
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(false);
@@ -184,7 +193,7 @@ const Header = ({ state }) => {
             </div>
 
             {/* Search Input */}
-            {isHome && (
+            {(isHome && appIsActivated && !appIsBlocked) && (
               <SearchInput
                 searchTerm={searchTerm}
                 setSearchTerm={handleSearchTermChange}
@@ -193,38 +202,69 @@ const Header = ({ state }) => {
           </div>
 
           {/* Animeton Logo */}
-          <div className="flex-1 flex justify-center items-center">
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <button onClick={handleHome} className={isHome ? 'cursor-default' : 'cursor-pointer'} style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}>
-              <div className="flex items-center">
+              <div className="flex flex-col items-center">
                 <p className="text-white font-bold text-2xl leading-none">Animeton</p>
-                <span className="text-zinc-400 text-sm ml-1 mt-2 leading-none">Beta cerrada</span>
+                <span className="text-zinc-400 text-xs mt-1 leading-none">Beta cerrada</span>
               </div>
             </button>
           </div>
 
-          {/* Window Controls */}
-          <div className="flex flex-row items-center gap-1 flex-1 justify-end">
-            <button 
-              onClick={handleWindowControl('minimize')} 
-              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-              className="p-1 hover:bg-zinc-800 rounded"
-            >
-              <Icon icon="gravity-ui:minus" width="26" height="26" />
-            </button>
-            <button 
-              onClick={handleWindowControl('maximize')} 
-              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-              className="p-1 hover:bg-zinc-800 rounded"
-            >
-              <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
-            </button>
-            <button 
-              onClick={handleWindowControl('close')} 
-              style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
-              className="p-1 hover:bg-zinc-800 rounded"
-            >
-              <Icon icon="gravity-ui:xmark" width="26" height="26" />
-            </button>
+          {/* Window Controls and Discord Login */}
+          <div className="flex flex-row items-center gap-2 justify-end">
+
+            {/* Discord Login */}
+            {(appIsActivated && appUserDiscordId && !appIsBlocked) && (
+              <div className="flex flex-row items-center gap-2 bg-zinc-900 rounded-full pl-1 pr-3 py-1">
+                {isLoadingDiscordUser ? (
+                  <>
+                    <Skeleton className="rounded-full" style={{ backgroundColor: '#ffffff30' }}>
+                      <div className="w-8 h-8 rounded-full bg-default-200"></div>
+                    </Skeleton>
+                    <Skeleton className="w-24 rounded-lg" style={{ backgroundColor: '#ffffff30' }}>
+                      <div className="h-4 rounded-lg bg-default-200"></div>
+                    </Skeleton>
+                  </>
+                ) : (
+                  <>
+                    <img 
+                      src={discordUser.assets.avatarURL} 
+                      alt={discordUser.basicInfo.globalName} 
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <span className="text-white font-medium text-sm">
+                      {discordUser.basicInfo.globalName}
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Window Controls */}
+            <div className="flex flex-row items-center gap-1">
+              <button 
+                onClick={handleWindowControl('minimize')} 
+                style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+                className="p-1 hover:bg-zinc-800 rounded"
+              >
+                <Icon icon="gravity-ui:minus" width="26" height="26" />
+              </button>
+              <button 
+                onClick={handleWindowControl('maximize')} 
+                style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+                className="p-1 hover:bg-zinc-800 rounded"
+              >
+                <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
+              </button>
+              <button 
+                onClick={handleWindowControl('close')} 
+                style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
+                className="p-1 hover:bg-zinc-800 rounded"
+              >
+                <Icon icon="gravity-ui:xmark" width="26" height="26" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

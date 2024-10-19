@@ -119,6 +119,10 @@ function onState(err, _state) {
     folderWatcher: createGetter(() => {
       const FolderWatcherController = require('./controllers/folder-watcher-controller');
       return new FolderWatcherController();
+    }),
+    activation: createGetter(() => {
+      const ActivationController = require('./controllers/activation-controller');
+      return new ActivationController(state);
     })
   };
 
@@ -320,6 +324,10 @@ const dispatchHandlers = {
   mediaControlsMouseLeave: () => controllers.media().controlsMouseLeave(),
   openExternalPlayer: () => controllers.media().openExternalPlayer(),
   externalPlayerNotFound: () => controllers.media().externalPlayerNotFound(),
+
+  // Activation
+  activateKey: (keyData) => controllers.activation().activateKey(keyData),
+  updateKeyState: (keyData) => controllers.activation().updateKeyState(keyData),
 
   // Remote casting: Chromecast, Airplay, etc
   toggleCastMenu: (deviceType) => lazyLoadCast().toggleMenu(deviceType),
