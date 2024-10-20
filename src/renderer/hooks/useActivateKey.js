@@ -11,10 +11,10 @@ const useActivateKey = (key) => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/keys/update`, {
+      const response = await fetch(`${API_BASE_URL}/keys/activate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, newStatus: 'active' })
+        body: JSON.stringify({ key })
       });
 
       const result = await response.json();

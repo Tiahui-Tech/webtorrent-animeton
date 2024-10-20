@@ -160,7 +160,7 @@ function AppContent({ initialState, onUpdate }) {
 
 function ErrorPopover({ state }) {
   const now = new Date().getTime();
-  const recentErrors = state.errors.filter((x) => now - x.time < 8000);
+  const recentErrors = state.errors.filter((x) => now - x.time < 5000);
   const hasErrors = recentErrors.length > 0;
 
   if (!hasErrors) return null;
@@ -174,8 +174,8 @@ function ErrorPopover({ state }) {
   return (
     <div
       key="errors"
-      className="fixed top-4 left-4 flex flex-col space-y-4"
-      style={{ zIndex: 9999 }}
+      className="fixed left-4 flex flex-col space-y-4"
+      style={{ zIndex: 9999, top: '72px' }}
     >
       {recentErrors.map((error, i) => (
         <motion.div

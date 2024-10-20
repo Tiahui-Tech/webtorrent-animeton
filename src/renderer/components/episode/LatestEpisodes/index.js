@@ -1,5 +1,5 @@
 const React = require('react');
-const { useState } = React;
+const { useState, useEffect } = React;
 const useRSSData = require('../../../hooks/useRSSData');
 const useModernBackground = require('../../../hooks/useModernBackground');
 
@@ -12,7 +12,8 @@ const EpisodeCardSkeleton = require('./skeleton');
 const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
   const [loadingEpisodeId, setLoadingEpisodeId] = useState(null);
 
-  const { rssAnimes, isLoading } = useRSSData({
+  const { rssAnimes, isLoading, error } = useRSSData({
+    state,
     page: 1,
     perPage: 10,
     displayCount: 8,
@@ -24,6 +25,12 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
     disablePattern: true,
     opacity: 0.6
   });
+
+  useEffect(() => {
+    if (error) {
+      sendNotification(state, { message: error });
+    }
+  }, [error]);
 
   const handlePlay = (anime) => {
     const infoHash = anime?.torrent?.infoHash;
@@ -50,7 +57,7 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
         }}
       />
       <h2 className="relative text-2xl font-bold mb-4 px-8">{sectionTitle}</h2>
-      <div className="grid grid-cols-4 auto-cols-max gap-4 justify-center items-center min-h-[700px]">
+      <div className={`grid grid-cols-4 auto-cols-max gap-4 justify-center items-center ${error ? 'min-h-[300px]' : 'min-h-[700px]'} w-full`}>
         {isLoading
           ? Array.from({ length: 8 }).map((_, i) => (
             <EpisodeCardSkeleton key={i} />

@@ -11,15 +11,21 @@ const main = module.exports = {
   toggleAlwaysOnTop,
   toggleDevTools,
   toggleFullScreen,
-  win: null
+  win: null,
+  initDiscordRPC,
+  updateDiscordRPC
 }
 
 const { app, BrowserWindow, screen } = require('electron')
 const debounce = require('debounce')
+const DiscordRPC = require('discord-rpc')
 
 const config = require('../../config')
 const log = require('../log')
 const menu = require('../menu')
+
+const discordClientId = '1297080240736309348'
+let rpc
 
 function init (state, options) {
   if (main.win) {
@@ -102,6 +108,7 @@ function init (state, options) {
 
   win.on('close', e => {
     if (process.platform !== 'darwin') {
+      if (rpc) rpc.destroy()
       return app.quit()
     }
     if (!app.isQuitting) {
@@ -109,6 +116,9 @@ function init (state, options) {
       hide()
     }
   })
+
+  // Initialize Discord RPC
+  initDiscordRPC()
 }
 
 function dispatch (...args) {
@@ -253,4 +263,26 @@ function getIconPath () {
   return process.platform === 'win32'
     ? config.APP_ICON + '.ico'
     : config.APP_ICON + '.png'
+}
+
+function initDiscordRPC() {
+  DiscordRPC.register(discordClientId)
+  rpc = new DiscordRPC.Client({ transport: 'ipc' })
+
+  rpc.on('ready', () => {
+    updateDiscordRPC('En el menú principal')
+  })
+
+  rpc.login({ clientId: discordClientId }).catch(console.error)
+}
+
+function updateDiscordRPC(details) {
+  if (!rpc) return
+
+  rpc.setActivity({
+    details: details,
+    largeImageKey: 'app_logo',
+    largeImageText: config.APP_NAME,
+    instance: false,
+  })
 }

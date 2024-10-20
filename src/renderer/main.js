@@ -328,6 +328,7 @@ const dispatchHandlers = {
   // Activation
   activateKey: (keyData) => controllers.activation().activateKey(keyData),
   updateKeyState: (keyData) => controllers.activation().updateKeyState(keyData),
+  cleanKeyState: () => controllers.activation().cleanKeyState(),
 
   // Remote casting: Chromecast, Airplay, etc
   toggleCastMenu: (deviceType) => lazyLoadCast().toggleMenu(deviceType),

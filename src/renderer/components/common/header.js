@@ -1,9 +1,8 @@
 const React = require('react');
-const { useState, useEffect, useCallback } = require('react');
+const { useState, useEffect, useCallback, useRef } = require('react');
 const {
   useNavigate,
   useLocation,
-  useNavigationType
 } = require('react-router-dom');
 
 const { ipcRenderer } = require('electron');
@@ -20,8 +19,7 @@ const { Skeleton } = require('@nextui-org/react');
 const Header = ({ state }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const navigationType = useNavigationType();
-  const onPlayerPage = location.pathname.includes('player');
+  const historyRef = useRef({ past: [], current: null, future: [] });
 
   const appIsActivated = state?.saved?.activation?.key
   const appUserDiscordId = state?.saved?.activation?.discordId
@@ -50,11 +48,25 @@ const Header = ({ state }) => {
   };
 
   useEffect(() => {
-    // Updates the navigation state every time the location or navigation type changes
-    setCanGoBack(navigationType !== 'POP' || location.key !== 'default');
-    setCanGoForward(false); // Reset on each navigation
-    setIsHome(location.pathname === '/'); // Update isHome state based on current path
-  }, [location, navigationType]);
+    const currentPath = location.pathname;
+    
+    if (!currentPath.includes('/player')) {
+      if (historyRef.current.current !== currentPath) {
+        if (historyRef.current.current) {
+          historyRef.current.past.push(historyRef.current.current);
+        }
+        historyRef.current.current = currentPath;
+        historyRef.current.future = [];
+      }
+    }
+
+    setCanGoBack(historyRef.current.past.length > 0);
+    setCanGoForward(historyRef.current.future.length > 0);
+    setIsHome(currentPath === '/');
+
+    // Debug logging
+    console.log('History updated:', JSON.stringify(historyRef.current, null, 2));
+  }, [location]);
 
   useEffect(() => {
     const updateMaximizedState = () => {
@@ -71,7 +83,7 @@ const Header = ({ state }) => {
   }, []);
 
   useEffect(() => {
-    if (onPlayerPage) {
+    if (location.pathname.includes('player')) {
       let timeoutId;
       const handleMouseMove = () => {
         setOpacity(1);
@@ -89,7 +101,7 @@ const Header = ({ state }) => {
     } else {
       setOpacity(1);
     }
-  }, [onPlayerPage]);
+  }, [location]);
 
   useEffect(() => {
     if (isHome) {
@@ -98,28 +110,47 @@ const Header = ({ state }) => {
     }
   }, [debouncedSearchTerm, isHome]);
 
-  const handleBack = (e) => {
-    e.preventDefault();
-    if (canGoBack) {
-      navigate(-1);
-      setCanGoForward(true);
-    }
-  };
+  useEffect(() => {
+    const updateNavigationState = () => {
+      setCanGoBack(historyRef.current.past.length > 0);
+      setCanGoForward(historyRef.current.future.length > 0);
+    };
 
-  const handleForward = (e) => {
-    e.preventDefault();
-    if (canGoForward) {
-      navigate(1);
-    }
-  };
+    updateNavigationState();
+    return () => {
+      eventBus.off('historyUpdated', updateNavigationState);
+    };
+  }, []);
 
-  const handleHome = () => {
+  const handleBack = useCallback((e) => {
+    e.preventDefault();
+    if (historyRef.current.past.length > 0) {
+      const prevPage = historyRef.current.past.pop();
+      historyRef.current.future.unshift(historyRef.current.current);
+      historyRef.current.current = prevPage;
+      navigate(prevPage);
+      eventBus.emit('historyUpdated');
+    }
+  }, [navigate]);
+
+  const handleForward = useCallback((e) => {
+    e.preventDefault();
+    if (historyRef.current.future.length > 0) {
+      const nextPage = historyRef.current.future.shift();
+      historyRef.current.past.push(historyRef.current.current);
+      historyRef.current.current = nextPage;
+      navigate(nextPage);
+      eventBus.emit('historyUpdated');
+    }
+  }, [navigate]);
+
+  const handleHome = useCallback(() => {
     if (!isHome) {
       navigate('/');
-      setDebouncedSearchTerm('')
-      setSearchTerm('')
+      setDebouncedSearchTerm('');
+      setSearchTerm('');
     }
-  };
+  }, [isHome, navigate, setDebouncedSearchTerm, setSearchTerm]);
 
   const startDrag = (e) => {
     if (e.button !== 0) return;
@@ -163,11 +194,11 @@ const Header = ({ state }) => {
         >
           <div className='flex flex-row items-center gap-2 flex-1'>
             {/* Navigate Buttons */}
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex flex-row items-center">
               <button
                 onClick={handleBack}
                 disabled={!canGoBack}
-                className={`focus:outline-none ${canGoBack ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                className={`focus:outline-none p-1 hover:bg-zinc-800 rounded ${canGoBack ? 'cursor-pointer' : 'cursor-default'}`}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
               >
                 <Icon
@@ -180,7 +211,7 @@ const Header = ({ state }) => {
               <button
                 onClick={handleForward}
                 disabled={!canGoForward}
-                className={`focus:outline-none ${canGoForward ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                className={`focus:outline-none p-1 hover:bg-zinc-800 rounded ${canGoForward ? 'cursor-pointer' : 'cursor-default'}`}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
               >
                 <Icon
@@ -228,9 +259,9 @@ const Header = ({ state }) => {
                   </>
                 ) : (
                   <>
-                    <img 
-                      src={discordUser.assets.avatarURL} 
-                      alt={discordUser.basicInfo.globalName} 
+                    <img
+                      src={discordUser.assets.avatarURL}
+                      alt={discordUser.basicInfo.globalName}
                       className="w-8 h-8 rounded-full"
                     />
                     <span className="text-white font-medium text-sm">
@@ -243,22 +274,22 @@ const Header = ({ state }) => {
 
             {/* Window Controls */}
             <div className="flex flex-row items-center gap-1">
-              <button 
-                onClick={handleWindowControl('minimize')} 
+              <button
+                onClick={handleWindowControl('minimize')}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
                 className="p-1 hover:bg-zinc-800 rounded"
               >
                 <Icon icon="gravity-ui:minus" width="26" height="26" />
               </button>
-              <button 
-                onClick={handleWindowControl('maximize')} 
+              <button
+                onClick={handleWindowControl('maximize')}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
                 className="p-1 hover:bg-zinc-800 rounded"
               >
                 <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
               </button>
-              <button 
-                onClick={handleWindowControl('close')} 
+              <button
+                onClick={handleWindowControl('close')}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
                 className="p-1 hover:bg-zinc-800 rounded"
               >

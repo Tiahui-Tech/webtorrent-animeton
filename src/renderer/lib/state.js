@@ -139,7 +139,10 @@ function setupStateSaved () {
     version: config.APP_VERSION, /* make sure we can upgrade gracefully later */
     activation: {
       discordId: null,
+      status: null,
+      blocked: false,
       key: null,
+      createdAt: null,
       activatedAt: null
     }
   }

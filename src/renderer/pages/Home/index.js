@@ -14,13 +14,13 @@ const Activation = require('../../components/common/activation');
 const Home = ({ state }) => {
   const animes = useAnimesData({ displayCount: 10 });
   const [searchTerm, setSearchTerm] = useState('');
-  const { isValid, isLoading, validateKey } = useValidateKey(state?.saved?.activation?.discordId);
+  const { isValid, isLoading, validateKey } = useValidateKey(state?.saved?.activation?.key);
 
   useEffect(() => {
-    if (state?.saved?.activation?.discordId) {
+    if (state?.saved?.activation?.key) {
       validateKey();
     }
-  }, [state?.saved?.activation?.discordId, validateKey]);
+  }, [state?.saved?.activation?.key, validateKey]);
 
   useEffect(() => {
     const handleSearchTermChanged = (term) => {
@@ -36,7 +36,7 @@ const Home = ({ state }) => {
 
   if (isLoading) return <Spinner />;
 
-  if (!state?.saved?.activation?.key || (state?.saved?.activation?.discordId && !isValid)) {
+  if (!state?.saved?.activation?.key || (state?.saved?.activation?.key && !isValid)) {
     return <Activation isValid={isValid} />;
   }
 

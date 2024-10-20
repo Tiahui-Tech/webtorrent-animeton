@@ -1481,10 +1481,6 @@ video {
   top: 0.5rem;
 }
 
-.top-4 {
-  top: 1rem;
-}
-
 .top-\[10\%\] {
   top: 10%;
 }
@@ -1921,6 +1917,10 @@ video {
 
 .min-h-8 {
   min-height: 2rem;
+}
+
+.min-h-\[300px\] {
+  min-height: 300px;
 }
 
 .min-h-\[32px\] {

@@ -20,4 +20,18 @@ module.exports = class ActivationController {
 
     dispatch('stateSaveImmediate')
   }
+
+  cleanKeyState() {
+    console.log('Cleaning key state')
+    this.state.saved.activation = {
+      discordId: null,
+      status: null,
+      blocked: false,
+      key: null,
+      createdAt: null,
+      activatedAt: null
+    }
+
+    dispatch('stateSaveImmediate')
+  }
 }

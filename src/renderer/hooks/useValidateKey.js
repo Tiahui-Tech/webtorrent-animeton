@@ -2,7 +2,7 @@ const { useState, useCallback } = require('react');
 const { API_BASE_URL } = require('../../constants/config');
 const { dispatch } = require('../lib/dispatcher');
 
-const useValidateKey = (discordId) => {
+const useValidateKey = (key) => {
   const [isValid, setIsValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ const useValidateKey = (discordId) => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/keys/${discordId}`, {
+      const response = await fetch(`${API_BASE_URL}/keys/validate/${key}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -24,9 +24,12 @@ const useValidateKey = (discordId) => {
       if (result.error) {
         setError(result.message);
       } else {
-        const isAccountValid = result.status === 'active' && !result.blocked
-        dispatch('updateKeyState', { ...result, blocked: result.blocked })
-        setIsValid(isAccountValid);
+        const isKeyValid = result?.valid
+        setIsValid(isKeyValid);
+
+        if (!isKeyValid) {
+          dispatch('cleanKeyState')
+        }
       }
     } catch (err) {
       console.error('Error validating key:', err);
@@ -34,7 +37,7 @@ const useValidateKey = (discordId) => {
     } finally {
       setIsLoading(false);
     }
-  }, [discordId]);
+  }, [key]);
 
   return { isValid, isLoading, error, validateKey };
 };

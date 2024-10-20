@@ -28,8 +28,8 @@ const Activation = ({ isValid }) => {
         }}>
             <div className="flex flex-col items-center justify-center bg-zinc-950 p-8 rounded-lg">
                 <img src="assets/animeton.png" alt="Animeton Logo" className="w-32 h-32 mb-6" />
-                <h1 className="text-3xl font-bold mb-4 text-white">{isValid ? '¡Bienvenido a Animeton!' : 'Tu cuenta fue desactivada :('}</h1>
-                <p className="text-lg text-gray-300 mb-6 text-center">{isValid ? 'Tu portal al mundo del anime.' : 'Activala de nuevo ingresando otra clave.'}</p>
+                <h1 className="text-3xl font-bold mb-4 text-white">{isValid ? '¡Bienvenido a Animeton!' : 'Tu clave ya no es válida :('}</h1>
+                <p className="text-lg text-gray-300 mb-6 text-center">{isValid ? 'Tu portal al mundo del anime.' : 'Activa de nuevo tu cuenta ingresando otra clave.'}</p>
                 <Divider />
                 <h2 className="text-2xl font-semibold my-6 text-white">Activación de tu cuenta</h2>
                 <div className="w-full max-w-md">
