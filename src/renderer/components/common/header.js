@@ -49,7 +49,7 @@ const Header = ({ state }) => {
 
   useEffect(() => {
     const currentPath = location.pathname;
-    
+
     if (!currentPath.includes('/player')) {
       if (historyRef.current.current !== currentPath) {
         if (historyRef.current.current) {
@@ -205,7 +205,7 @@ const Header = ({ state }) => {
                   icon="gravity-ui:chevron-left"
                   width="28"
                   height="28"
-                  className={canGoBack ? 'text-white' : 'text-gray-500'}
+                  className={`pointer-events-none ${canGoBack ? 'text-white' : 'text-gray-500'}`}
                 />
               </button>
               <button
@@ -218,7 +218,7 @@ const Header = ({ state }) => {
                   icon="gravity-ui:chevron-right"
                   width="28"
                   height="28"
-                  className={canGoForward ? 'text-white' : 'text-gray-500'}
+                  className={`pointer-events-none ${canGoForward ? 'text-white' : 'text-gray-500'}`}
                 />
               </button>
             </div>
@@ -242,10 +242,10 @@ const Header = ({ state }) => {
             </button>
           </div>
 
-          {/* Window Controls and Discord Login */}
-          <div className="flex flex-row items-center gap-2 justify-end">
+          {/* Window Controls and Discord User */}
+          <div className="flex flex-row items-center gap-4 justify-end">
 
-            {/* Discord Login */}
+            {/* Discord User */}
             {(appIsActivated && appUserDiscordId && !appIsBlocked) && (
               <div className="flex flex-row items-center gap-2 bg-zinc-900 rounded-full pl-1 pr-3 py-1">
                 {isLoadingDiscordUser ? (
@@ -279,21 +279,21 @@ const Header = ({ state }) => {
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
                 className="p-1 hover:bg-zinc-800 rounded"
               >
-                <Icon icon="gravity-ui:minus" width="26" height="26" />
+                <Icon icon="gravity-ui:minus" className="pointer-events-none" width="26" height="26" />
               </button>
               <button
                 onClick={handleWindowControl('maximize')}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
                 className="p-1 hover:bg-zinc-800 rounded"
               >
-                <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} width="26" height="26" />
+                <Icon icon={isMaximized ? "gravity-ui:copy" : "gravity-ui:square"} className="pointer-events-none" width="26" height="26" />
               </button>
               <button
                 onClick={handleWindowControl('close')}
                 style={{ WebkitAppRegion: 'no-drag', zIndex: 9999 }}
                 className="p-1 hover:bg-zinc-800 rounded"
               >
-                <Icon icon="gravity-ui:xmark" width="26" height="26" />
+                <Icon icon="gravity-ui:xmark" className="pointer-events-none" width="26" height="26" />
               </button>
             </div>
           </div>

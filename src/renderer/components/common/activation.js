@@ -1,7 +1,9 @@
 const React = require('react');
 const { useState, useEffect } = require('react');
 const { Divider } = require('@nextui-org/react');
+const { Icon } = require('@iconify/react');
 const { dispatch } = require('../../lib/dispatcher');
+const { shell } = require('electron');
 
 const useActivateKey = require('../../hooks/useActivateKey');
 
@@ -23,7 +25,7 @@ const Activation = ({ isValid }) => {
     }, [data]);
 
     return (
-        <div className="flex flex-col items-center justify-center bg-zinc-900" style={{
+        <div className="flex flex-col items-center justify-center bg-zinc-900 pt-4" style={{
             minHeight: 'calc(100vh - 56px)',
         }}>
             <div className="flex flex-col items-center justify-center bg-zinc-950 p-8 rounded-lg">
@@ -55,6 +57,17 @@ const Activation = ({ isValid }) => {
                         <p className="text-green-500 mt-2 text-center">¡Activación exitosa!</p>
                     )}
                 </div>
+            </div>
+            <div className="flex flex-col items-center justify-center py-4 rounded-lg mt-6">
+                <p className="text-white text-xl font-bold">¿No tienes una clave?</p>
+                <p className="text-white text-lg mb-4">Únete a nuestro Discord y consigue una</p>
+                <button
+                    className="flex items-center justify-center bg-[#5865F2] text-white px-6 py-2 rounded-full hover:bg-opacity-80 transition-all duration-300"
+                    onClick={() => shell.openExternal('https://discord.gg/fYNNmKJJfk')}
+                >
+                    <Icon icon="ic:baseline-discord" className="pointer-events-none mr-2" width="26" height="26" style={{ color: 'white' }} />
+                    <p className="text-white text-lg font-bold">Animeton</p>
+                </button>
             </div>
         </div>
     );

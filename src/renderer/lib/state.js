@@ -140,7 +140,6 @@ function setupStateSaved () {
     activation: {
       discordId: null,
       status: null,
-      blocked: false,
       key: null,
       createdAt: null,
       activatedAt: null

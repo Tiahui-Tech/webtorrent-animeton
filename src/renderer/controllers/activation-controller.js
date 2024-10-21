@@ -26,7 +26,6 @@ module.exports = class ActivationController {
     this.state.saved.activation = {
       discordId: null,
       status: null,
-      blocked: false,
       key: null,
       createdAt: null,
       activatedAt: null

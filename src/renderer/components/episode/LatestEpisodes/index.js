@@ -23,7 +23,7 @@ const LatestEpisodes = React.memo(({ state, sectionTitle }) => {
     primaryColor: '#63e8ff',
     secondaryColor: '#ff9af7',
     disablePattern: true,
-    opacity: 0.6
+    opacity: 0.3
   });
 
   useEffect(() => {
