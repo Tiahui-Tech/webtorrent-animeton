@@ -12,6 +12,11 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
     onPlay(episode);
   };
 
+  const episodeTitle = episode?.title?.en || episode?.torrent?.title;
+  const episodeSubtitle = episode?.title?.ja || episodeTitle;
+  const episodeNumber = episode?.episodeNumber || episode?.episode;
+  const episodeDate = episode?.torrent?.date || episode?.airDateUtc || episode?.airDate || episode?.airdate;
+
   return (
     <motion.div
       onClick={handlePlay}
@@ -58,9 +63,9 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-3xl font-medium truncate w-full max-w-[500px]">
-                  {`E${episode.episodeNumber || episode.episode}`}{episode.title.en && ` - ${episode.title.en}`}
+                  {`E${episodeNumber}`}{episodeTitle && ` - ${episodeTitle}`}
                 </p>
-                <span className="text-xl text-gray-400">{episode.title.ja}</span>
+                <span className="text-xl text-gray-400">{episodeSubtitle}</span>
               </div>
             </div>
 
@@ -79,7 +84,7 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
               </div>
               <div className="flex flex-row gap-1">
                 <span className="text-base text-gray-400">
-                  {episode.length}
+                  {episode.length || '??'}
                   {' mins'}
                 </span>
                 <Icon
@@ -92,7 +97,7 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
               </div>
               <div className="flex flex-row gap-1">
                 <span className="text-base text-gray-400">
-                  {new Date(episode.airDateUtc || episode.airDate || episode.airdate).toLocaleDateString() || 'N/A'}
+                  {new Date(episodeDate).toLocaleDateString() || 'N/A'}
                 </span>
                 <Icon
                   icon="gravity-ui:calendar"
