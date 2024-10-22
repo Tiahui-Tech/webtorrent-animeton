@@ -1,5 +1,5 @@
 const React = require('react');
-const { useState } = React;
+const { useState, useEffect } = React;
 const { useNavigate } = require('react-router-dom');
 const { motion, AnimatePresence } = require('framer-motion');
 
@@ -11,20 +11,32 @@ const AnimeCarousel = ({ animes }) => {
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
+    const [isUserInteraction, setIsUserInteraction] = useState(false);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            handleNext(false);
+        }, isUserInteraction ? 10000 : 5000);
+
+        return () => clearInterval(interval);
+    }, [currentIndex, isUserInteraction]);
 
     const handlePrev = () => {
         setDirection(-1);
         setCurrentIndex((prevIndex) =>
             prevIndex === 0 ? animes.length - 1 : prevIndex - 1
         );
+        setIsUserInteraction(true);
     };
 
-    const handleNext = () => {
+    const handleNext = (isUser = true) => {
         setDirection(1);
         setCurrentIndex((prevIndex) => (prevIndex + 1) % animes.length);
+        setIsUserInteraction(isUser);
     };
 
     const currentAnime = animes[currentIndex];
+    const animeImage = currentAnime?.bannerImage || currentAnime.coverImage?.extraLarge;
 
     const slideVariants = {
         enter: (direction) => ({
@@ -64,7 +76,7 @@ const AnimeCarousel = ({ animes }) => {
                     className="absolute inset-0"
                 >
                     <img
-                        src={currentAnime.bannerImage}
+                        src={animeImage}
                         alt="Anime background"
                         className="absolute inset-0 w-full h-full object-cover"
                         style={{
@@ -137,7 +149,7 @@ const AnimeCarousel = ({ animes }) => {
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-50" />
                 <Icon
-                    className="relative"
+                    className="relative pointer-events-none text-white opacity-30 group-hover:opacity-100 transition-opacity duration-300"
                     icon="gravity-ui:chevron-left"
                     width="72"
                     height="72"
@@ -149,7 +161,7 @@ const AnimeCarousel = ({ animes }) => {
             >
                 <div className="absolute inset-0 bg-gradient-to-l from-black to-transparent opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-50" />
                 <Icon
-                    className="relative"
+                    className="relative pointer-events-none text-white opacity-30 group-hover:opacity-100 transition-opacity duration-300"
                     icon="gravity-ui:chevron-right"
                     width="72"
                     height="72"
