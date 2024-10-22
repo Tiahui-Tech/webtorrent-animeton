@@ -27,4 +27,4 @@ async function anitomyscript(...args) {
   return parseObjs;
 }
 
-module.exports = { anitomyscript, findAnilistEpisodeAndTorrent };
+module.exports = { anitomyscript };

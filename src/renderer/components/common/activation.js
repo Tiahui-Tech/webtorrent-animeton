@@ -17,6 +17,10 @@ const Activation = ({ isValid }) => {
     };
 
     useEffect(() => {
+        dispatch('discordRpcUpdate', { details: 'Activando la app' });
+    }, []);
+
+    useEffect(() => {
         if (data) {
             console.log('Activation successful:', data);
             dispatch('activateKey', data);

@@ -90,6 +90,7 @@ function AppContent({ initialState, onUpdate }) {
     eventBus.on('navigate', navigationHandler);
 
     const torrentUpdateHandler = (torrentSummary) => {
+      console.log('torrentUpdateHandler', torrentSummary);
       setCurrentTorrent(torrentSummary);
     };
     eventBus.on('torrentUpdate', torrentUpdateHandler);

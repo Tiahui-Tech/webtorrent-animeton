@@ -15,6 +15,13 @@ const Home = ({ state }) => {
   const animes = useAnimesData({ displayCount: 10 });
   const [searchTerm, setSearchTerm] = useState('');
   const { isValid, isLoading, validateKey } = useValidateKey(state?.saved?.activation?.key);
+  const needActivation = !state?.saved?.activation?.key || (state?.saved?.activation?.key && !isValid);
+
+  useEffect(() => {
+    if (!needActivation) {
+      dispatch('discordRpcUpdate', { details: 'En el inicio' });
+    }
+  }, [needActivation]);
 
   useEffect(() => {
     if (state?.saved?.activation?.key) {
@@ -36,7 +43,7 @@ const Home = ({ state }) => {
 
   if (isLoading) return <Spinner />;
 
-  if (!state?.saved?.activation?.key || (state?.saved?.activation?.key && !isValid)) {
+  if (needActivation) {
     return <Activation isValid={isValid} />;
   }
 

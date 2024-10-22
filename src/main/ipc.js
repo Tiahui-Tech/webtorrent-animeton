@@ -184,6 +184,7 @@ function init () {
   ipcMain.on('setTitle', (e, ...args) => main.setTitle(...args))
   ipcMain.on('show', () => main.show())
   ipcMain.on('toggleFullScreen', (e, ...args) => main.toggleFullScreen(...args))
+  ipcMain.on('discordRpcUpdate', (e, ...args) => main.updateDiscordRPC(...args))
   ipcMain.on('setAllowNav', (e, ...args) => menu.setAllowNav(...args))
 
   /**

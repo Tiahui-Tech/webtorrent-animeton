@@ -367,6 +367,9 @@ const dispatchHandlers = {
     state.window.title = config.APP_WINDOW_TITLE;
   },
 
+  // Discord RPC
+  discordRpcUpdate: (details) => ipcRenderer.send('discordRpcUpdate', details),
+
   // Everything else
   onOpen,
   error: onError,

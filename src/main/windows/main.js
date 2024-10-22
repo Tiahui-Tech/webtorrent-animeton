@@ -27,7 +27,7 @@ const menu = require('../menu')
 const discordClientId = '1297080240736309348'
 let rpc
 
-function init (state, options) {
+function init(state, options) {
   if (main.win) {
     return main.win.show()
   }
@@ -121,17 +121,17 @@ function init (state, options) {
   initDiscordRPC()
 }
 
-function dispatch (...args) {
+function dispatch(...args) {
   send('dispatch', ...args)
 }
 
-function hide () {
+function hide() {
   if (!main.win) return
   dispatch('backToList')
   main.win.hide()
 }
 
-function send (...args) {
+function send(...args) {
   if (!main.win) return
   main.win.send(...args)
 }
@@ -139,7 +139,7 @@ function send (...args) {
 /**
  * Enforce window aspect ratio. Remove with 0. (Mac)
  */
-function setAspectRatio (aspectRatio) {
+function setAspectRatio(aspectRatio) {
   if (!main.win) return
   main.win.setAspectRatio(aspectRatio)
 }
@@ -148,7 +148,7 @@ function setAspectRatio (aspectRatio) {
  * Change the size of the window.
  * TODO: Clean this up? Seems overly complicated.
  */
-function setBounds (bounds, maximize) {
+function setBounds(bounds, maximize) {
   // Do nothing in fullscreen
   if (!main.win || main.win.isFullScreen()) {
     log('setBounds: not setting bounds because already in full screen mode')
@@ -190,23 +190,23 @@ function setBounds (bounds, maximize) {
 /**
  * Set progress bar to [0, 1]. Indeterminate when > 1. Remove with < 0.
  */
-function setProgress (progress) {
+function setProgress(progress) {
   if (!main.win) return
   main.win.setProgressBar(progress)
 }
 
-function setTitle (title) {
+function setTitle(title) {
   if (!main.win) return
   main.win.setTitle(title)
 }
 
-function show () {
+function show() {
   if (!main.win) return
   main.win.show()
 }
 
 // Sets whether the window should always show on top of other windows
-function toggleAlwaysOnTop (flag) {
+function toggleAlwaysOnTop(flag) {
   if (!main.win) return
   if (flag == null) {
     flag = !main.win.isAlwaysOnTop()
@@ -216,7 +216,7 @@ function toggleAlwaysOnTop (flag) {
   menu.onToggleAlwaysOnTop(flag)
 }
 
-function toggleDevTools () {
+function toggleDevTools() {
   if (!main.win) return
   log('toggleDevTools')
   if (main.win.webContents.isDevToolsOpened()) {
@@ -226,7 +226,7 @@ function toggleDevTools () {
   }
 }
 
-function toggleFullScreen () {
+function toggleFullScreen() {
   if (!main.win || !main.win.isVisible()) {
     return
   }
@@ -241,7 +241,7 @@ function toggleFullScreen () {
   main.win.setFullScreen(newFullScreenState)
 }
 
-function onWindowBlur () {
+function onWindowBlur() {
   menu.setWindowFocus(false)
 
   if (process.platform !== 'darwin') {
@@ -250,7 +250,7 @@ function onWindowBlur () {
   }
 }
 
-function onWindowFocus () {
+function onWindowFocus() {
   menu.setWindowFocus(true)
 
   if (process.platform !== 'darwin') {
@@ -259,30 +259,62 @@ function onWindowFocus () {
   }
 }
 
-function getIconPath () {
+function getIconPath() {
   return process.platform === 'win32'
     ? config.APP_ICON + '.ico'
     : config.APP_ICON + '.png'
 }
 
+const defaultStatus = {
+  activity: {
+    details: 'En el inicio',
+    instance: true,
+    type: 3
+  }
+}
+
 function initDiscordRPC() {
-  DiscordRPC.register(discordClientId)
   rpc = new DiscordRPC.Client({ transport: 'ipc' })
 
   rpc.on('ready', () => {
-    updateDiscordRPC('En el menú principal')
+    updateDiscordRPC(defaultStatus)
   })
 
-  rpc.login({ clientId: discordClientId }).catch(console.error)
+  loginRPC()
 }
 
-function updateDiscordRPC(details) {
+function loginRPC() {
+  rpc.login({ clientId: discordClientId }).catch(() => {
+    setTimeout(() => loginRPC(), 5000).unref()
+  })
+}
+
+function updateDiscordRPC(params = {}) {
+  debounce(setDiscordRPC, 3500)(params)
+}
+
+function setDiscordRPC(params = {}) {
   if (!rpc) return
 
-  rpc.setActivity({
-    details: details,
-    largeImageKey: 'app_logo',
-    largeImageText: config.APP_NAME,
-    instance: false,
-  })
+  const activityData = Object.entries(params).reduce((acc, [key, value]) => {
+    if (value != null && value !== '') {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+
+  activityData.instance = true;
+  activityData.type = 3
+  activityData.buttons = [
+    {
+      label: 'Descarga la app',
+      url: 'https://www.animeton.com/'
+    },
+    {
+      label: 'Nuestro Discord',
+      url: 'https://discord.gg/fYNNmKJJfk'
+    }
+  ]
+
+  rpc.request('SET_ACTIVITY', { activity: activityData, pid: process.pid })
 }
