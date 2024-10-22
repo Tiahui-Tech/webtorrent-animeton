@@ -63,7 +63,7 @@ function Player({ state, currentTorrent }) {
       const episodeNumber = Number(anitomyData[0].episode_number) || null
       const isPaused = state.playing.isPaused
 
-      dispatch('discordRpcUpdate', {
+      dispatch('updateDiscordRPC', {
         details: animeName,
         state: episodeNumber ? `Episodio ${episodeNumber}` : '',
         assets: {

@@ -16,11 +16,11 @@ const messageQueueMainToWebTorrent = []
 // IPC events.
 const modules = {}
 
-function setModule (name, module) {
+function setModule(name, module) {
   modules[name] = module
 }
 
-function init () {
+function init() {
   ipcMain.once('ipcReady', e => {
     app.ipcReady = true
     app.emit('ipcReady')
@@ -184,7 +184,7 @@ function init () {
   ipcMain.on('setTitle', (e, ...args) => main.setTitle(...args))
   ipcMain.on('show', () => main.show())
   ipcMain.on('toggleFullScreen', (e, ...args) => main.toggleFullScreen(...args))
-  ipcMain.on('discordRpcUpdate', (e, ...args) => main.updateDiscordRPC(...args))
+  ipcMain.on('updateDiscordRPC', (e, ...args) => main.updateDiscordRPC(...args))
   ipcMain.on('setAllowNav', (e, ...args) => menu.setAllowNav(...args))
 
   /**

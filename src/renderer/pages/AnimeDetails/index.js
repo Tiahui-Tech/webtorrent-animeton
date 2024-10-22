@@ -28,7 +28,7 @@ const AnimeDetails = ({ state }) => {
 
   useEffect(() => {
     state.window.title = animeTitle;
-    dispatch('discordRpcUpdate', {
+    dispatch('updateDiscordRPC', {
       state: 'Viendo detalles',
       details: animeTitle,
       assets: { large_text: animeTitle, large_image: animeImage }

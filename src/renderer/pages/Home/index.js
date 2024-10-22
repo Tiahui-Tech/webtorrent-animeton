@@ -19,7 +19,7 @@ const Home = ({ state }) => {
 
   useEffect(() => {
     if (!needActivation) {
-      dispatch('discordRpcUpdate', { details: 'En el inicio' });
+      dispatch('updateDiscordRPC', { details: 'En el inicio' });
     }
   }, [needActivation]);
 
