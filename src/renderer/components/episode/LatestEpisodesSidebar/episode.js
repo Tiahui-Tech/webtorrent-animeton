@@ -31,7 +31,7 @@ const Episode = memo(({ anime, isLoading, onPlay }) => {
             className={`aspect-video object-cover w-auto h-32 ${isLoading && 'grayscale'}`}
           />
           <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50 z-10">
-            <Icon icon="gravity-ui:play-fill" width="64" height="64" style={{ color: '#000' }} />
+            <Icon icon="gravity-ui:play-fill" className="pointer-events-none" width="64" height="64" style={{ color: '#000' }} />
           </div>
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center opacity-100 z-10">
@@ -44,7 +44,7 @@ const Episode = memo(({ anime, isLoading, onPlay }) => {
             </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 ease-in-out shadow-current hover:opacity-50">
-              <Icon icon="gravity-ui:play-fill" width="64" height="64" />
+              <Icon icon="gravity-ui:play-fill" className="pointer-events-none" width="64" height="64" />
             </div>
           )}
         </div>

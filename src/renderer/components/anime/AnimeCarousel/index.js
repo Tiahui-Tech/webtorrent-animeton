@@ -137,7 +137,7 @@ const AnimeCarousel = ({ animes }) => {
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-50" />
                 <Icon
-                    className="relative"
+                    className="relative pointer-events-none"
                     icon="gravity-ui:chevron-left"
                     width="72"
                     height="72"
@@ -149,7 +149,7 @@ const AnimeCarousel = ({ animes }) => {
             >
                 <div className="absolute inset-0 bg-gradient-to-l from-black to-transparent opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-50" />
                 <Icon
-                    className="relative"
+                    className="relative pointer-events-none"
                     icon="gravity-ui:chevron-right"
                     width="72"
                     height="72"
