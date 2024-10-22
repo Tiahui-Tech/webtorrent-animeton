@@ -18,6 +18,7 @@ const eventBus = require('../lib/event-bus');
 
 const Spinner = require('../components/common/spinner');
 const { sendNotification } = require('../lib/errors');
+const { anitomyscript } = require('../../modules/anime');
 
 // Shows a streaming video player. Standard features + Chromecast + Airplay
 function Player({ state, currentTorrent }) {
@@ -52,6 +53,29 @@ function Player({ state, currentTorrent }) {
       setIsMouseMoving(false);
     }, 3000); // Set to 0 after 3 seconds of inactivity
   };
+
+  // Discord RPC
+  useEffect(() => {
+    const updateDiscordRPC = async () => {
+      const anitomyData = await anitomyscript(currentTorrent.name)
+
+      const animeName = anitomyData[0].anime_title
+      const episodeNumber = Number(anitomyData[0].episode_number) || null
+      const isPaused = state.playing.isPaused
+
+      dispatch('updateDiscordRPC', {
+        details: animeName,
+        state: episodeNumber ? `Episodio ${episodeNumber}` : '',
+        assets: {
+          small_image: isPaused ? 'pause' : 'play'
+        },
+      });
+    }
+
+    if (currentTorrent && subtitlesFound && isTorrentReady) {
+      updateDiscordRPC()
+    }
+  }, [currentTorrent, state.playing.isPaused, subtitlesFound, isTorrentReady]);
 
   useEffect(() => {
     return () => {
@@ -148,7 +172,7 @@ function Player({ state, currentTorrent }) {
       }
 
       const subsLength = tracks.reduce((max, track) =>
-      track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
+        track.buffer && track.buffer.length > (max?.buffer?.length || 0) ? track : max, null)?.buffer?.length || null
 
       if (subsLength) {
         console.log('Subtitles updated:', infoHash);
@@ -195,7 +219,7 @@ function Player({ state, currentTorrent }) {
       subtitleCheckRef.current = { infoHash, attempts: 0, lastMaxLength: 0 };
     }
 
-    const MAX_ATTEMPTS = 8;
+    const MAX_ATTEMPTS = 16;
     if (attempts < MAX_ATTEMPTS) {
       console.log(`Checking subtitles (attempt ${attempts + 1} of ${MAX_ATTEMPTS})`);
 

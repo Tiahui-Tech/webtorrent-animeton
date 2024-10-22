@@ -1,5 +1,5 @@
 const React = require('react');
-const { useState, memo } = React;
+const { useState, useEffect, memo } = React;
 
 const useRSSData = require('../../../hooks/useRSSData');
 
@@ -12,11 +12,17 @@ const EpisodeSkeleton = require('./skeleton');
 const LatestEpisodesSidebar = memo(({ state, bannerColors, sectionTitle }) => {
   const [loadingEpisodeId, setLoadingEpisodeId] = useState(null);
 
-  const { rssAnimes, isLoading } = useRSSData({
+  const { rssAnimes, isLoading, error } = useRSSData({
     page: 1,
     perPage: 10,
     displayCount: 8
   });
+
+  useEffect(() => {
+    if (error) {
+      sendNotification(state, { message: error });
+    }
+  }, [error]);
 
   const handlePlay = (anime) => {
     const infoHash = anime?.torrent?.infoHash;

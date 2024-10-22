@@ -24,7 +24,7 @@ const AnimeCard = React.memo(({ anime, state, glassStyle }) => {
 
   return (
     <Card
-      className="max-w-52 transition duration-300 ease-in-out hover:scale-105"
+      className="max-w-52 transition duration-300 ease-in-out hover:scale-105 rounded-md border border-zinc-800"
       style={glassStyle ?? {}}
       isPressable
       onPress={() => handleAnimeClick(anime)}

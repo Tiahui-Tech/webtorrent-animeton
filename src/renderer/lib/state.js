@@ -136,7 +136,14 @@ function setupStateSaved () {
     },
     torrents: config.DEFAULT_TORRENTS.map(createTorrentObject),
     torrentsToResume: [],
-    version: config.APP_VERSION /* make sure we can upgrade gracefully later */
+    version: config.APP_VERSION, /* make sure we can upgrade gracefully later */
+    activation: {
+      discordId: null,
+      status: null,
+      key: null,
+      createdAt: null,
+      activatedAt: null
+    }
   }
 
   // TODO: Doing several sync calls during first startup is not ideal

@@ -4,6 +4,7 @@ const { API_BASE_URL } = require('../../constants/config');
 const RETRY_INTERVAL = 2500;
 const UPDATE_INTERVAL = 15000;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const ERROR_MESSAGE = 'No se encontraron los ultimos episodios';
 
 // Global cache object
 const cache = {};
@@ -32,8 +33,12 @@ const useRSSData = ({ page, perPage, displayCount, emptyState }) => {
     try {
       // Fetch new data from the API
       const response = await fetch(`${API_BASE_URL}/anime/rss?page=${page}&perPage=${perPage}`);
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) throw new Error(ERROR_MESSAGE);
       const rssAnimesData = await response.json();
+
+      if (rssAnimesData.length === 0) {
+        throw new Error(ERROR_MESSAGE);
+      }
 
       if (rssAnimesData.length > 1) {
         const slicedRssAnimes = rssAnimesData.slice(0, displayCount);
