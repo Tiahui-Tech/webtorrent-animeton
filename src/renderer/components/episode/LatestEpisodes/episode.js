@@ -1,5 +1,6 @@
 const React = require('react');
 const { memo } = React;
+const { useNavigate } = require('react-router-dom');
 const {
   getAnimeFlags,
   timeAgo,
@@ -17,6 +18,7 @@ const { Icon } = require('@iconify/react');
 const useExtractColor = require('../../../hooks/useExtractColor');
 
 const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
+  const navigate = useNavigate();
 
   const episodeImage =
     anime?.episode?.image ||
@@ -35,6 +37,12 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
     handlePlay(e);
   }
 
+  const handleAnimeClick = () => {
+    navigate(`/anime/${anime.idAnilist}`, {
+        state: { title: anime.title.romaji }
+    });
+};
+
   const { animeColors } = useExtractColor(episodeImage);
 
   if (!animeColors) return null;
@@ -43,9 +51,9 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
 
   return (
     <div className="max-w-[400px] px-4">
-        <Card className="flex flex-col relative overflow-visible">
+        <Card className="flex flex-col relative overflow-visible rounded-md border border-zinc-800">
           <CardHeader className="flex flex-col truncate items-start justify-start">
-            <p className="text-base font-medium truncate w-full">
+            <p className="text-base font-medium truncate w-full cursor-pointer" onClick={handleAnimeClick}>
               {anime?.title?.romaji}
             </p>
             <span className="text-sm text-gray-400">
@@ -60,7 +68,7 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
               component="img"
               src={episodeImage}
               alt={anime?.title?.romaji}
-              className={`aspect-[16/9] rounded-t-lg w-full h-full object-cover ${isLoading && 'grayscale'}`}
+              className={`aspect-[16/9] w-full h-full object-cover ${isLoading && 'grayscale'}`}
             />
             <div className="flex flex-row gap-2 bg-slate-950/25 px-1 py-0.5 rounded-md absolute top-2 right-2 z-10">
               {getAnimeFlags(anime?.torrent?.title)}
@@ -82,6 +90,7 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
               >
                 <Icon
                   icon="gravity-ui:play-fill"
+                  className="pointer-events-none"
                   width="64"
                   height="64"
                   style={{ color: cardColor }}
@@ -90,7 +99,7 @@ const EpisodeCard = memo(({ anime, isLoading, onPlay }) => {
             )}
           </CardBody>
           <CardFooter>
-            <div className="flex justify-between items-center w-full mt-2">
+            <div className="flex justify-between items-center w-full">
               <div className="flex items-center">
                 <Icon icon="gravity-ui:calendar" />
                 <span className="text-sm text-gray-400 ml-1">

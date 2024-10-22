@@ -1,7 +1,7 @@
 {
   "name": "animeton",
   "description": "Animeton, the streaming torrent client. For Mac, Windows, and Linux.",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "author": {
     "name": "Tiahui Tech",
     "email": "contact@tiahui.tech",
@@ -46,6 +46,7 @@
     "chromecasts": "1.10.2",
     "create-torrent": "5.0.9",
     "debounce": "1.2.1",
+    "discord-rpc": "^4.0.1",
     "dlnacasts": "0.1.0",
     "drag-drop": "7.2.0",
     "es6-error": "4.1.1",
@@ -126,7 +127,7 @@
     "url": "git://github.com/Tiahui-Tech/webtorrent-animerso.git"
   },
   "scripts": {
-    "build": "npm run clean && babel src --out-dir build",
+    "build": "babel src --out-dir build",
     "clean": "node ./bin/clean.js",
     "gh-release": "gh-release",
     "install-system-deps": "brew install fakeroot dpkg rpm",

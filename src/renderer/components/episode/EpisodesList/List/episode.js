@@ -23,10 +23,11 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      className="w-full"
     >
       <Card
-        className="w-full max-w-[1130px] relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
-        style={{ zIndex: 9999 }}
+        className="w-full h-full relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
+        style={{ zIndex: 9000 }}
       >
         <CardBody className="flex flex-row relative gap-4 justify-start">
           <div className="flex flex-row gap-4 items-center justify-between w-full">
@@ -55,7 +56,7 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
                       style={{ color: '#000' }}
                     />
                   ) : episodeHasTorrent ? (
-                    <Icon icon="gravity-ui:play-fill" width="64" height="64" style={{ color: '#000' }} />
+                    <Icon icon="gravity-ui:play-fill" className="pointer-events-none" width="64" height="64" style={{ color: '#000' }} />
                   ) : (
                     <p className="text-black text-xl font-bold">No disponible...</p>
                   )}

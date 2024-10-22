@@ -119,6 +119,10 @@ function onState(err, _state) {
     folderWatcher: createGetter(() => {
       const FolderWatcherController = require('./controllers/folder-watcher-controller');
       return new FolderWatcherController();
+    }),
+    activation: createGetter(() => {
+      const ActivationController = require('./controllers/activation-controller');
+      return new ActivationController(state);
     })
   };
 
@@ -321,6 +325,11 @@ const dispatchHandlers = {
   openExternalPlayer: () => controllers.media().openExternalPlayer(),
   externalPlayerNotFound: () => controllers.media().externalPlayerNotFound(),
 
+  // Activation
+  activateKey: (keyData) => controllers.activation().activateKey(keyData),
+  updateKeyState: (keyData) => controllers.activation().updateKeyState(keyData),
+  cleanKeyState: () => controllers.activation().cleanKeyState(),
+
   // Remote casting: Chromecast, Airplay, etc
   toggleCastMenu: (deviceType) => lazyLoadCast().toggleMenu(deviceType),
   selectCastDevice: (index) => lazyLoadCast().selectDevice(index),
@@ -358,13 +367,16 @@ const dispatchHandlers = {
     state.window.title = config.APP_WINDOW_TITLE;
   },
 
+  // Discord RPC
+  updateDiscordRPC: (details) => ipcRenderer.send('updateDiscordRPC', details),
+
   // Everything else
   onOpen,
   error: onError,
   uncaughtError: (proc, err) => telemetry.logUncaughtError(proc, err),
   stateSave: () => State.save(state),
   stateSaveImmediate: () => State.saveImmediate(state),
-  update: () => {} // No-op, just trigger an update
+  update: () => { } // No-op, just trigger an update
 };
 
 // Events from the UI never modify state directly. Instead they call dispatch()
@@ -493,11 +505,11 @@ function setDimensions(dimensions) {
   const screenHeight = workArea.height;
 
   const aspectRatio = dimensions.width / dimensions.height;
-  
+
   // Calculate the maximum size that fits in the work area while maintaining aspect ratio
   let width = Math.min(dimensions.width, screenWidth);
   let height = Math.round(width / aspectRatio);
-  
+
   if (height > screenHeight) {
     height = screenHeight;
     width = Math.round(height * aspectRatio);
@@ -508,7 +520,7 @@ function setDimensions(dimensions) {
   height = Math.max(height, config.WINDOW_MIN_HEIGHT);
 
   console.log('setDimensions', aspectRatio, width, height);
-  
+
   // Center the window in the work area
   const x = Math.round(workArea.x + (screenWidth - width) / 2);
   const y = Math.round(workArea.y + (screenHeight - height) / 2);
@@ -628,14 +640,14 @@ function onVisibilityChange() {
 }
 
 function onFullscreenChanged() {
-  
+
   // Use remote to get the current window and check its fullscreen state
   const currentWindow = remote.getCurrentWindow();
   const actualFullScreenState = currentWindow.isFullScreen();
-  
+
   // Update the state with the actual fullscreen state
   state.window.isFullScreen = actualFullScreenState;
-  
+
   if (!actualFullScreenState) {
     // Aspect ratio gets reset in fullscreen mode, so restore it (Mac)
     ipcRenderer.send('setAspectRatio', state.playing.aspectRatio);
