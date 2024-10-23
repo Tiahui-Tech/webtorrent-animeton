@@ -290,33 +290,36 @@ function loginRPC() {
 }
 
 function updateDiscordRPC(params = {}) {
-  debounce(setDiscordRPC, 3500)(params)
+  debounce(setDiscordRPC, 1500)(params)
 }
 
 function setDiscordRPC(params = {}) {
   if (!rpc) return
 
-  const activityData = Object.entries(params).reduce((acc, [key, value]) => {
-    if (value != null && value !== '') {
-      acc[key] = value;
+  const defaultActivityData = {
+    instance: true,
+    type: 3,
+    timestamps: {
+      start: new Date().getTime()
+    },
+    buttons: [
+      {
+        label: 'Descarga la App',
+        url: 'https://www.animeton.com/'
+      }
+    ],
+    assets: {
+      large_image: 'animeton'
     }
-    return acc;
-  }, {});
+  };
 
-  activityData.instance = true;
-  activityData.type = 3
-  activityData.timestamps = {
-    start: new Date().getTime()
-  }
-  activityData.buttons = [
-    {
-      label: 'Descarga la App',
-      url: 'https://www.animeton.com/'
-    }
-  ]
-  activityData.assets = {
-    large_image: 'animeton'
-  }
+  const activityData = {
+    ...defaultActivityData,
+    ...params,
+    timestamps: { ...defaultActivityData.timestamps, ...params.timestamps },
+    buttons: params.buttons || defaultActivityData.buttons,
+    assets: { ...defaultActivityData.assets, ...params.assets }
+  };
 
   rpc.request('SET_ACTIVITY', { activity: activityData, pid: process.pid })
 }

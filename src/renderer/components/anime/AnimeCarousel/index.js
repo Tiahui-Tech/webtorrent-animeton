@@ -36,7 +36,7 @@ const AnimeCarousel = ({ animes }) => {
     };
 
     const currentAnime = animes[currentIndex];
-    const animeImage = currentAnime?.bannerImage || currentAnime.coverImage?.extraLarge;
+    const animeImage = currentAnime?.bannerImage || currentAnime?.coverImage?.extraLarge;
 
     const slideVariants = {
         enter: (direction) => ({
@@ -54,8 +54,8 @@ const AnimeCarousel = ({ animes }) => {
     };
 
     const handleAnimeClick = (anime) => {
-        navigate(`/anime/${anime.idAnilist}`, {
-            state: { title: anime.title.romaji }
+        navigate(`/anime/${anime?.idAnilist}`, {
+            state: { title: anime?.title?.romaji }
         });
     };
 
@@ -95,7 +95,7 @@ const AnimeCarousel = ({ animes }) => {
                                         transition={{ delay: 0.6, duration: 0.5 }}
                                         className="text-5xl font-bold text-left w-full"
                                     >
-                                        {currentAnime.title.romaji}
+                                        {currentAnime?.title?.romaji}
                                     </motion.p>
                                     <motion.div
                                         initial={{ opacity: 0, x: -50 }}
@@ -103,7 +103,7 @@ const AnimeCarousel = ({ animes }) => {
                                         transition={{ delay: 0.6, duration: 0.5 }}
                                         className="flex gap-2"
                                     >
-                                        {translateGenres(currentAnime.genres).map((genre, index) => (
+                                        {translateGenres(currentAnime?.genres).map((genre, index) => (
                                             <span
                                                 key={index}
                                                 className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm"
@@ -126,7 +126,7 @@ const AnimeCarousel = ({ animes }) => {
                                         WebkitBoxOrient: 'vertical',
                                     }}
                                 >
-                                    {currentAnime.description}
+                                    {currentAnime?.description}
                                 </motion.p>
                                 <motion.button
                                     initial={{ opacity: 0, scale: 0.9 }}
