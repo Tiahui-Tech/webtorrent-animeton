@@ -20,18 +20,25 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
   return (
     <motion.div
       onClick={handlePlay}
+      viewport={{ once: true }}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="w-full"
+      whileInView={{ opacity: 1 }}
+      whileHover={{ scale: 1.05 }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+        opacity: { delay: 0.3 }
+      }}
+      className="w-full overflow-visible"
     >
       <Card
-        className="w-full h-full relative transition-all duration-300 ease-in-out hover:scale-105 cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
+        className="w-full h-full relative transition-all duration-300 ease-in-out cursor-pointer group/card bg-zinc-950 rounded-xl border-2 border-zinc-900"
         style={{ zIndex: 9000 }}
       >
-        <CardBody className="flex flex-row relative gap-4 justify-start">
-          <div className="flex flex-row gap-4 items-center justify-between w-full">
-            <div className="flex flex-row gap-4 items-center">
+        <CardBody className="flex flex-row relative gap-4 justify-start overflow-hidden">
+          <div className="flex flex-row gap-4 items-center justify-between w-full overflow-hidden">
+            <div className="flex flex-row gap-4 items-center flex-grow min-w-0 overflow-hidden">
               <div className="relative min-w-[227px]">
                 <Image
                   alt="episode-image"
@@ -62,11 +69,11 @@ const EpisodeCard = React.memo(({ episode, isLoading, onPlay }) => {
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <p className="text-3xl font-medium truncate w-full max-w-[500px]">
+              <div className="flex flex-col gap-2 min-w-0 flex-grow overflow-hidden">
+                <p className="text-3xl font-medium truncate">
                   {`E${episodeNumber}`}{episodeTitle && ` - ${episodeTitle}`}
                 </p>
-                <span className="text-xl text-gray-400">{episodeSubtitle}</span>
+                <span className="text-xl text-gray-400 truncate">{episodeSubtitle}</span>
               </div>
             </div>
 

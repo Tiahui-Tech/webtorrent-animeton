@@ -166,6 +166,7 @@ table {
 .content {
   position: relative;
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
   overflow-y: auto;
   flex: 1 1 auto;
@@ -1675,6 +1676,10 @@ video {
   margin-top: 0.5rem;
 }
 
+.mt-4 {
+  margin-top: 1rem;
+}
+
 .mt-6 {
   margin-top: 1.5rem;
 }
@@ -2055,6 +2060,10 @@ video {
   width: 2rem;
 }
 
+.w-80 {
+  width: 20rem;
+}
+
 .w-9 {
   width: 2.25rem;
 }
@@ -2241,10 +2250,6 @@ video {
 
 .max-w-\[400px\] {
   max-width: 400px;
-}
-
-.max-w-\[500px\] {
-  max-width: 500px;
 }
 
 .max-w-\[50vw\] {
@@ -2828,6 +2833,10 @@ video {
 
 .rounded-none {
   border-radius: 0px;
+}
+
+.rounded-sm {
+  border-radius: 0.125rem;
 }
 
 .rounded-small {

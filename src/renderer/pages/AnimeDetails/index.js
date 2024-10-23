@@ -74,8 +74,8 @@ const AnimeDetails = ({ state }) => {
   }
 
   return (
-    <div className="flex flex-row bg-black justify-between items-start">
-      <div className="relative w-full">
+    <div className="flex flex-row bg-black justify-between items-start overflow-hidden">
+      <div className="relative w-full overflow-hidden">
         <AnimeOverview
           anime={anime}
           animeColors={animeColors}
@@ -96,11 +96,13 @@ const AnimeDetails = ({ state }) => {
       </div>
 
       {showSidebar && (
-        <LatestEpisodesSidebar
-          state={state}
-          bannerColors={bannerColors}
-          sectionTitle="Episodios Recientes"
-        />
+        <div className="flex-shrink-0 z-50">
+          <LatestEpisodesSidebar
+            state={state}
+            bannerColors={bannerColors}
+            sectionTitle="Episodios Recientes"
+          />
+        </div>
       )}
     </div>
   );
