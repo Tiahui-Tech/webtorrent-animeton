@@ -23,9 +23,7 @@ const AnimeSection = ({ state, sectionTitle, searchTerm, fullScreen }) => {
         setFilteredAnimes(animes || []);
       } else {
         const searchResults = await searchAnimes();
-        setFilteredAnimes(searchResults.filter((anime) =>
-          anime.title.romaji.toLowerCase().includes(searchTerm.toLowerCase())
-        ));
+        setFilteredAnimes(searchResults);
       }
       setIsLoading(false);
     };

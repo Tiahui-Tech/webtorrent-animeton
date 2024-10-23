@@ -305,16 +305,18 @@ function setDiscordRPC(params = {}) {
 
   activityData.instance = true;
   activityData.type = 3
+  activityData.timestamps = {
+    start: new Date().getTime()
+  }
   activityData.buttons = [
     {
-      label: 'Descarga la app',
+      label: 'Descarga la App',
       url: 'https://www.animeton.com/'
-    },
-    {
-      label: 'Nuestro Discord',
-      url: 'https://discord.gg/fYNNmKJJfk'
     }
   ]
+  activityData.assets = {
+    large_image: 'animeton'
+  }
 
   rpc.request('SET_ACTIVITY', { activity: activityData, pid: process.pid })
 }
