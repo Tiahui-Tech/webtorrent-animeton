@@ -25,7 +25,9 @@ const AnimeRecommendationsList = React.memo(({ idAnilist, sectionTitle }) => {
             key={`anim-recomm-${idAnilist}-${i}`}
           />
         ))) : (
-          <AnimeCardSkeleton />
+          Array.from({ length: 8 }).map((_, index) => (
+            <AnimeCardSkeleton key={`skeleton-${index}`} />
+          ))
         )}
       </div>
     </div>
