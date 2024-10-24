@@ -35,7 +35,7 @@ const AnimeDetails = ({ state }) => {
       dispatch('updateDiscordRPC', {
         state: 'Viendo detalles',
         details: animeTitle,
-        assets: { large_text: animeTitle, large_image: rpcFrame, small_image: 'animeton' }
+        assets: { large_image: rpcFrame, small_image: 'animeton' }
       });
     }
   }, [state.window, anime, rpcFrame]);

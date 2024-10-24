@@ -27,6 +27,8 @@ const menu = require('../menu')
 const discordClientId = '1297080240736309348'
 let rpc
 
+const initialTimestamp = new Date().getTime()
+
 function init(state, options) {
   if (main.win) {
     return main.win.show()
@@ -300,7 +302,7 @@ function setDiscordRPC(params = {}) {
     instance: true,
     type: 3,
     timestamps: {
-      start: new Date().getTime()
+      start: initialTimestamp
     },
     buttons: [
       {

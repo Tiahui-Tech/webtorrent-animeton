@@ -74,16 +74,17 @@ function Player({ state, currentTorrent }) {
         assets: {
           small_image: isPaused ? 'pause' : 'play',
           small_text: isPaused ? 'Pausado' : 'Reproduciendo',
-          large_text: animeName,
           large_image: rpcFrame,
         },
       });
     }
 
-    if (currentTorrent && subtitlesFound && isTorrentReady && rpcFrame) {
+    console.log('updateDiscordRPC', { currentTorrent, state: state.playing.isPaused, isTorrentReady, rpcFrame })
+
+    if (currentTorrent && isTorrentReady && rpcFrame) {
       updateDiscordRPC()
     }
-  }, [currentTorrent, state.playing.isPaused, subtitlesFound, isTorrentReady, rpcFrame]);
+  }, [currentTorrent, state.playing.isPaused, isTorrentReady, rpcFrame]);
 
   useEffect(() => {
     return () => {
